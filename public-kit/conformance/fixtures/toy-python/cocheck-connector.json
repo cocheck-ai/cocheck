@@ -1,0 +1,10 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "toy-notes-python",
+  "version": "0.0.1",
+  "entry": "state",
+  "matches": { "extensions": [".notes.json"] },
+  "run": ["python3", "connector.py"],
+  "credentials": [],
+  "platforms": ["darwin"]
+}

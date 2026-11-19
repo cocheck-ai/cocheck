@@ -1,0 +1,86 @@
+{
+  "spec": "cocheck.changes/1",
+  "changes": [
+    {
+      "id": "k1",
+      "mark": "changed",
+      "label": "Sheet1!B3",
+      "before": "5",
+      "after": "7",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "B3"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "B3"
+        }
+      ]
+    },
+    {
+      "id": "k2",
+      "mark": "changed",
+      "label": "Sheet1!D3",
+      "lines": [
+        "Recalculated: the formula is unchanged, a cell it reads changed"
+      ],
+      "before": "20",
+      "after": "28",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "D3"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "D3"
+        }
+      ]
+    },
+    {
+      "id": "k3",
+      "mark": "changed",
+      "label": "Sheet1!D5",
+      "lines": [
+        "Recalculated: the formula is unchanged, a cell it reads changed"
+      ],
+      "before": "47.5",
+      "after": "55.5",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "D5"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "D5"
+        }
+      ]
+    }
+  ],
+  "pictures": [
+    {
+      "id": "after:Sheet1",
+      "side": "after",
+      "type": "grid",
+      "private": {
+        "paneText": "Sheet1, after: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Gadget | B=7 | C=$4.00 | D=$28.00 ; 4: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 5: D=$55.50"
+      }
+    },
+    {
+      "id": "before:Sheet1",
+      "side": "before",
+      "type": "grid",
+      "private": {
+        "paneText": "Sheet1, before: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Gadget | B=5 | C=$4.00 | D=$20.00 ; 4: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 5: D=$47.50"
+      }
+    }
+  ]
+}

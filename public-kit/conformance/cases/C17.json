@@ -1,0 +1,25 @@
+{
+  "id": "C17",
+  "title": "one process answers each diff from its inputs only",
+  "fixture": "toy",
+  "inputs": [
+    {
+      "name": "A",
+      "before": "public-kit/toy-product/states/edit.before.json",
+      "after": "public-kit/toy-product/states/edit.after.json"
+    },
+    {
+      "name": "B",
+      "before": "public-kit/toy-product/states/delete.before.json",
+      "after": "public-kit/toy-product/states/delete.after.json"
+    }
+  ],
+  "expect": {
+    "order": ["A", "B", "A"],
+    "sameAsFreshRuns": true
+  },
+  "failingFixtures": [
+    "bad-leaky"
+  ],
+  "dangerous": "a connector that carries state from one diff to the next shows the wrong change on the wrong file; it must fail C17"
+}

@@ -1,0 +1,73 @@
+{
+  "spec": "cocheck.changes/1",
+  "changes": [
+    {
+      "id": "k1",
+      "mark": "changed",
+      "label": "paragraph 3",
+      "before": "The plan uses a practical monthly cadence so the team can make decisions with current information and resolve issues before they affect delivery.",
+      "after": "The plan uses a practical 6-week cadence so the team can make decisions with current information and resolve issues before they affect delivery.",
+      "kind": "paragraph",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page1",
+          "rect": {
+            "h": 57.7,
+            "w": 946.5,
+            "x": 129.8,
+            "y": 290.9
+          },
+          "highlights": [
+            {
+              "h": 26.8,
+              "w": 77.9,
+              "x": 369.1,
+              "y": 290.9
+            }
+          ]
+        },
+        {
+          "picture": "after:page1",
+          "rect": {
+            "h": 57.7,
+            "w": 937.6,
+            "x": 129.8,
+            "y": 290.9
+          },
+          "highlights": [
+            {
+              "h": 26.8,
+              "w": 68.9,
+              "x": 369.1,
+              "y": 290.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k2",
+      "mark": "described",
+      "label": "paragraph 4",
+      "kind": "picture",
+      "parent": null,
+      "unplaced": {
+        "after": "not marked",
+        "before": "not marked"
+      }
+    }
+  ],
+  "pictures": [
+    {
+      "id": "after:page1",
+      "side": "after",
+      "type": "image"
+    },
+    {
+      "id": "before:page1",
+      "side": "before",
+      "type": "image"
+    }
+  ]
+}

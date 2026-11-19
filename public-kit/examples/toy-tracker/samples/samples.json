@@ -1,0 +1,7 @@
+{
+  "samples": [
+    { "class": "changed", "params": { "subject": "toy-tracker://issue/ABC-12", "since": "2026-11-07T14:00:00.000Z", "until": "2026-11-07T14:00:09.000Z" } },
+    { "class": "no-change", "params": { "subject": "toy-tracker://issue/ABC-12", "since": "2026-11-07T15:00:00.000Z", "until": "2026-11-07T15:00:09.000Z" } },
+    { "class": "failed-read", "params": { "subject": "toy-tracker://issue/ABC-99", "since": "2026-11-07T14:00:00.000Z", "until": "2026-11-07T14:00:09.000Z" } }
+  ]
+}

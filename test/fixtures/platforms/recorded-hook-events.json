@@ -1,0 +1,16 @@
+{
+  "about": "Hook events CoCheck consumed, read from a recorded run snapshot (journal event records, ledger steps, five SubagentStop payload bodies). The journal records carry no run id, so the event lists below cover every run the snapshot holds, and only the ledger step phases are split by run.",
+  "journal_events": {
+    "claude": ["UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop", "SubagentStop"],
+    "codex": ["UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"]
+  },
+  "ledger_step_phases_by_drive": {
+    "claude-16": ["Pre", "Post", "Stop"],
+    "claude-17": ["Pre", "Post", "Stop"],
+    "claude-18": ["Post", "Stop"],
+    "claude-19": ["Post"],
+    "codex-12": ["Pre", "Post"],
+    "codex-13": ["Pre", "Post"]
+  },
+  "subagent_stop_payload_keys": ["agent_id", "agent_transcript_path", "agent_type", "background_tasks", "cwd", "effort", "hook_event_name", "last_assistant_message", "permission_mode", "prompt_id", "scratchpad_dir", "session_crons", "session_id", "stop_hook_active", "transcript_path"]
+}

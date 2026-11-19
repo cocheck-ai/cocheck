@@ -1,0 +1,987 @@
+/* one design system. Every size, weight and colour below reads a token from here; nothing else
+   writes a raw colour or font size. Colour carries meaning, surfaces stay neutral: before (blue) is Before and selection, after (pink) is After and
+   "this changed", pass and fail are verdicts only, warn is warnings only. Dark tokens follow under prefers-color-scheme. Connector pictures are
+   shown as delivered: they sit on --sheet, white in both schemes, and are never tinted. */
+:root{
+  color-scheme:light dark;
+  /* type: one family, the system UI font (SF Pro on a Mac, Segoe UI Variable on Windows), five sizes, three weights, one mono */
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI Variable","Segoe UI",system-ui;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --fs-cap:11px; --lh-cap:14px;
+  --fs-body:13px; --lh-body:18px;
+  --fs-read:15px; --lh-read:22px;
+  --fs-title:20px; --lh-title:24px;
+  --fs-display:28px; --lh-display:34px;
+  --fs-mono:12px; --lh-mono:18px;
+  --w-reg:400; --w-med:500; --w-semi:600;
+  /* spacing: a 4px base */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  /* radius: 6 controls, 10 panes, cards and popovers, 4 change boxes and inline marks, round for dots and pills; xs only for tiny glyphs */
+  --r-xs:3px; --r-sm:4px; --r:6px; --r-lg:10px; --round:999px;
+  /* One motion scale: fast for state changes (hover, press, panels), base for small moves, slow for glides; one easing for everything that travels */
+  --dur-fast:.14s; --dur:.2s; --dur-slow:.32s; --dur-box:.18s; --ease-out:cubic-bezier(.2,.8,.2,1);
+  --rail:300px; --notes:250px; --toolbar:52px; --barh:56px;
+  /* colour, light */
+  --canvas:#f4f5f7; --surface:#fff; --sidebar:#eceef1; --well:#e6e8ec; --sheet:#fff;
+  --ink:#16181d; --ink-2:#5b616c; --ink-3:#6b717b; --hairline:rgba(22,24,29,.1); --shade:#10121a;
+  --before:#2f6bd8; --after:#cc2f76; --pass:#1e7b45; --fail:#c0302a;
+  --warn:#955400; --warn-tint:#fff3dc; --warn-mark:#d9a23a;
+  --extra:#8b5cc9; --teal:#22806a;
+  --on-fill:#fff; --keyline:#fff;
+  /* the change box's two colours, on the picture: the light before and after in both schemes (pictures are not re-themed) */
+  --box-before:#2f6bd8; --box-after:#cc2f76;
+  /* ink on an actor's colour chip: the actor colours do not change with the scheme, so neither does the ink on them */
+  --chip-ink:#16181d;
+  --mark:rgba(255,200,40,.38);
+  --note-paper:#fff7c2; --note-mark:#ffe45c; --note-ink:#16181d;
+  --sel-a:12%;
+}
+/* the dark tokens are one list, applied twice: under the system's setting unless the viewer chose Light, and when the viewer chose Dark (data-theme on the root, set by review.js) */
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --canvas:#1c1d20; --surface:#26272b; --sidebar:#212225; --well:#2e3034;
+  --ink:#ecedef; --ink-2:#a2a7b0; --ink-3:#8e939c; --hairline:rgba(255,255,255,.08); --shade:#000;
+  --before:#5b93f5; --after:#f2639f; --pass:#3fb56e; --fail:#f0675f;
+  --warn:#f2b13c; --warn-tint:rgba(242,177,60,.14); --warn-mark:#f2b13c;
+  --extra:#a98be0; --teal:#3fae92;
+  --note-paper:#3a3420; --note-mark:#f2d13c;
+  --sel-a:20%;
+}}
+:root[data-theme=dark]{
+  --canvas:#1c1d20; --surface:#26272b; --sidebar:#212225; --well:#2e3034;
+  --ink:#ecedef; --ink-2:#a2a7b0; --ink-3:#8e939c; --hairline:rgba(255,255,255,.08); --shade:#000;
+  --before:#5b93f5; --after:#f2639f; --pass:#3fb56e; --fail:#f0675f;
+  --warn:#f2b13c; --warn-tint:rgba(242,177,60,.14); --warn-mark:#f2b13c;
+  --extra:#a98be0; --teal:#3fae92;
+  --note-paper:#3a3420; --note-mark:#f2d13c;
+  --sel-a:20%;
+}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+:root{
+  /* derived: tints and inks every rule reads; they follow the scheme because their inputs do */
+  --on-ink:var(--canvas);
+  --selection:color-mix(in srgb,var(--before) var(--sel-a),transparent);
+  --before-tint:color-mix(in srgb,var(--before) 10%,var(--surface)); --before-wash:color-mix(in srgb,var(--before) 30%,var(--surface));
+  --after-tint:color-mix(in srgb,var(--after) 8%,var(--surface)); --after-wash:color-mix(in srgb,var(--after) 30%,var(--surface)); --after-mid:color-mix(in srgb,var(--after) 55%,var(--surface));
+  --pass-tint:color-mix(in srgb,var(--pass) 12%,var(--surface)); --fail-tint:color-mix(in srgb,var(--fail) 12%,var(--surface));
+  --extra-tint:color-mix(in srgb,var(--extra) 25%,var(--surface));
+  /* depth from surface tone and light shadows, not outlines */
+  --shadow-1:0 1px 2px color-mix(in srgb,var(--shade) 7%,transparent);
+  --shadow-pop:0 8px 24px color-mix(in srgb,var(--shade) 18%,transparent),0 0 0 1px var(--hairline);
+  /* the two names the loading widget's verbatim rules read */
+  --sky-deep:var(--before); --pink-deep:var(--after);
+}
+/* end of tokens (the home page inlines everything from the top of this file to here: designTokensCss in page.ts) */
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+[hidden]{display:none!important}
+body{font:var(--fs-body)/var(--lh-body) var(--font);color:var(--ink);background:var(--canvas)}
+/* counts and positions keep their width as they change ("9 of 40", "23 of 40") */
+.pbpos,.progress,.cnt,.count,.dcount,.rowh,.vn .top,.vcover,.pml,.mini .more,.vltally{font-variant-numeric:tabular-nums}
+/* the not-recording line above the header */
+.notrec{margin:0;padding:var(--s2) var(--s4);background:var(--warn-tint);color:var(--warn);font:var(--fs-body)/var(--lh-body) var(--font)}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;text-align:left;cursor:pointer}
+:focus-visible{outline:2px solid var(--before);outline-offset:2px}
+/* The ring follows each element's own radius; only text-like controls with none of their own get a small one */
+.linkbtn:focus-visible,.crumb:focus-visible,.stoplink:focus-visible,summary:focus-visible,.qline:focus-visible{border-radius:var(--r-sm)}
+kbd{font:var(--w-med) var(--fs-cap)/1 var(--font);padding:2px var(--s1);border:1px solid currentColor;border-radius:var(--r-sm);opacity:.7}
+
+/* ---------- the top bar: the task bar lives here ---------- */
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:var(--s4);height:52px;padding:0 var(--s5);background:var(--surface);border-bottom:1px solid var(--hairline)}
+.wordmark{flex:none;font-size:var(--fs-title);font-weight:var(--w-semi);letter-spacing:-.03em;line-height:1;white-space:nowrap;color:inherit;text-decoration:none;padding:var(--s1) var(--s2);margin-left:calc(-1 * var(--s2));border-radius:var(--r)}
+.wordmark:hover{background:var(--well)}
+.wordmark .wm-co{color:var(--sky-deep)}
+.wordmark .wm-ck{color:var(--pink-deep)}
+.wordmark svg{overflow:visible;width:.751em;height:.805em;vertical-align:-.035em;margin:0 .1em 0 .01em;color:var(--sky-deep)}
+.wordmark svg *{fill:none;stroke:currentColor;stroke-linecap:round}
+.wordmark svg .wm-glint{stroke:var(--before-wash)}
+.task{min-width:0;display:flex;flex-direction:column;line-height:1.2}
+/* the task in words (13px semibold), its folder under it (11px) */
+.task{max-width:min(36em,32vw)}
+.task b{font-size:var(--fs-body);line-height:var(--lh-body);font-weight:var(--w-semi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task span{font-size:var(--fs-cap);line-height:var(--lh-cap);color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress{margin-left:auto;display:flex;align-items:center;gap:var(--s2);flex:0 4 auto;min-width:0;font-size:var(--fs-body);color:var(--ink-2)}
+.progress #progtext{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress .ring{flex:none;width:16px;height:16px;transform:rotate(-90deg)}
+.progress .ring circle{fill:none;stroke-width:2.5}
+.progress .rtrack{stroke:var(--well)}
+.progress .rfill{stroke:var(--before);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;transition:stroke-dashoffset var(--dur) ease-out}
+.taskbtns{display:flex;align-items:center;gap:var(--s2);position:relative;margin-left:auto}
+.progress:not([hidden]) + .taskbtns{margin-left:0}
+.btn{display:inline-flex;align-items:center;gap:var(--s2);height:34px;padding:0 var(--s4);border:1px solid var(--hairline);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow-1);font-weight:var(--w-med);font-size:var(--fs-body);white-space:nowrap}
+.btn:hover:not(:disabled){background:var(--well)}
+.btn:disabled{opacity:.45;cursor:default}
+/* the one primary action, blue */
+.btn.primary{background:var(--before);border-color:var(--before);color:var(--on-fill)}
+.btn.primary:hover:not(:disabled){background:color-mix(in srgb,var(--before) 88%,var(--ink))}
+.btn .count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 var(--s2);border-radius:var(--round);background:var(--fail);color:var(--on-fill);font-size:var(--fs-cap)}
+.btn .dot{width:8px;height:8px;border-radius:50%;background:var(--after)}
+.tpanel{position:absolute;right:0;top:44px;z-index:21;width:380px;padding:var(--s3);background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r);box-shadow:var(--shadow-pop)}
+.tpanel label{display:block;font-weight:var(--w-semi);font-size:var(--fs-body);margin-bottom:var(--s2)}
+.tpanel textarea{width:100%;font:var(--fs-body)/var(--lh-body) var(--font);color:var(--ink);padding:var(--s2) var(--s2);border:1px solid var(--hairline);border-radius:var(--r);resize:vertical;background:var(--surface)}
+#sbout textarea{font:var(--fs-mono)/var(--lh-mono) var(--mono)}
+#sbout .sbmarker{margin:var(--s2) 0 0;font:var(--fs-mono)/var(--lh-mono) var(--mono);color:var(--ink-3);user-select:text;word-break:break-word}
+.tpanel .row-end{display:flex;justify-content:flex-end;gap:var(--s2);margin-top:var(--s2)}
+.barmsg{position:absolute;right:0;top:40px;margin:0;font-size:var(--fs-cap);color:var(--ink-2);white-space:nowrap;pointer-events:none}
+.barmsg:empty,.barmsg span:empty{display:none}
+
+.body{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);min-height:calc(100vh - 52px)}
+
+/* ---------- vertical timeline ---------- */
+.railcol{background:var(--sidebar);border-right:1px solid var(--hairline)}
+.rail{position:sticky;top:54px;height:calc(100vh - 54px);display:flex;flex-direction:column;padding:var(--s3) 5px 0 var(--s2);user-select:none}
+.legend{display:flex;flex-wrap:wrap;gap:var(--s1);margin:0 0 var(--s2) 0}
+/* small outline tokens, a dot and a name, on one row when they fit; each one shows or hides its actor */
+.lg{flex:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:var(--fs-cap);font-weight:var(--w-med);color:var(--ink);height:20px;padding:0 var(--s2) 0 6px;border-radius:var(--round);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);background:transparent}
+.lg .ldot{flex:none;width:7px;height:7px;border-radius:50%;background:var(--c)}
+.lg[aria-pressed=false]{border-style:dashed;color:var(--ink-2);font-weight:var(--w-reg)}
+.lg[aria-pressed=false] .ldot{background:transparent;box-shadow:inset 0 0 0 1.5px var(--c)}
+.lg:hover{border-color:var(--ink-2)}
+.scroller{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;margin-right:-6px;border-top:1px solid var(--hairline);scrollbar-width:thin;scrollbar-color:var(--before-wash) transparent}
+.tl{position:relative}
+svg.graph{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.graph path{fill:none;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.graph .faint{opacity:.3}
+.row{position:absolute;left:3px;right:3px;border-radius:var(--r);text-align:left}
+.row.muted .lbl,.row.muted .mark{opacity:.55}
+.row .lbl{position:absolute;left:var(--lbl);right:6px;top:0;bottom:0;display:flex;align-items:center;gap:5px;font-size:var(--fs-body);line-height:1;color:var(--ink);padding-left:2px;white-space:nowrap;min-width:0}
+/* the verb in secondary ink and never trimmed; the name in primary ink */
+.row .lbl .vb{flex:none;color:var(--ink-2);font-weight:var(--w-reg)}
+.row .lbl .tx{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.row .lbl .tx.split{display:flex;text-overflow:clip}
+/* the trimmed start always keeps room for a letter and its ellipsis, so the verb never fuses with the kept tail ("D…sub/nested.txt", never "Dsub/nested.txt"), normal or bold */
+.row .lbl .txh{flex:0 1000 auto;overflow:hidden;text-overflow:ellipsis;min-width:1.6em;white-space:pre}
+/* the kept tail never shares the squeeze with the start (a fraction of a pixel there drew a second ellipsis); only when the tail alone is wider than the row does it give way, from its left: rtl box, ltr text inside */
+.row .lbl .txt{flex:none;max-width:calc(100% - 1.6em);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:pre;direction:rtl}
+.row .lbl .txt>span{direction:ltr;unicode-bidi:embed}
+.chip{flex:none;width:17px;height:17px;border-radius:50%;font-size:var(--fs-cap);font-weight:var(--w-semi);line-height:17px;text-align:center;color:var(--ink);font-style:normal}
+.row:hover::before{background:var(--well)}
+.row[aria-current=true] .lbl .tx{font-weight:var(--w-semi)}
+.row::before{content:'';position:absolute;left:0;right:0;top:0;bottom:0;border-radius:var(--r);z-index:0}
+.row[aria-current=true]::before{background:var(--selection)}
+.row .mark,.row .lbl,.row .tick{z-index:1}
+/* the lane dot carries the actor; the current row's dot wears a ring */
+.mark{position:absolute;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:var(--c,var(--ink-3))}
+.row .mark{margin-left:-7.5px}
+.row.now .mark{box-shadow:0 0 0 2px var(--sidebar),0 0 0 3.5px var(--c)}
+/* The origin is a marker the lanes leave from, never a row */
+.origin{position:absolute;left:0;right:0;top:0;pointer-events:none}
+.mark.origin{width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:var(--r-xs);transform:rotate(45deg);border-color:var(--ink-2);background:var(--ink-2)}
+/* Every row type has a slot of its own. A call header: chevron, name, and when closed "N files" and a dot with a ring */
+.row.hdr .lbl{font-size:var(--fs-cap);font-weight:var(--w-semi);color:var(--ink-2)}
+/* a request is the section header over its steps: its words on one line, caption size, secondary ink */
+.row.req .lbl{top:auto;height:28px;font-size:var(--fs-cap);color:var(--ink-2)}
+.row.req .rq{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.row.req[aria-current=true] .lbl{color:var(--ink);font-weight:var(--w-semi)}
+.row.req::before{top:auto;height:28px}
+.row.hdr .chev{flex:none;display:block;width:12px;height:12px;margin:0 1px 0 -2px;transition:transform var(--dur-fast) ease-out}
+.row.hdr .chev path{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.row.hdr[aria-expanded=false] .chev{transform:rotate(-90deg)}
+/* newest first: a group opens upward, so its open chevron points up */
+.row.hdr[aria-expanded=true] .chev.up{transform:rotate(180deg)}
+.row.hdr .cnt{flex:none;font-weight:var(--w-reg)}
+.row .mark.hring{background:var(--sidebar);box-shadow:inset 0 0 0 2px var(--c)}
+.graph .brk path{stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* a failure group is a stop whose node is a hollow ring with a slash */
+.row.fgroup .mark,.row.fgroup.past .mark,.row.fgroup.now .mark{background:var(--sidebar);box-shadow:inset 0 0 0 1.5px var(--ink-2);overflow:hidden}
+.row.fgroup .mark::after{content:'';position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:var(--ink-2);transform:rotate(45deg)}
+/* quiet calls: a row of their own with a small hollow tick on the lane; selecting it opens the calls in the main area */
+.quiet{position:absolute;left:0;right:0;display:flex;align-items:center;padding-left:var(--lbl);font-size:var(--fs-cap);line-height:1}
+.quiet .qtick{position:absolute;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;border:1.5px solid var(--ink-2);background:var(--surface)}
+.quiet .qtick.qgroup{width:13px;height:7px;margin:-3.5px 0 0 -6.5px;border-radius:var(--round)}
+.quiet .qline{all:unset;cursor:pointer;color:var(--ink-2);padding-left:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quiet .qline:hover{color:var(--ink);text-decoration:underline}
+.quiet .qline.on{color:var(--ink);text-decoration:underline}
+.quiet .qline:focus-visible{outline:2px solid var(--ink-2);outline-offset:2px}
+.calls .qc{padding:var(--s2) 0;border-bottom:1px solid color-mix(in srgb,var(--ink-2) 20%,transparent)}
+.calls .qc .what{font-size:var(--fs-body);color:var(--ink)}
+.calls .qactor{font-size:var(--fs-cap);font-weight:var(--w-semi);color:var(--ink-2);padding:var(--s3) 0 2px}
+.calls .qactor:first-child{padding-top:0}
+.calls .codeblock{margin:var(--s2) 0 0;padding:var(--s2) var(--s2);max-height:240px;overflow:auto;background:color-mix(in srgb,var(--ink-2) 8%,transparent);border-radius:var(--r-sm);font:var(--fs-mono)/var(--lh-mono) var(--mono);white-space:pre-wrap;word-break:break-all;color:var(--ink)}
+.calls .codeblock[hidden]{display:none}
+/* Small, quick motion when rows open, close, show or hide: a moved row glides (transform only), a new one fades in. The global
+   reduced-motion rule at the end of this file turns all of it off, and the script skips it there too. */
+.tl .flip{transition:transform var(--dur-fast) ease-out}
+.tl .enter{animation:railin var(--dur-fast) ease-out both}
+svg.graph.enter{animation:lanein var(--dur-fast) ease-out both}
+@keyframes railin{from{opacity:0}}
+@keyframes lanein{from{opacity:.4}}
+/* Live polls (prototype): a new lane segment draws itself from the stop it leaves to the stop it reaches (one dash as long as the path, --len, set by the
+   script), and the new stop's node settles in as the line arrives. `scale` composes with the node's own transform (the current step's 1.25), never replaces it. */
+@keyframes railgrow{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+@keyframes railnode{from{opacity:0;scale:.4}to{scale:1}}
+.lg{transition:background-color var(--dur-fast),border-color var(--dur-fast),color var(--dur-fast)}
+.lg .ldot{transition:background-color var(--dur-fast),box-shadow var(--dur-fast)}
+
+/* ---------- main stage ---------- */
+.main{padding:var(--s4) var(--s4) var(--s6) var(--s5);min-width:0}
+.head{margin-bottom:var(--s3)}
+.stephead{display:flex;align-items:center;gap:var(--s4);min-height:40px}
+.head h1{flex:0 1 auto;min-width:0;font-size:var(--fs-title);line-height:1.25;margin:0;font-weight:var(--w-semi)}
+.hinferred{flex:none;margin-left:var(--s2);font-size:var(--fs-body);font-weight:var(--w-semi);color:var(--ink-2)}
+.hinferred[hidden]{display:none}
+/* the step's issues: a small amber pill at the header's right end; it opens Details at its Issues group */
+.hpill{flex:none;margin-left:auto;padding:2px var(--s2);border:0;border-radius:var(--r);background:var(--warn-tint);color:var(--warn);font:var(--w-med) var(--fs-body)/var(--lh-body) var(--font);white-space:nowrap;cursor:pointer}
+.hpill:hover{background:color-mix(in srgb,var(--warn) 18%,var(--surface))}
+.hpill[hidden]{display:none}
+/* one secondary line under the title: the actor's "(likely)" and the command line, body size, secondary ink */
+.head .hsub{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--s2);margin:2px 0 0;max-width:58em;font-size:var(--fs-body);line-height:var(--lh-body);color:var(--ink-2)}
+.head .hsub:not(:has(> :not([hidden]))){display:none}
+.head .hsub .hinferred{margin-left:0;font-size:var(--fs-body);font-weight:var(--w-reg);color:var(--ink-2)}
+.head .hsub .hinferred:has(+ .hcalls:not([hidden]))::after{content:" \00B7"}
+.head .hsub .hcalls{flex:1 1 0;min-width:0;margin:0}
+.head .hcalls .qc{padding:0;border:0}
+.head .hcalls .qc .what{display:inline;font-size:var(--fs-body);color:var(--ink-2)}
+.head .hcalls .linkbtn{margin-left:var(--s2);font-weight:var(--w-med);text-decoration:none}
+.head .hcalls .linkbtn:hover{text-decoration:underline}
+.head .hcalls .hmore{margin-top:var(--s2)}
+.head .hcalls .hmore[hidden]{display:none}
+.head .hcalls p.hmorehead{margin:0 0 var(--s1);font-size:var(--fs-body);color:var(--ink-2)}
+.head .hcalls .hmore .qc{padding:var(--s1) 0}
+.hsign{flex:none;margin-left:-6px;padding:0 var(--s2);border-radius:var(--round);font-size:var(--fs-cap);font-weight:var(--w-semi);line-height:20px;color:var(--warn);background:var(--warn-tint);white-space:nowrap}
+.hsign[hidden]{display:none}
+.hchip{flex:none;display:flex}
+.hchip:empty{display:none}
+.hchip .chip{width:24px;height:24px;font-size:var(--fs-body);line-height:24px}
+.head h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.head p{margin:2px 0 0;color:var(--ink-2);font-size:var(--fs-read);max-width:52em}
+.cmp{flex:none;display:flex;align-items:center;gap:var(--s2);font-size:var(--fs-body);color:var(--ink-2);padding-top:var(--s1)}
+.cmp .seg{display:flex;border:1px solid var(--hairline);border-radius:var(--round);overflow:hidden;background:var(--surface)}
+.cmp .seg button:first-child{border-radius:var(--round) 0 0 var(--round)}
+.cmp .seg button:last-child{border-radius:0 var(--round) var(--round) 0}
+.cmp button{padding:2px var(--s3);font-size:var(--fs-body);color:var(--ink-2)}
+.cmp button[aria-pressed=true]{background:var(--before-wash);color:var(--ink);font-weight:var(--w-semi)}
+
+.stage{position:relative;display:grid;grid-template-columns:var(--bw,minmax(0,1fr)) minmax(0,1fr) var(--notes);column-gap:var(--s4);align-items:start}
+.stage .notes{margin-left:var(--s4)}
+/* one label row above each pane, 28px: a dot in the side's colour, the side's name, and the place of the picture in view at the right */
+.panelabel{display:flex;align-items:center;gap:var(--s3);height:28px;margin:0 0 var(--s1);white-space:nowrap;overflow:hidden}
+.panelabel .side{flex:none;display:inline-flex;align-items:center;gap:var(--s2);font-size:var(--fs-body);font-weight:var(--w-med);color:var(--ink-2)}
+.panelabel .side::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--before)}
+.panelabel.a .side::before{background:var(--after)}
+.panelabel .plpos{margin-left:auto;min-width:0;font-size:var(--fs-cap);color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+/* no empty tab bar, and none for a single view (a sheet bar with two or more sheets stays) */
+.tabs:empty,.tabs:has(> .tab:only-child){display:none}
+.pane{position:relative;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r-lg);box-shadow:var(--shadow-1);overflow:hidden}
+.tabs{display:flex;gap:var(--s1);min-height:30px;box-sizing:border-box;padding:var(--s1) var(--s2) 0;background:var(--before-tint);border-bottom:1px solid var(--before-wash);overflow-x:auto;overflow-y:hidden}
+.tab{padding:2px var(--s2);border:1px solid var(--before-wash);border-bottom:0;border-radius:var(--r) var(--r) 0 0;font-size:var(--fs-body);white-space:nowrap;background:var(--surface);color:var(--ink-2)}
+.tab{font-family:inherit;cursor:pointer;flex:none}
+.tab:focus-visible{outline-offset:-3px}
+.tab.chg::after{content:'';display:inline-block;width:8px;height:8px;margin-left:var(--s2);border-radius:50%;background:var(--after)}
+.tab.fresh.chg::after{margin-left:var(--s2)}
+.vw[hidden]{display:none}
+.tab.on{background:var(--surface);color:var(--ink);font-weight:var(--w-semi);border-color:var(--before)}
+.tab.fresh::after{content:'';display:inline-block;width:9px;height:9px;margin-left:var(--s2);border-radius:50%;background:var(--after)}
+.vw{position:relative;overflow:hidden;background:var(--surface)}
+.clip{position:absolute;top:0;height:100%;overflow:hidden}
+.pg{position:absolute;left:0;top:0;transform-origin:0 0}
+.pg.glide{transition:transform var(--dur-slow) var(--ease-out)}
+.pg img{position:absolute;display:block}
+.pg img.p{display:none}
+.pg img.p.on{display:block}
+.cut{position:absolute;top:0;height:100%;background:repeating-linear-gradient(180deg,var(--before-wash) 0 3px,transparent 3px 9px) center/3px 100% no-repeat,var(--before-tint)}
+.one{position:absolute;left:0;top:0;display:block}
+.ov{position:absolute;inset:0;pointer-events:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.bx{position:absolute;border-radius:var(--r-sm)}
+/* the change box. One style on both sides, only the colour differs: a 1.5px white keyline on the box edge, the 2px solid side
+   colour outside it, then a 7px halo of the same hue at 22%. No fill over the content. The keyline keeps the line readable on a dark picture, the
+   colour keeps it readable on white (both at least 3:1). The box colours do not follow the dark scheme: they sit
+   on the connector's picture, which is shown as delivered in both schemes. */
+.before .bx{--bc:var(--box-before)} .after .bx{--bc:var(--box-after)}
+.before .bx,.after .bx,.bx.cf{background:none;mix-blend-mode:normal;outline:2px solid var(--bc,var(--box-before));outline-offset:1.5px;box-shadow:0 0 0 1.5px var(--keyline),0 0 0 7px color-mix(in srgb,var(--bc,var(--box-before)) 22%,transparent)}
+.before .bx.sel,.after .bx.sel{outline-width:3px}
+.after .bx.frame{background:none;mix-blend-mode:normal;box-shadow:none}
+.bx.asked{background:none!important;outline:2px dashed var(--before)!important;mix-blend-mode:normal!important;box-shadow:none!important}
+.empty{display:flex;align-items:center;padding:var(--s5) var(--s4);font-size:var(--fs-read);font-style:italic;color:var(--ink-2);background:repeating-linear-gradient(135deg,var(--before-tint) 0 6px,var(--surface) 6px 12px)}
+.stage.wide .empty{font-size:var(--fs-body);padding:var(--s4) var(--s3)}
+.stage.wide #lb{display:none}
+.stage.wide #pb .tab{padding:2px var(--s2);font-size:var(--fs-cap)}
+
+/* ---------- notes in the margin ---------- */
+.notes{position:relative;min-width:0;align-self:stretch}
+.note{position:absolute;left:0;width:100%;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r);padding:var(--s2) var(--s3) var(--s2) var(--s3);font-size:var(--fs-body);line-height:1.35;cursor:pointer}
+.note .t{font-weight:var(--w-semi);display:block}
+.note .v{display:block;color:var(--ink-2)}
+.note .v s{text-decoration-thickness:2px;text-decoration-color:var(--after)}
+.note .v b{color:var(--ink)}
+.note .by,.note .why{display:none}
+.note.sel{background:var(--after-tint);border:1px solid var(--after);padding:var(--s2) var(--s3) var(--s2) var(--s3);cursor:default}
+.note.sel .t{font-size:var(--fs-read)}
+.note.sel .v{font-size:var(--fs-title);margin:1px 0 var(--s1);color:var(--ink)}
+.note.sel .v s{color:var(--ink-2)}
+.note.sel .v b{color:var(--after)}
+.note.sel .by,.note.sel .why{display:block}
+.note .by q{display:block;margin-top:2px;font-style:italic;quotes:"\201C" "\201D"}
+.dotw{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid var(--ink);margin-right:var(--s2);vertical-align:-1px}
+.doc{position:absolute;left:0;top:0;width:432px;height:230px;transform-origin:0 0;background:var(--surface);font-size:var(--fs-read)}
+.doc .dt{position:absolute;left:12px;top:8px;font-weight:var(--w-semi);font-size:var(--fs-read)}
+.doc .dl{position:absolute;left:12px;right:12px;height:26px;line-height:26px;white-space:pre}
+.docwrap{position:relative;overflow:hidden}
+.note .by b{font-weight:var(--w-semi)}
+.note .why{margin-top:var(--s2);padding-top:var(--s2);border-top:1px solid var(--after-mid)}
+.note.card{background:var(--surface);border:1px solid var(--hairline);cursor:default;padding:var(--s2) var(--s3) var(--s2)}
+.note.card .t{font-size:var(--fs-read);margin-bottom:var(--s1)}
+.note.card .ln{display:block;margin-top:var(--s1);font-style:italic}
+.note.card .ln.plain{font-style:normal;color:var(--ink-2)}
+.note.card .fbox{display:block;margin-top:var(--s1)}
+.note.card .flabel{display:inline-block;font-size:var(--fs-cap);font-weight:var(--w-semi);color:var(--ink-2);margin-bottom:2px}
+.note.card .fb{display:block;color:var(--ink-2)}
+.note.card .fb.ln{margin-top:0}
+.note.card .fshow{display:block;margin-top:var(--s2);font:inherit;font-size:var(--fs-body);cursor:pointer}
+.note.card .fraw{margin:var(--s2) 0 0;padding:var(--s2) var(--s2);max-height:220px;overflow:auto;background:var(--surface);border:1px solid var(--before);border-radius:var(--r);font:var(--fs-mono)/var(--lh-mono) var(--mono);white-space:pre-wrap;word-break:break-word;user-select:text}
+.note.card .ln::before{content:'\201C'} .note.card .ln::after{content:'\201D'}
+.note.card .ln.plain::before,.note.card .ln.plain::after{content:''}
+svg.leaders{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;animation:fade var(--dur-slow) ease-out both}
+svg.leaders.now{animation:none}
+.ld{fill:none;stroke:var(--after-mid);stroke-width:1.5}
+.ld.sel{stroke:var(--after);stroke-width:2.25}
+.th{fill:none;stroke:var(--after-mid);stroke-width:1.5;stroke-dasharray:3 4;visibility:hidden}
+.th.hv{visibility:visible}
+/* hover focus: the card under the pointer, its two boxes and its lines stay; every other leader and box dims */
+.stage.hvon svg .ld:not(.hv),.stage.hvon svg .dot:not(.hv),.stage.hvon .bx:not(.hv){opacity:.3}
+/* only a box that belongs to a card takes the pointer, and it stacks above the others, so an unmatched renderer box over matched lines never swallows the hover */
+.bx{pointer-events:none}
+.bx.hm{pointer-events:auto;z-index:2}
+.th.sel{stroke:var(--after);stroke-width:2;stroke-dasharray:none}
+.dot{fill:var(--after-mid)} .dot.sel{fill:var(--after)}
+.foot{margin-top:var(--s4);font-size:var(--fs-body);color:var(--ink-2);max-width:62em}
+
+@media (max-width:1180px){
+  /* The file list (Deliverables) stacks above the page; the rail never does (it is a sidebar, see the 1099px rule below) */
+  .body:has(>.listcol:not([hidden])){grid-template-columns:minmax(0,1fr);align-content:start}
+  .listcol{border-right:0;border-bottom:1px solid var(--hairline)}
+  .stage{grid-template-columns:minmax(0,1fr)!important;row-gap:var(--s4)}
+  .stage .notes{margin-left:0}
+  svg.leaders{display:none}
+  .notes{display:flex;flex-direction:column;gap:var(--s2)}
+  .note{position:static}
+  .stephead{flex-wrap:wrap}
+}
+.tree{background:var(--surface);border-bottom:1px solid var(--hairline);padding:var(--s2) var(--s2) var(--s2);position:relative}
+.tree[hidden]{display:none}
+.after .tree{border-bottom-color:var(--after-mid)}
+.tr{display:flex;align-items:center;gap:var(--s2);height:22px;font-size:var(--fs-body);white-space:nowrap;color:var(--ink)}
+.tr .nm{display:inline-block;padding:0 var(--s1);border-radius:var(--r-sm)}
+.tr .ch{width:9px;color:var(--ink-2);font-size:var(--fs-cap);flex:none}
+.tr.dir .nm{font-weight:var(--w-semi)}
+.tr small{color:var(--ink-2);font-size:var(--fs-cap)}
+.tr .ic{flex:none;display:block}
+.tr .ic.d{width:14px;height:10px;background:var(--before-wash);border-radius:var(--r-xs)}
+.tr .ic.f{width:10px;height:13px;border:1.5px solid var(--ink-2);border-radius:var(--r-xs);background:var(--surface);margin:0 2px}
+.tr.gap{background:repeating-linear-gradient(135deg,var(--before-tint) 0 5px,var(--surface) 5px 10px);border-radius:var(--r-sm);color:var(--ink-2);font-style:italic}
+.after .tr.new{background:color-mix(in srgb,var(--after) 11%,transparent);border-radius:var(--r-sm)}
+.after .tr.new .nm{font-weight:var(--w-semi)}
+.tree .bx{pointer-events:none}
+/* the review page's own parts: grid panes as tables, page panes as images, the caveats */
+.stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr) var(--notes)}
+.grid{border-collapse:collapse;font-size:var(--fs-body);width:auto}
+.grid td{border:1px solid var(--before-wash);padding:2px var(--s2);height:22px;white-space:nowrap;max-width:14em;overflow:hidden;text-overflow:ellipsis}
+.grid td.hit{background:color-mix(in srgb,var(--after) 16%,transparent);outline:2px solid var(--after-mid);outline-offset:-2px}
+.before .grid td.hit{background:none;outline:2px dashed var(--before)}
+.pagewrap{position:relative;line-height:0;background:var(--sheet)}
+.pagewrap img{width:100%;height:auto;display:block}
+.pagewrap + .pagewrap{border-top:1px solid var(--hairline)}
+.caveats{margin:0 0 var(--s2);font-size:var(--fs-body);color:var(--ink-2);max-width:62em}
+.cardbody{padding:var(--s4) var(--s4);font-size:var(--fs-read)}
+.cardbody p{margin:0 0 var(--s2)}
+.hunk{font:var(--fs-mono)/var(--lh-mono) var(--mono);padding:var(--s2) var(--s2);white-space:pre-wrap}
+.hunk .add{background:color-mix(in srgb,var(--after) 11%,transparent)} .hunk .del{background:color-mix(in srgb,var(--before) 14%,transparent)}
+.callout{margin:0 var(--s2) var(--s2);padding:var(--s2) var(--s2);border:1px solid var(--hairline);border-radius:var(--r);background:var(--after-tint);font-size:var(--fs-body)}
+.secretline{padding:var(--s4) var(--s4);font-size:var(--fs-read);font-weight:var(--w-semi)}
+/* a step change is instant: the panes, notes and leaders carry .glide on a user step but no animation (only the rail selection and a group opening move) */
+.grid th{font-weight:var(--w-reg);font-size:var(--fs-cap);color:var(--ink-2);background:color-mix(in srgb,var(--ink) 4%,transparent);border:1px solid var(--before-wash);padding:1px var(--s2);text-align:center}
+.grid th.rowh{text-align:right}
+.grid th.hid,.grid tr.hid{opacity:.55;font-style:italic}
+.grid tr.gaprow td{height:8px;padding:0;text-align:center;line-height:8px;font-size:var(--fs-cap);color:var(--ink-2);border-style:dashed}
+.vw .more{margin:var(--s2) 2px;font-size:var(--fs-cap);color:var(--ink-2)}
+
+/* Long text stays inside its card; the asked text and request lines clamp to six lines with a toggle */
+.note,.note .v,.note .t,.note .by{overflow-wrap:anywhere;min-width:0}
+.note .clamp{overflow-wrap:anywhere;word-break:break-word}
+.note .clamp:not(.open){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:6;line-clamp:6;overflow:hidden}
+.note .clamp.open{display:block}
+/* a change card's own text clamps by height (the card stays near 200 px with its heading and toggle), not by six lines */
+.note .clamp.cardv:not(.open){display:block;-webkit-line-clamp:unset;line-clamp:unset;max-height:103px;overflow:hidden}
+/* the whole card stays within 200 px until "show all": the place takes two lines, the text four, and the card itself is capped as a backstop */
+.note .clamp.cardt:not(.open){display:block;-webkit-line-clamp:unset;line-clamp:unset;max-height:44px;overflow:hidden}
+.note.capped:not(.open){max-height:200px;overflow:hidden;box-sizing:border-box}
+.note .cs{display:block}
+.note .clamp:not(.open) .cs{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+.note .toggle{display:block;margin:var(--s1) 0 0;padding:0;border:0;background:none;font:inherit;font-size:var(--fs-body);color:var(--after);text-decoration:underline;cursor:pointer}
+.note .toggle[hidden]{display:none}
+.note.more{background:var(--surface);border:1px dashed var(--hairline);color:var(--ink-2);cursor:default;padding:var(--s2) var(--s3);font-style:italic}
+/* the numbered-lines pane (Pane.text): the grid's look, monospace, line numbers down the side */
+.grid.textpane td.code{font-family:var(--mono);font-size:var(--fs-mono);white-space:pre-wrap;overflow-wrap:anywhere;max-width:none;height:auto;overflow:visible;text-overflow:clip}
+.grid.textpane th.rowh{width:3.5em;vertical-align:top;font-family:var(--mono)}
+/* the text pane draws its rows on hairlines */
+.grid.textpane td,.grid.textpane th{border-color:var(--hairline)}
+/* A request stop shows the request as the main element, whole: line breaks kept, long text wrapped, never clamped */
+.stage[hidden],.reqview[hidden]{display:none}
+.reqview{margin:var(--s2) 0 0}
+.reqtext{white-space:pre-wrap;word-break:break-word}
+.msg.ask .mcard{font-size:17px;line-height:24px}
+
+/* The verdict control: two real buttons in one group at the right end of the heading row. The chosen one fills, Pass green, Fail red. */
+.verdict{flex:none;display:flex;align-items:center;gap:var(--s2)}
+.vcover{font-size:var(--fs-body);color:var(--ink-2)}
+.vgroup{display:flex;border:1px solid var(--hairline);border-radius:var(--r);background:var(--surface)}
+.vgroup button{display:inline-flex;align-items:center;gap:var(--s2);height:36px;padding:0 var(--s4);background:var(--surface);font-weight:var(--w-semi);font-size:var(--fs-read)}
+.vgroup button + button{border-left:1px solid var(--hairline)}
+.vgroup button:first-child{border-radius:calc(var(--r) - 1.5px) 0 0 calc(var(--r) - 1.5px)}
+.vgroup button:last-child{border-radius:0 calc(var(--r) - 1.5px) calc(var(--r) - 1.5px) 0}
+/* A filled segment paints over the group's border in its own colour, so its outer corners are the group's corners (radius r) and no grey ring
+   shows between the fill and the edge. A shadow, not a border: nothing moves when the pressed segment changes. */
+.vgroup button[aria-pressed=true],.viewswitch button[aria-pressed=true]{position:relative;z-index:1;box-shadow:0 0 0 1.5px var(--seg-fill)}
+.vgroup button:hover{background:var(--well)}
+.vgroup button:focus-visible{outline-offset:-4px}
+.vgroup button svg{width:16px;height:16px}
+.vgroup .vp[aria-pressed=true]{--seg-fill:var(--pass);background:var(--pass);color:var(--on-fill)}
+.vgroup .vf[aria-pressed=true]{--seg-fill:var(--fail);background:var(--fail);color:var(--on-fill)}
+.pcomp{flex:1 0 100%;width:min(46em,calc(100vw - 56px));padding:var(--s4) var(--s4) var(--s4);border:1px solid var(--hairline);border-radius:var(--r-lg);background:var(--after-tint)}
+.pcomp[hidden]{display:none}
+.pbar{flex-wrap:wrap}
+.rchips{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s2)}
+.rchips:empty{display:none}
+.rchip{display:inline-flex;align-items:center;gap:var(--s2);padding:2px var(--s1) 2px var(--s2);border:1px dashed var(--ink-3);border-radius:var(--r);background:var(--surface);font-size:var(--fs-body)}
+.rchip img{display:block;max-height:40px;max-width:96px}
+.rchip button{border:0;background:none;cursor:pointer;font-size:var(--fs-read);line-height:1;padding:0 var(--s1)}
+.regsel{position:fixed;z-index:50;pointer-events:none;border:2px dashed var(--fail);background:color-mix(in srgb,var(--fail) 12%,transparent)}
+.regsvg{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:50;pointer-events:none}
+.regpoly{fill:color-mix(in srgb,var(--fail) 12%,transparent);stroke:var(--fail);stroke-width:2;stroke-dasharray:6 4}
+.rrow{display:flex;margin:var(--s2) 0 0}
+.regtool{position:relative;flex:none;display:inline-flex;border:1px solid var(--hairline);border-radius:var(--r);background:var(--surface)}
+.regtool button{height:30px;padding:0 var(--s4);font-weight:var(--w-semi);font-size:var(--fs-body);color:var(--ink)}
+.regtool button:first-of-type{border-radius:calc(var(--r) - 1px) 0 0 calc(var(--r) - 1px)}
+.regtool button:nth-of-type(2){border-radius:0 calc(var(--r) - 1px) calc(var(--r) - 1px) 0}
+.regtool button + button{border-left:1px solid var(--hairline)}
+.regtool button:hover{background:var(--well)}
+.regtool button[aria-pressed=true]{background:var(--before-wash);color:var(--ink)}
+.regtool button:focus-visible{outline-offset:-3px}
+/* A tooltip sits beside its control and hangs down from the control's top edge, never above it (the textarea is above); its width is clamped to the room left of the control so it stays in the composer and the viewport. Shown on hover and on keyboard focus. */
+.tip{position:absolute;left:calc(100% + 10px);top:0;z-index:60;display:none;width:max-content;max-width:min(22em,calc(100vw - 300px));padding:var(--s1) var(--s2);border-radius:var(--r);background:var(--ink);color:var(--on-ink);font-size:var(--fs-body);line-height:1.35;font-weight:var(--w-reg);pointer-events:none;box-shadow:var(--shadow-pop)}
+.regtool:hover > .tip,.regtool:focus-within > .tip,.acts button:hover + .tip,.acts button:focus-visible + .tip{display:block}
+body.regon #stage{cursor:crosshair;user-select:none}
+.pcomp label{display:block;font-weight:var(--w-semi);font-size:var(--fs-body);color:var(--after);margin-bottom:var(--s2)}
+.pcomp textarea{width:100%;font:var(--fs-body)/var(--lh-body) var(--font);color:var(--ink);padding:var(--s2) var(--s2);border:1px solid var(--hairline);border-radius:var(--r);resize:vertical;background:var(--surface)}
+.pcomp .acts{position:relative;display:flex;width:max-content;gap:var(--s2);margin-top:var(--s3);align-items:center}
+/* a saved failure: the one place strong colour belongs, a 3 px fail edge on a faint fail wash */
+.head .vsaved{max-width:46em;margin:var(--s2) 0 0;padding:var(--s2) var(--s3);border-left:3px solid var(--fail);background:color-mix(in srgb,var(--fail) 6%,transparent);border-radius:0 var(--r-sm) var(--r-sm) 0;font-size:var(--fs-read);color:var(--ink)}
+.head .vmsg{margin:var(--s2) 0 0;color:var(--after);font-weight:var(--w-semi)}
+.head .vmsg:empty{display:none}
+.head button.vsaved{display:flex;align-items:baseline;gap:var(--s2);width:100%;text-align:left;font-family:inherit;background:color-mix(in srgb,var(--fail) 6%,transparent);border-width:0 0 0 3px;cursor:pointer;border-radius:0 var(--r-sm) var(--r-sm) 0}
+.head button.vsaved[hidden]{display:none}
+.head .vsaved:hover,.head .vsaved:focus-visible{background:var(--fail-tint)}
+.head .vsaved:focus-visible{outline:2px solid var(--fail);outline-offset:1px}
+.vsaved .vsedit{margin-left:auto;font-size:var(--fs-cap);font-weight:var(--w-semi);color:var(--fail);opacity:0;transition:opacity var(--dur-fast) ease-out}
+.vsaved:hover .vsedit,.vsaved:focus-visible .vsedit{opacity:1}
+.vhist{margin-top:var(--s2);font-size:var(--fs-body);color:var(--ink-2)}
+.vhist summary{display:inline-flex;align-items:center;gap:var(--s2);list-style:none;cursor:pointer;color:var(--ink-2);border-radius:var(--r-sm)}
+.vhist summary::-webkit-details-marker{display:none}
+.vhist summary::before{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform var(--dur-fast) ease-out}
+.vhist[open] summary::before{transform:rotate(45deg)}
+.vhist summary:hover{color:var(--ink)}
+.vhist summary:focus-visible{outline:2px solid var(--after);outline-offset:2px}
+.vhist ol{margin:var(--s1) 0 0;padding:0;list-style:none}
+.vhist .vh{display:flex;align-items:baseline;gap:var(--s2);padding:var(--s1) 0;border-top:1px solid color-mix(in srgb,var(--ink-2) 18%,transparent)}
+.vhist .vhs{font-weight:var(--w-semi);color:var(--ink-2)}.vhist .vhs.failed{color:var(--fail)}.vhist .vhs.passed{color:var(--pass)}
+.vhist .vhn{color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.vhist .vhw,.vhist .vht{margin-left:auto;white-space:nowrap}.vhist .vhw+.vht{margin-left:0}
+.vhist .vh.old{opacity:.7}
+.row[data-status=passed] .lbl::after{content:" \2713";color:var(--pass)}
+.row[data-status=failed] .lbl::after{content:" \2717";color:var(--fail)}
+/* a header step's body: its files, each with its state */
+.hfiles{max-width:640px;border:1px solid var(--hairline);border-radius:var(--r-lg);background:var(--surface);overflow:hidden}
+.hfiles .hf{display:flex;align-items:center;gap:var(--s3);width:100%;padding:var(--s2) var(--s4);border-top:1px solid var(--hairline);font-size:var(--fs-body);line-height:var(--lh-body)}
+.hfiles .hf:first-child{border-top:0}
+.hfiles .hf:hover{background:var(--well)}
+.hfiles .fn{flex:1;min-width:0;font-weight:var(--w-semi);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hfiles .st{order:-1;flex:none;width:16px;height:16px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;border:1.5px solid var(--ink-3);font-size:11px;line-height:1;font-weight:var(--w-semi);color:transparent}
+.hfiles .st.passed{border:0;color:var(--pass)}
+.hfiles .st.failed{border:0;color:var(--fail)}
+.hfiles .st.passed,.hfiles .st.failed{font-size:15px}
+/* Small motion, 140 to 160 ms. A shown part fades and settles in; a leaving one (.leaving) fades out before it hides.
+   Only opacity and transform move, so nothing around them reflows during it. All of it is off under reduced motion (the rule at the end). */
+@keyframes softin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes softout{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-4px)}}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes toastout{from{opacity:1;transform:translateX(-50%)}to{opacity:0;transform:translate(-50%,8px)}}
+.tpanel,.pcomp{animation:softin var(--dur-fast) ease-out}
+.tpanel.leaving,.pcomp.leaving{animation:softout var(--dur-fast) ease-in forwards}
+.toast{animation:toastin var(--dur-fast) ease-out}
+.toast.leaving{animation:toastout var(--dur-fast) ease-in forwards}
+.vgroup button{transition:background-color var(--dur-fast) ease,color var(--dur-fast) ease}
+.vgroup button svg{transition:transform var(--dur-fast) ease}
+.vgroup button[aria-pressed=true] svg{transform:scale(1.12)}
+.btn{transition:background-color var(--dur-fast) ease,opacity var(--dur-fast) ease}
+/* the undo bar */
+.toast{position:fixed;left:50%;bottom:calc(var(--barh) + var(--s4));transform:translateX(-50%);display:flex;align-items:center;gap:var(--s4);padding:var(--s2) var(--s3) var(--s2) var(--s4);border-radius:var(--r);background:var(--ink);color:var(--on-ink);font-size:var(--fs-body);box-shadow:var(--shadow-pop);z-index:30}
+.toast button{height:28px;padding:0 var(--s2);border:1px solid var(--on-ink);border-radius:var(--r);color:var(--on-ink);font-weight:var(--w-semi);font-size:var(--fs-body)}
+#subdlg{max-width:30em;border:1px solid var(--hairline);border-radius:var(--r);padding:var(--s5) var(--s5);color:var(--ink);font-family:var(--font)}
+#subdlg::backdrop{background:color-mix(in srgb,var(--shade) 35%,transparent)}
+#subdlg h2{margin:0 0 var(--s2);font-size:var(--fs-read)}
+#subdlg p{margin:0 0 var(--s4)}
+#subdlg .acts{display:flex;justify-content:flex-end;gap:var(--s2)}
+#sbdlg{max-width:32em;border:1px solid var(--hairline);border-radius:var(--r);padding:var(--s5) var(--s5);color:var(--ink);font-family:var(--font)}
+#sbdlg::backdrop{background:color-mix(in srgb,var(--shade) 35%,transparent)}
+#sbdlg h2{margin:0 0 var(--s2);font-size:var(--fs-read)}
+#sbdlg p{margin:0 0 var(--s3)}
+#sbdlg .sbchoice{display:grid;gap:var(--s2);margin:0 0 var(--s4)}
+#sbdlg .sbchoice label{display:flex;gap:var(--s2);align-items:flex-start;padding:var(--s2) var(--s3);border:1px solid var(--hairline);border-radius:var(--r);cursor:pointer}
+#sbdlg .sbchoice label:has(input:checked){border-color:var(--before);background:var(--before-tint)}
+#sbdlg .sbchoice input{margin:var(--s1) 0 0}
+#sbdlg .sbchoice b{display:block;font-size:var(--fs-body)}
+#sbdlg .sbchoice small{display:block;color:var(--ink-2);font-size:var(--fs-body);margin-top:2px}
+#sbdlg .acts{display:flex;justify-content:flex-end;gap:var(--s2)}
+
+/* The passes of a review. A marker is one line across every lane; a tag is a small chip on the stop and a line in its header. */
+.pmark{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--ink-3);pointer-events:none;z-index:2}
+.pmark .pml{position:absolute;right:2px;top:-8px;height:15px;padding:0 6px;border-radius:var(--round);background:var(--ink-2);color:var(--on-ink);font-size:var(--fs-cap);font-weight:var(--w-semi);line-height:15px;white-space:nowrap}
+.pmark.submitted{border-top-color:var(--before)}
+.pmark.submitted .pml{background:var(--before);pointer-events:auto;cursor:help}
+.row .lbl .tg{flex:none;padding:0 5px;border-radius:var(--round);font-size:var(--fs-cap);font-weight:var(--w-semi);line-height:14px;border:1px solid var(--hairline);color:var(--ink);background:var(--surface)}
+.row .lbl .tg.reworks{border-color:var(--extra);background:var(--extra-tint)}
+.row .lbl .sent{flex:none;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;color:var(--before);cursor:help} .row .lbl .sent svg{width:14px;height:14px;fill:currentColor}
+.row .lbl .tg.changes_passed{border-color:var(--warn-mark);background:var(--warn-tint)}
+.ptag{margin:var(--s1) 0 0;font-size:var(--fs-body)}
+.ptag .pt{display:inline-block;padding:1px var(--s2);border-radius:var(--round);border:1px solid var(--hairline);background:var(--well);font-weight:var(--w-semi)}
+.ptag .pt.reworks,.ptag .pt.answered{border-color:var(--extra);background:var(--extra-tint)}
+.row .lbl .tg.aftersign{border-color:var(--warn-mark);background:var(--warn-tint)}
+.ptag .pt.changes_passed{border-color:var(--warn-mark);background:var(--warn-tint);color:var(--warn)}
+.ptag .stoplink{display:inline;padding:0;border:0;background:none;font:inherit;color:var(--before);text-decoration:underline;cursor:pointer}
+.ptag[hidden]{display:none}
+/* The aligned text diff. Removed and edited lines are sky on the left, added and edited lines pink on the right, and an empty row opposite an
+   added or removed line wears the page's hatching. Changed words sit inside the tint. */
+.grid.textpane tr.ln.del td.code,.grid.textpane tr.ln.edit td.code,.grid.textpane tr.ln.del th.rowh,.grid.textpane tr.ln.edit th.rowh{background:color-mix(in srgb,var(--before) 8%,transparent)}
+.after .grid.textpane tr.ln.add td.code,.after .grid.textpane tr.ln.edit td.code,.after .grid.textpane tr.ln.add th.rowh,.after .grid.textpane tr.ln.edit th.rowh{background:color-mix(in srgb,var(--after) 8%,transparent)}
+.grid.textpane tr.ln.del td.code{text-decoration:line-through;text-decoration-color:var(--before)}
+.grid.textpane td.code .w{border-radius:2px;padding:0 1px}
+.before .grid.textpane td.code .w{background:color-mix(in srgb,var(--before) 28%,transparent);text-decoration:line-through}
+.after .grid.textpane td.code .w{background:color-mix(in srgb,var(--after) 28%,transparent);font-weight:var(--w-semi)}
+/* a changed line is marked by a 3px bar at the left edge of its number cell, not by a solid wall */
+.grid.textpane tr.ln.del th.rowh,.grid.textpane tr.ln.edit th.rowh{box-shadow:inset 3px 0 0 var(--before)}
+.after .grid.textpane tr.ln.add th.rowh,.after .grid.textpane tr.ln.edit th.rowh{box-shadow:inset 3px 0 0 var(--after)}
+/* an addition is one column: the empty before side is a single quiet row and the added lines take the full width */
+.stage.nonotes.unified{grid-template-columns:minmax(0,1fr)}
+/* a text pane with no lines is one quiet row */
+.noline{padding:var(--s2) var(--s4);font-size:var(--fs-body);font-style:italic;color:var(--ink-2)}
+/* the one column of a modified file stands for both sides: a before dot then an after dot */
+.stage.unified .panelabel.a .side::before{background:var(--before);margin-right:var(--s3);box-shadow:calc(8px + var(--s2)) 0 0 var(--after)}
+.grid.textpane tr.filler td.code,.grid.textpane tr.filler th.rowh{background:repeating-linear-gradient(135deg,var(--before-tint) 0 5px,var(--surface) 5px 10px);height:1.6em}
+.grid.textpane td.code.hit,.before .grid.textpane td.code.hit{outline:none;background:none}
+.grid.textpane tr.ln.del td.code.hit,.grid.textpane tr.ln.edit td.code.hit{background:color-mix(in srgb,var(--before) 8%,transparent)}
+.after .grid.textpane tr.ln.add td.code.hit,.after .grid.textpane tr.ln.edit td.code.hit{background:color-mix(in srgb,var(--after) 8%,transparent)}
+.grid.textpane tr.fold td{height:auto;padding:2px 0;line-height:20px;font-size:var(--fs-cap);font-style:italic;background:var(--canvas);border-top:1px dashed var(--before-wash);border-bottom:1px dashed var(--before-wash)}
+/* a long line stays one row and the pane scrolls sideways to its end (no ellipsis); the line numbers stay in view while it scrolls */
+.textscroll{overflow-x:auto}
+.grid.textpane{width:max-content;min-width:100%}
+.grid.textpane td.code{white-space:pre;overflow:visible;text-overflow:clip;max-width:none;height:1.6em}
+.grid.textpane th.rowh{position:sticky;left:0;z-index:1;background:var(--surface)}
+.grid.textpane tr.ln.del th.rowh,.grid.textpane tr.ln.edit th.rowh{background:linear-gradient(color-mix(in srgb,var(--before) 8%,transparent),color-mix(in srgb,var(--before) 8%,transparent)),var(--surface)}
+.after .grid.textpane tr.ln.add th.rowh,.after .grid.textpane tr.ln.edit th.rowh{background:linear-gradient(color-mix(in srgb,var(--after) 8%,transparent),color-mix(in srgb,var(--after) 8%,transparent)),var(--surface)}
+
+/* The failure line replaces the subtitle: plain body text, no color or rule of its own */
+.head p.fact{margin:var(--s2) 0 0;max-width:58em;font-size:var(--fs-read);font-weight:var(--w-semi);color:var(--ink)}
+.head p.fact[hidden]{display:none}
+.head .hcalls{margin:var(--s2) 0 0;max-width:58em}
+.head .hcalls[hidden]{display:none}
+.head .hcalls .qc:last-child{border-bottom:0}
+.head p.ai{margin:var(--s2) 0 var(--s2);max-width:58em;font-size:var(--fs-read);color:var(--ink)}
+.ai .plainline{color:var(--ink)}
+.linkbtn{display:inline;padding:0;border:0;background:none;font:inherit;font-size:var(--fs-body);color:var(--before);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.ai .linkbtn{margin-left:var(--s2)}
+pre.output{margin:var(--s2) 0 0;padding:var(--s2) var(--s2);max-height:220px;overflow:auto;background:var(--canvas);border:1px solid var(--before-wash);border-radius:var(--r);font:var(--fs-mono)/var(--lh-mono) var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}
+/* the view's limits behind one closed disclosure; the row is gone while the disclosure is hidden */
+.below{display:flex;align-items:baseline;gap:var(--s4);margin-top:var(--s2);font-size:var(--fs-body);color:var(--ink-2)}
+.below:has(> #about[hidden]){display:none}
+.below details{font-size:var(--fs-body)}
+.below summary{cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+.below .caveats{margin:var(--s2) 0 0;max-width:52em;font-size:var(--fs-body)}
+/* a change with nothing to note (a text diff, a new file the heading already names) gives the panes the width */
+.stage.nonotes{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.stage.nonotes .notes,.stage.nonotes .leaders{display:none}
+/* a call header's failed call; a failure group's calls; a message or report card */
+.callfail{max-width:46em;margin:0 0 var(--s2);font-weight:var(--w-semi)}
+.callfail .err{display:block;margin-top:2px;font:var(--fs-mono)/var(--lh-mono) var(--mono);font-weight:var(--w-reg);color:var(--ink-2)}
+.fails{display:flex;flex-direction:column;gap:var(--s4)}
+.fails .what{font-weight:var(--w-semi);margin:0 0 var(--s1)}
+.fails .err{margin:0 0 var(--s1);font:var(--fs-mono)/var(--lh-mono) var(--mono);color:var(--ink-2);overflow-wrap:anywhere}
+.msg{max-width:640px}
+.msg .to{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s2);margin:0 0 var(--s2);font-size:var(--fs-body);line-height:var(--lh-body);color:var(--ink-2)}
+.msg .mdot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--lc,var(--ink-3))}
+.msg .mname{font-weight:var(--w-semi);color:var(--ink)}
+.msg .mfailed{font-weight:var(--w-semi);color:var(--fail)}
+.mcard{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r-lg);padding:var(--s3) var(--s4);font-size:var(--fs-read);line-height:var(--lh-read);overflow-wrap:anywhere}
+.mcard p{margin:0 0 var(--s2)} .mcard p:last-of-type{margin-bottom:0}
+.mcard .linkbtn{margin-top:var(--s2)}
+.cvcard .cvl{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}.cvcard .cvl:empty::before{content:"\200b"}
+h2.sub{font-size:var(--fs-read);margin:var(--s5) 0 var(--s2)}
+
+/* The stale-input flag: a small amber dot on the list entry, a pill on the strip node, a calm warning box with a button */
+.fi .stdot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--warn-mark)}
+.fi .undot{flex:none;width:8px;height:8px;border-radius:50%;border:2px solid var(--warn);box-sizing:border-box}
+.fi .delmark{flex:none;font-size:var(--fs-cap);line-height:1;padding:2px var(--s2);border-radius:var(--round);color:var(--ink-2);border:1px solid currentColor}
+.stalewarn .warn.unk{background:var(--surface);border-color:var(--ink-2)}
+.stalewarn .warn.unk .ic{background:var(--ink-2)}
+.vn .stl{white-space:nowrap;display:inline-flex;align-items:center;gap:var(--s1);margin-left:auto;font-size:var(--fs-cap);font-weight:var(--w-semi);color:var(--warn);background:var(--warn-tint);border:1px solid var(--warn-mark);border-radius:var(--round);padding:0 var(--s2);line-height:17px}
+.vn .stl::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--warn-mark)}
+.stalewarn:not(:empty){margin-bottom:var(--s3)}
+.stalewarn .warn{display:flex;align-items:center;gap:var(--s3);margin:var(--s3) 0 0;padding:var(--s2) var(--s4);background:var(--warn-tint);border:0;border-radius:var(--r);font-size:var(--fs-body);max-width:860px}
+.stalewarn .warn .ic{flex:none;width:22px;height:22px;border-radius:50%;background:var(--warn-mark);color:var(--on-fill);font-weight:var(--w-semi);font-size:var(--fs-body);line-height:22px;text-align:center}
+.stalewarn .warn .tx{flex:1;min-width:0}
+.stalewarn .warn button{flex:none;font:inherit;font-size:var(--fs-body);font-weight:var(--w-med);color:var(--warn);border:1px solid var(--warn-mark);background:var(--surface);border-radius:var(--round);padding:2px var(--s3);white-space:nowrap;cursor:pointer}
+.stalewarn .warn button:hover{border-color:var(--warn)}
+/* every motion on the page is off under reduced motion; kept last so no rule above can win */
+.sketchnote{margin:var(--s2) 0 0;font-size:var(--fs-body);color:var(--ink-2)}
+/* ---------- the Files view ---------- */
+/* a native-style segmented control: a grey track, the chosen segment a raised white thumb, 24px tall */
+.viewswitch{flex:none;display:inline-flex;gap:2px;margin-left:var(--s2);padding:2px;border:0;border-radius:var(--r);background:var(--well)}
+.viewswitch button{height:24px;padding:0 var(--s3);border-radius:calc(var(--r) - 2px);font-weight:var(--w-med);font-size:var(--fs-body);color:var(--ink-2);text-align:center;transition:background-color var(--dur-fast) ease,color var(--dur-fast) ease}
+.viewswitch button:focus-visible{outline-offset:0}
+.viewswitch button[aria-pressed=true]{--seg-fill:transparent;background:var(--surface);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--shade) 14%,transparent),0 0 0 .5px var(--hairline)}
+.viewswitch button[aria-pressed=false]:hover:not(:disabled){color:var(--ink)}
+.viewswitch button:disabled{opacity:.45;cursor:default}
+.listcol{background:var(--sidebar);border-right:1px solid var(--hairline)}
+.list{position:sticky;top:54px;height:calc(100vh - 54px);box-sizing:border-box;overflow-y:auto;overflow-x:hidden;padding:var(--s4) var(--s3) var(--s5) var(--s3);scrollbar-width:thin;scrollbar-color:var(--before-wash) transparent}
+.list .grp{font-size:var(--fs-cap);font-weight:var(--w-semi);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:var(--s2) var(--s2) var(--s2)}
+.fi{display:block;width:100%;padding:var(--s2) var(--s2);border-radius:var(--r-lg);margin:0 0 var(--s1);border:1px solid transparent;transition:background-color var(--dur) ease,border-color var(--dur) ease}
+.fi:hover{background:var(--well)}
+.fi[aria-current=true]{background:var(--selection);border-color:transparent}
+.fi .r1{display:flex;flex-wrap:nowrap;align-items:center;gap:var(--s1) var(--s2);min-width:0}
+.fi .nm{font-weight:var(--w-semi);font-size:var(--fs-read);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:100%}
+.fi .vv{margin-left:auto;font-size:var(--fs-cap);color:var(--ink-2);flex:none}
+.glyph{flex:none;width:16px;height:19px;border-radius:var(--r-xs);border:1.5px solid var(--ink-2);background:var(--surface);position:relative}
+.glyph::after{content:'';position:absolute;left:2px;right:2px;top:4px;height:2px;background:var(--gc,var(--before));box-shadow:0 4px 0 var(--gc,var(--before)),0 8px 0 var(--gc,var(--before))}
+.glyph.csv{--gc:var(--ink-3)}
+.filesview{margin-bottom:var(--s3)}
+/* Stacked (see the 1180px rule above), the file list is as tall as its entries, up to 45% of the screen; here because .list is defined above */
+@media (max-width:1180px){.list{position:static;height:auto;max-height:45vh}}
+.fhead{display:flex;align-items:baseline;gap:var(--s4);flex-wrap:wrap}
+.fhead h1{position:relative;font-size:var(--fs-title);line-height:1.25;margin:0;font-weight:var(--w-semi)}
+/* the path is a tip hung above the name (a native title lands under the pointer, on the strip's labels) */
+.fhead h1[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:0;bottom:100%;z-index:60;width:max-content;max-width:min(36em,80vw);padding:var(--s1) var(--s2);border-radius:var(--r);background:var(--ink);color:var(--on-ink);font-size:var(--fs-body);line-height:1.35;font-weight:var(--w-reg);pointer-events:none;box-shadow:var(--shadow-pop);overflow-wrap:anywhere}
+.fhead .order{font-size:var(--fs-body);color:var(--ink-2);display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+.crumbs{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;font-size:var(--fs-body);color:var(--ink-2);margin-bottom:var(--s2)}
+.crumbs:empty{display:none}
+.crumbs .crumb{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
+/* The inputs flow inline and wrap with one gap; the group labels and the Looked-at line take a row of their own */
+.built{margin:var(--s3) 0;display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center}
+.built>.grp,.built>.looked{flex-basis:100%}
+.built:empty{display:none}
+.built .grp{font-size:var(--fs-body);font-weight:var(--w-semi);color:var(--ink-2)}
+.built .bf{display:inline-flex;align-items:center;gap:var(--s2);max-width:100%;min-width:0;background:none;border:1px solid var(--hairline);border-radius:var(--round);padding:var(--s1) var(--s2);font:inherit;font-size:var(--fs-body);cursor:pointer}
+.built .bf .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.built .bf .inf{flex:none;font-size:var(--fs-cap);font-style:italic;color:var(--ink-2)}
+.built .looked{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;opacity:.8}
+.built .looked .grp{font-weight:var(--w-semi);font-size:var(--fs-cap)}
+.built .looked .bf{border-style:dashed;padding:2px var(--s2);font-size:var(--fs-body)}
+.fhead .notkept{padding:0 var(--s2);border:1px dashed color-mix(in srgb,var(--ink-2) 60%,transparent);border-radius:var(--round);font-size:var(--fs-body);font-style:italic}
+.strip{position:relative;display:flex;gap:var(--s2);margin:6px -6px 0;padding:6px;user-select:none;overflow-x:auto;scrollbar-width:thin}
+.vn{position:relative;display:flex;flex-direction:column;gap:var(--s1);text-align:left;flex:none;min-width:112px;max-width:168px;padding:var(--s2) var(--s3);border-radius:var(--r-lg);border:1px solid var(--hairline);background:var(--surface);transition:background-color var(--dur) ease,border-color var(--dur) ease}
+.vn:hover{background:var(--well)}
+.vn.cur,.vn.cur:hover{background:var(--selection);border-color:var(--before);box-shadow:0 0 0 1px var(--before)}
+.vn .top{display:flex;align-items:center;gap:var(--s2);font-size:var(--fs-cap);color:var(--ink-2)}
+.vn .top b{font-size:var(--fs-body);font-weight:var(--w-semi);color:var(--ink)}
+.vn .who{display:flex;align-items:center;gap:var(--s2);min-width:0;font-size:var(--fs-body);color:var(--ink-2)}
+.vn .who>.chip{flex:none}
+.vn .lbl{display:block;min-width:0;font-size:var(--fs-body);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vn.cur .lbl{color:var(--ink)}
+.vn.muted .lbl{font-style:italic;color:var(--ink-3)}
+.vn.muted .who{opacity:.5}
+.built:not(:empty)+.stalewarn .warn:first-child{margin-top:0}
+.fi .od{font-size:var(--fs-cap);color:var(--ink-2);margin:2px 0 0 var(--s5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.fi .wh{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-cap);color:var(--ink-2);border:1px solid var(--before-wash);border-radius:var(--round);padding:0 var(--s2)}
+.stage.nonotes.solo-before,.stage.nonotes.solo-after{grid-template-columns:minmax(0,1fr)}
+/* Clean diff: the notes, leaders and change boxes go, and the panes take the column; the text diff's own colouring stays */
+body.clean .stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+body.clean .stage.solo-before,body.clean .stage.solo-after{grid-template-columns:minmax(0,1fr)}
+body.clean .notes,body.clean .leaders,body.clean .bx{display:none}
+body.clean .grid td.hit,body.clean .before .grid td.hit{background:none;outline:none}
+.stage.solo-before>div:nth-child(2),.stage.solo-after>div:nth-child(1){display:none}
+/* Two states that draw the same */
+.banner{margin:var(--s2) 0;padding:var(--s2) var(--s4);border:1px solid var(--hairline);border-left:1px solid var(--warn-mark);border-radius:var(--r);font-size:var(--fs-body)}
+.banner[hidden]{display:none}
+/* The app's own refusal of a file the agent wrote (connector status "prompt" or "refused"): a finding about the work, shown above the pictures, never only in About this view */
+.finding{margin:var(--s2) 0 var(--s2);padding:var(--s2) var(--s3);border:1px solid var(--fail);background:color-mix(in srgb,var(--fail) 8%,transparent);border-radius:var(--r);font-size:var(--fs-body);font-weight:var(--w-semi);max-width:62em}
+.finding[hidden]{display:none}
+
+.livebanner{margin:0;padding:var(--s2) var(--s4);background:var(--before-tint);color:var(--before);font:var(--fs-body)/var(--lh-body) var(--font)}
+.livebanner[hidden]{display:none}
+/* ---------- the one loading widget; these rules are LOADING_CSS in src/timeline/loading.ts, verbatim (a test pins it); the last rule of this file stills the icon under reduced motion ---------- */
+.iload{display:inline-flex;align-items:center;vertical-align:middle;padding:2px 0}
+.iload-mark{display:block;width:24px;height:24px;overflow:visible}
+.loadpane .iload-mark{width:72px;height:72px}
+.ild-p{transform:translate(54.7px,52.7px)}
+.ild-s{transform:scale(.7)}
+.ild-rim{fill:none;stroke:var(--ink,#1c2740);stroke-width:14;stroke-linecap:round}
+.ild-glint{fill:none;stroke:var(--sky-deep,#4f86b0);stroke-width:7;stroke-linecap:round}
+.ild-neck{fill:none;stroke:var(--ink,#1c2740);stroke-width:11;stroke-linecap:butt}
+.ild-grip{fill:none;stroke:var(--ink,#1c2740);stroke-width:22;stroke-linecap:round}
+.iload-mark .ild-p{animation:ild-p 10.4s infinite}
+@keyframes ild-p{0%{transform:translate(54.7px,52.7px);animation-timing-function:cubic-bezier(.4,0,.2,1)}1.923%{transform:translate(54.7px,52.7px);animation-timing-function:cubic-bezier(.4,0,.2,1)}6.41%{transform:translate(64px,64px);animation-timing-function:cubic-bezier(.4,0,.2,1)}19.872%{transform:translate(64px,64px);animation-timing-function:cubic-bezier(.4,0,.2,1)}24.359%{transform:translate(54.7px,52.7px);animation-timing-function:cubic-bezier(.4,0,.2,1)}26.923%{transform:translate(54.7px,52.7px);animation-timing-function:linear}42.308%{transform:translate(54.7px,52.7px);animation-timing-function:cubic-bezier(.4,0,.2,1)}44.231%{transform:translate(54.7px,52.7px);animation-timing-function:cubic-bezier(.4,0,.2,1)}48.718%{transform:translate(64px,64px);animation-timing-function:cubic-bezier(.4,0,.2,1)}62.179%{transform:translate(64px,64px);animation-timing-function:cubic-bezier(.4,0,.2,1)}66.667%{transform:translate(54.7px,52.7px);animation-timing-function:cubic-bezier(.4,0,.2,1)}69.231%{transform:translate(54.7px,52.7px);animation-timing-function:linear}84.615%{transform:translate(54.7px,52.7px);animation-timing-function:linear}100%{transform:translate(54.7px,52.7px);animation-timing-function:linear}}
+.iload-mark .ild-r{animation:ild-r 10.4s infinite}
+@keyframes ild-r{0%{transform:rotate(0deg);animation-timing-function:linear}26.923%{transform:rotate(0deg);animation-timing-function:cubic-bezier(.167,.167,.833,.833)}42.308%{transform:rotate(360deg);animation-timing-function:linear}69.231%{transform:rotate(360deg);animation-timing-function:cubic-bezier(.167,.167,.833,.833)}84.615%{transform:rotate(720deg);animation-timing-function:cubic-bezier(.167,.167,.833,.833)}100%{transform:rotate(1080deg);animation-timing-function:linear}}
+.iload-mark .ild-d{animation:ild-d 10.4s infinite}
+@keyframes ild-d{0%{transform:translate(5px,0px);animation-timing-function:cubic-bezier(.4,0,.2,1)}1.923%{transform:translate(0px,0px);animation-timing-function:linear}24.359%{transform:translate(0px,0px);animation-timing-function:cubic-bezier(.4,0,.2,1)}26.923%{transform:translate(5px,0px);animation-timing-function:linear}42.308%{transform:translate(5px,0px);animation-timing-function:cubic-bezier(.4,0,.2,1)}44.231%{transform:translate(0px,0px);animation-timing-function:linear}66.667%{transform:translate(0px,0px);animation-timing-function:cubic-bezier(.4,0,.2,1)}69.231%{transform:translate(5px,0px);animation-timing-function:linear}84.615%{transform:translate(5px,0px);animation-timing-function:linear}100%{transform:translate(5px,0px);animation-timing-function:linear}}
+.iload-mark .ild-c{animation:ild-c 10.4s infinite}
+@keyframes ild-c{0%{transform:rotate(0deg);animation-timing-function:linear}26.923%{transform:rotate(0deg);animation-timing-function:cubic-bezier(.167,.167,.833,.833)}42.308%{transform:rotate(-360deg);animation-timing-function:linear}69.231%{transform:rotate(-360deg);animation-timing-function:cubic-bezier(.167,.167,.833,.833)}84.615%{transform:rotate(-720deg);animation-timing-function:cubic-bezier(.167,.167,.833,.833)}100%{transform:rotate(-1080deg);animation-timing-function:linear}}
+.iload-mark .ild-s{animation:ild-s 10.4s infinite}
+@keyframes ild-s{0%{transform:scale(.7);animation-timing-function:cubic-bezier(.4,0,.2,1)}1.923%{transform:scale(.7);animation-timing-function:cubic-bezier(.4,0,.2,1)}6.41%{transform:scale(.62);animation-timing-function:cubic-bezier(.4,0,.2,1)}19.872%{transform:scale(.62);animation-timing-function:cubic-bezier(.4,0,.2,1)}24.359%{transform:scale(.7);animation-timing-function:cubic-bezier(.4,0,.2,1)}26.923%{transform:scale(.7);animation-timing-function:linear}42.308%{transform:scale(.7);animation-timing-function:cubic-bezier(.4,0,.2,1)}44.231%{transform:scale(.7);animation-timing-function:cubic-bezier(.4,0,.2,1)}48.718%{transform:scale(.62);animation-timing-function:cubic-bezier(.4,0,.2,1)}62.179%{transform:scale(.62);animation-timing-function:cubic-bezier(.4,0,.2,1)}66.667%{transform:scale(.7);animation-timing-function:cubic-bezier(.4,0,.2,1)}69.231%{transform:scale(.7);animation-timing-function:linear}84.615%{transform:scale(.7);animation-timing-function:linear}100%{transform:scale(.7);animation-timing-function:linear}}
+.iload-mark .ild-h{animation:ild-h 10.4s infinite}
+@keyframes ild-h{0%{transform:rotate(0deg);animation-timing-function:cubic-bezier(.5,0,.5,1)}6.41%{transform:rotate(0deg);animation-timing-function:cubic-bezier(.5,0,.5,1)}19.872%{transform:rotate(360deg);animation-timing-function:cubic-bezier(.5,0,.5,1)}26.923%{transform:rotate(360deg);animation-timing-function:linear}42.308%{transform:rotate(360deg);animation-timing-function:cubic-bezier(.5,0,.5,1)}48.718%{transform:rotate(360deg);animation-timing-function:cubic-bezier(.5,0,.5,1)}62.179%{transform:rotate(720deg);animation-timing-function:cubic-bezier(.5,0,.5,1)}69.231%{transform:rotate(720deg);animation-timing-function:linear}84.615%{transform:rotate(720deg);animation-timing-function:linear}100%{transform:rotate(720deg);animation-timing-function:linear}}
+.iload-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.loadpane{display:flex;align-items:center;justify-content:center;min-height:120px;padding:20px 16px}
+/* the review page only: the seconds beside the heading's widget while the work is read */
+.iload-s{margin-left:var(--s2);font-size:var(--fs-body);font-weight:var(--w-reg);color:var(--ink-2)}
+/* The review bar: docked bottom centre in both views; the undo toast sits just above it */
+/* the review bar is docked: 56px across the bottom of the main column, the content ends above it, nothing floats over the pictures */
+.body{padding-bottom:calc(var(--barh) + var(--s4))}
+/* anything scrolled into view (a box, a step) stops above the docked bar, not under it */
+html{scroll-padding-bottom:calc(var(--barh) + var(--s2))}
+.pbar{position:fixed;left:var(--rail);right:0;bottom:0;display:flex;align-items:center;gap:var(--s3);width:auto;max-width:calc(100vw - 32px);min-height:var(--barh);padding:var(--s2) var(--s5);border-radius:0;background:var(--surface);border-top:1px solid var(--hairline);z-index:29}
+@media (max-width:1099px){.pbar{left:0;max-width:none}}
+/* the toolbar toggle for the rail sidebar: only below 1100px */
+.railtoggle{display:none;flex:none;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;border-radius:var(--r);background:none;color:var(--ink-2)}
+.railtoggle:hover,.railtoggle[aria-expanded=true]{background:var(--well);color:var(--ink)}
+.railtoggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.railtoggle[hidden]{display:none!important}
+.noteic{display:none;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* Below 1100px the rail is a sidebar that overlays the stage from the left (it does not push the page), closed until the toggle opens it */
+@media (max-width:1099px){
+  .body{grid-template-columns:minmax(0,1fr)}
+  .railtoggle{display:inline-flex}
+  .railcol{position:fixed;top:var(--toolbar);left:0;bottom:0;width:var(--rail);z-index:31;visibility:hidden;box-shadow:var(--shadow-pop)}
+  .railcol.open{visibility:visible}
+  .rail{position:static;height:100%;box-sizing:border-box}
+  header{gap:var(--s3);padding:0 var(--s3)}
+  .task{flex:0 1 auto;min-width:4em;max-width:none}
+}
+/* the toolbar keeps the progress ring and gives up its words; the title has already been cut short */
+@media (max-width:900px){
+  .progress{flex:none}
+  .progress #progtext{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .pbar{padding:var(--s2) var(--s3)}
+  .prow{gap:var(--s1)}
+  .pbmsg{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pbar #pbnote{padding:0 var(--s2)}
+  .pbar #pbnote .noteic{display:block}
+  .pbnotetxt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .vpair kbd{display:none}
+}
+.pbar[hidden]{display:none}
+.pbpos,.pblabel{line-height:32px}
+.pbpos{font-weight:var(--w-semi);white-space:nowrap}
+.pblabel{flex:0 1 auto;min-width:0;max-width:26em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-2)}
+.pbmsg{color:var(--after);font-weight:var(--w-semi)}
+.pbmsg:empty{display:none}
+.pbstep{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:var(--r);color:var(--ink-2);font-size:var(--fs-read);line-height:1}
+.pbstep:hover:not(:disabled){background:var(--well);color:var(--ink)}
+.pbstep:disabled{opacity:.4}
+.pbar .pbstep svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+/* the control row never wraps: the label gives way first and ellipsizes */
+.prow{display:flex;align-items:center;gap:var(--s2);flex:1 1 auto;min-width:0}
+/* a composer open: the bar is as wide as the composer's own width, the row gives way instead of widening it */
+.pbar:has(.pcomp:not([hidden])){width:auto}
+.pbar:has(.pcomp:not([hidden])) .prow{contain:inline-size}
+@media (max-width:719px){.prow{flex-wrap:wrap}}
+.pbar .vp,.pbar .vf,.pbar .btn,.pbpos,.pbstep{flex:none}
+.pbar .btn{height:32px}
+/* the change on show: a ring on the page, green or red once it has a verdict */
+#stage{outline:2px solid transparent;outline-offset:6px}
+#stage[data-verdict="passed"]{outline-color:var(--pass)}
+#stage[data-verdict="failed"]{outline-color:var(--fail)}
+.fi .jm,.vn .jm{margin-left:var(--s2);font-weight:var(--w-semi)}
+.fi .r1>.jm{margin-left:auto;flex:none}
+.fi .jm.open{color:var(--ink-3)}
+.vn .jm{flex:none;margin-left:auto;line-height:1}
+.fi .jm.pass,.vn .jm.pass{color:var(--pass)}
+.fi .jm.fail,.vn .jm.fail{color:var(--fail)}
+/* Fail and Pass are one segmented pair: one rounded group, a hairline between, the key hint quiet inside each; the chosen one fills red or green */
+.vpair{flex:none;display:inline-flex;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow-1),0 0 0 1px var(--hairline);overflow:hidden}
+.pbar .vp,.pbar .vf{display:inline-flex;align-items:center;gap:var(--s2);height:32px;padding:0 var(--s4);border:0;border-radius:0;font-weight:var(--w-med);background:var(--surface)}
+.pbar .vf{color:var(--fail)} .pbar .vp{color:var(--pass)}
+.pbar .vf + .vp{border-left:1px solid var(--hairline)}
+.pbar .vp:hover:not(:disabled),.pbar .vf:hover:not(:disabled){background:var(--well)}
+.pbar .vp:focus-visible,.pbar .vf:focus-visible{outline-offset:-3px}
+.vpair svg{display:none}
+.vpair kbd{border:0;padding:0;opacity:1;font:var(--w-reg) var(--fs-cap)/1 var(--font);color:var(--ink-3)}
+.pbar .vp[aria-pressed=true]{background:var(--pass);border-color:var(--pass);color:var(--on-fill)}
+.pbar .vf[aria-pressed=true]{background:var(--fail);border-color:var(--fail);color:var(--on-fill)}
+.pbar [aria-pressed=true] kbd{color:var(--on-fill)}
+/* Note is a quiet text button; it and what follows sit at the right end */
+.pbar #pbnote{margin-left:auto;border:0;background:none;box-shadow:none;color:var(--ink-2)}
+.pbar #pbnote:hover{background:var(--well);color:var(--ink)}
+.pbar .pbdet{border:0;background:none;box-shadow:none;color:var(--ink-2)}
+/* the step's title is the page heading; in the bar it is for screen readers only */
+.pbar .pblabel{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.pbar .vp:disabled,.pbar .vf:disabled{opacity:.4;cursor:default}
+.pbar svg{width:14px;height:14px}
+/* Sticky notes: the bar's list, the composer and the markers on the diff */
+body.clean .nmarks{display:none}
+.pnotes{flex:1 0 100%;display:flex;flex-wrap:wrap;gap:var(--s2)}
+.pnotes[hidden]{display:none}
+.pnote{display:inline-flex;align-items:center;border:1px solid var(--hairline);border-radius:var(--r);background:var(--note-paper);font-size:var(--fs-body)}
+.pnote button{border:0;background:none;cursor:pointer;padding:2px var(--s2)}
+.ncomp{border-color:var(--warn-mark);background:var(--note-paper)}
+.ncomp label{color:var(--warn)}
+.ncomp textarea{border-color:var(--warn-mark)}
+.nmarks{position:absolute;left:0;top:0;width:0;height:0;z-index:45}
+.nmark{position:absolute;min-width:22px;height:22px;padding:0 var(--s1);border:1.5px solid var(--ink);border-radius:var(--r);background:var(--note-mark);font-weight:var(--w-semi);font-size:var(--fs-cap);cursor:pointer}
+/* The settings menu and the two animations. The icon is a quiet 32px control at the right end of the toolbar; the menu opens downward and is one .setopt per toggle. */
+.setwrap{position:relative;flex:none;display:inline-flex;align-items:center;margin-left:auto}
+header>:is(.progress,.taskbtns):not([hidden]) ~ .setwrap{margin-left:0}
+.pbset{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:var(--r);background:none;color:var(--ink-2)}
+.pbset:hover{background:var(--well);color:var(--ink)}
+.pbset[aria-expanded=true]{background:var(--ink);color:var(--on-ink)}
+.pbset svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.setmenu{position:absolute;right:0;top:calc(100% + var(--s2));z-index:30;display:flex;flex-direction:column;gap:var(--s1);min-width:170px;max-width:calc(100vw - 2*var(--s2));padding:var(--s2);border-radius:var(--r);background:var(--surface);border:1px solid var(--hairline);box-shadow:var(--shadow-pop);animation:softin var(--dur-fast) ease-out}
+.setmenu[hidden]{display:none}
+.setopt{height:32px;padding:0 var(--s3);text-align:left;font-weight:var(--w-semi);font-size:var(--fs-body);border:1px solid var(--hairline);border-radius:var(--r);background:var(--surface);white-space:nowrap}
+.setopt[aria-pressed=true]{background:var(--ink);color:var(--on-ink)}
+.setopt[hidden]{display:none}
+.setgroup{display:flex;gap:var(--s1)}
+.setgroup .setopt{flex:1;text-align:center;padding:0 var(--s2)}
+.tl .flipo{transition:transform var(--dur-slow) var(--ease-out)}
+@keyframes cfout{from{opacity:1}to{opacity:0}}
+body.cout .notes,body.cout .leaders,body.cout .bx,body.cout .hl,body.cout .nmarks{animation:cfout var(--dur) ease-in forwards!important}
+body.cin .notes,body.cin .leaders,body.cin .bx,body.cin .hl,body.cin .nmarks{animation:fade var(--dur-slow) ease-out both!important}
+/* the highlight on a grid cell carries the diff too: it fades with the notes and the boxes, on the same clock. A text pane's line tint is the plain diff and stays. */
+@keyframes hitout{to{background-color:transparent;outline-color:transparent}}
+@keyframes hitin{from{background-color:transparent;outline-color:transparent}}
+body.cout .grid:not(.textpane) td.hit{animation:hitout var(--dur) ease-in forwards!important}
+body.cin .grid:not(.textpane) td.hit{animation:hitin var(--dur-slow) ease-out both!important}
+/* the bar with nothing to step through: only the settings icon; a composer open hides the menu outright */
+.pbar.solo>:not(.prow){display:none}
+.pbar.solo .prow>*{display:none}
+.pbar.solo{display:none}
+.pbar:has(.pcomp:not([hidden])) .setmenu{display:none}
+/* change-first view: one solid outline per change per side, no fill; page blue on Before, page pink on After. Stacking: grid headers 3, boxes 6, focused boxes 9, callout 10. */
+/* the change-first box takes the one box style above; here only what makes it a control */
+.bx.cf{border-radius:var(--r-sm);pointer-events:auto;cursor:pointer;z-index:6;transition:opacity var(--dur-fast) ease-out}
+.bx.cf.hv{z-index:9;outline-width:3px}
+.bx.cf:focus-visible{outline-style:solid}
+/* hover or focus: the focused change's boxes (both sides) stay at full strength, every other change box drops to 40%; nothing covers the picture */
+.stage.cfon .bx.cf:not(.hv){opacity:.4}
+/* arriving at a step the boxes draw in once; stepping to a change pulses its boxes. The reduced-motion rule at the end turns both off (review.js skips them too) */
+.bx.cf.cf-in{animation:cfdraw var(--dur-box) ease-out backwards}
+.bx.cf.cf-pulse{animation:cfpulse var(--dur-slow) ease-out}
+@keyframes cfdraw{from{opacity:0;scale:1.03}to{opacity:1;scale:1}}
+@keyframes cfpulse{40%{scale:1.04}}
+.hl{position:absolute;background:var(--mark);pointer-events:none;z-index:5}
+/* the callout: a small card on the hovered box, the changed words marked inside the sentence */
+.cm{position:absolute;z-index:10;display:none;width:max-content;max-width:min(280px,96%);box-sizing:border-box;line-height:var(--lh-body);font-size:var(--fs-body);background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r-lg);padding:var(--s2) var(--s3);box-shadow:var(--shadow-pop);pointer-events:none;white-space:normal;overflow-wrap:anywhere;color:var(--ink)}
+.cm.hv{display:block}
+.cm del,.cm ins{border-radius:2px;padding:0 1px;color:var(--ink)}
+.cm del{background:color-mix(in srgb,var(--before) 28%,transparent);text-decoration:line-through}
+.cm ins{background:color-mix(in srgb,var(--after) 28%,transparent);text-decoration:none}
+.cm .gap{color:var(--ink-3)}
+/* a token with a dash inside ("(2026-10)") never breaks after the dash; overflow-wrap still breaks it if it alone is wider than the callout */
+.cm .nw{white-space:nowrap}
+.cm .cl{margin-top:var(--s1);color:var(--ink-2)}
+svg.cf-line{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:9}
+svg.cf-line .cf-ln{fill:none;stroke-width:3;stroke-linejoin:round}
+body.regon .bx.cf,body.regon .cm{pointer-events:none}
+body.clean .cm,body.clean .hl,body.clean svg.cf-line{display:none}
+/* the Details control in the bar (a quiet icon, a label and a neutral count) and its panel, upward from the bar like the settings menu */
+.pbar .pbdet{gap:var(--s1);padding:0 var(--s2)}
+.pbdet svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.pbdet .dcount{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 var(--s1);border-radius:var(--round);background:var(--before-tint);color:var(--ink);font-size:var(--fs-cap);font-weight:var(--w-semi)}
+.pbdet .dcount[hidden]{display:none}
+.pbdet[aria-expanded=true]{background:var(--ink);color:var(--on-ink)}
+.pbdet[aria-expanded=true] .dcount{background:var(--surface);color:var(--ink)}
+/* centred over the docked bar by margins, not a transform (the open animation animates transform and would move it off centre) */
+.detpanel{position:absolute;left:0;right:0;margin:0 auto;bottom:calc(100% + 14px);width:min(560px,calc(100% - 32px));max-height:min(60vh,520px);overflow:auto;box-sizing:border-box;padding:var(--s4) var(--s4) var(--s2);border-radius:var(--r);background:var(--surface);border:1px solid var(--hairline);box-shadow:var(--shadow-pop);animation:softin var(--dur-fast) ease-out;z-index:30}
+.detpanel[hidden]{display:none}
+.pbar:has(.pcomp:not([hidden])) .detpanel{display:none}
+.detpanel{width:min(760px,calc(100% - 32px))}
+.detpanel:focus{outline:none}
+.dethead{display:flex;align-items:center;gap:var(--s2);margin:0 0 var(--s2)}
+.dethead h2{margin:0;margin-right:auto;font-size:var(--fs-read)}
+.pbar .detcopy{height:28px;padding:0 var(--s2);font-size:var(--fs-body)}
+.detclose{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink);cursor:pointer}
+.detclose:hover{background:var(--well)}
+.detclose:focus-visible,.detstep:focus-visible{outline:2px solid var(--before);outline-offset:2px}
+.detclose svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.detlog{margin:0;padding:0;list-style:none;font:var(--fs-mono)/var(--lh-mono) var(--mono);color:var(--ink)}
+.detline{padding:var(--s1) 0;border-top:1px solid var(--before-tint);overflow-wrap:anywhere}
+.detline:first-child{border-top:0}
+.detsteps{margin-right:var(--s2)}
+.detstep{all:unset;cursor:pointer;font-weight:var(--w-semi);border-radius:var(--r-xs)}
+.detstep:hover{text-decoration:underline;text-underline-offset:2px}
+.detsrc{margin-right:var(--s2);color:var(--ink-2)}
+.detnone{margin:var(--s1) 0;font-size:var(--fs-body)}
+.detwait{margin:var(--s1) 0 var(--s2);font-size:var(--fs-body)}
+
+/* paged review view (any paged picture set): one scroll column per side, the two kept on the same page by review.js */
+.pscroll{position:relative;max-height:var(--colh,min(80vh,920px));overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:transparent}
+/* stacked pictures are white sheets with a 12px canvas gap between them, not a labelled strip; the pane itself steps back */
+.pane:has(> .vw > .pscroll){background:var(--canvas);border-color:transparent;box-shadow:none}
+.vw:has(> .pscroll){background:var(--canvas)}
+.pslot{position:relative;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--r-lg);box-shadow:var(--shadow-1);overflow:hidden}
+.pslot + .pslot{margin-top:var(--s3)}
+.plabel{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.plabel.none{font-style:italic;font-weight:var(--w-reg)}
+.pslot.same .plabel{font-weight:var(--w-reg)}
+.pbody{position:relative}
+.pbody.gone{display:flex;align-items:center;justify-content:center;min-height:120px;background:repeating-linear-gradient(135deg,var(--before-tint) 0 8px,var(--surface) 8px 16px)}
+.pbody .missing{font-size:var(--fs-body);font-style:italic;color:var(--ink-2);padding:var(--s2) var(--s3);background:var(--surface);border-radius:var(--r-sm)}
+/* change stepping: Previous change and Next change in the bottom bar, after the step counter, only on a step with more than one change; N and B on the keyboard */
+.stepbar{display:flex;align-items:center;gap:0;flex:none;margin-left:var(--s1);padding-left:var(--s2);border-left:1px solid var(--hairline)}
+.stepbar[hidden]{display:none}
+body:has(#stage[hidden]) .stepbar{display:none}
+body.clean .stepbar{display:none}
+.stepbtn{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:var(--r);background:transparent;color:var(--ink-2);cursor:pointer}
+.stepbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.stepbtn:hover{background:var(--well);color:var(--ink)}
+/* the step's issues in the Details panel: amber, the sentences, then Copy fix prompt */
+.detissues{margin:0 0 var(--s3);padding:var(--s2) var(--s3);border-radius:var(--r);background:var(--warn-tint);color:var(--warn);font-size:var(--fs-body);line-height:var(--lh-body)}
+.detissues[hidden]{display:none}
+.detissues:focus{outline:none}
+.detihead{margin:0 0 var(--s1);font-weight:var(--w-semi)}
+.detissues ul{margin:0;padding-left:var(--s4);overflow-wrap:anywhere}
+.detiacts{display:flex;justify-content:flex-end;margin-top:var(--s2)}
+.pbar .detissues .sfix{height:28px;padding:0 var(--s2)}
+.cv{margin-bottom:var(--s3)} .cvpanes{display:flex;gap:var(--s3)} .cvpane{flex:1;min-width:0} .cvpane pre{white-space:pre-wrap;margin:0} .cvhead{font-weight:var(--w-semi)}
+.cvfield{padding:var(--s1) var(--s2);border-radius:6px} .cvfield.changed{border:1px solid var(--hairline);background:var(--surface)} .cvname{font-weight:var(--w-semi);margin-right:var(--s2)} .cvnote,.cvcaveat{font-size:var(--fs-body);opacity:.8}
+.cvframe{display:block;width:100%;min-height:240px;border:1px solid var(--before);border-radius:6px;background:var(--surface);margin:var(--s1) 0 var(--s2)}
+.viewline{margin:var(--s2) 0;font-size:var(--fs-body);color:var(--ink-2)} .viewline p,.vlsrc,.vltally{margin:0 0 var(--s1)} .mcpcut,.cvcaveat{font-size:var(--fs-body);opacity:.8} .mcpline{margin:0 0 2px} .cvcard.child{margin:var(--s2) 0 0 var(--s4)}
+/* ---------- the stage: one pane for a subject that did not exist, zoom, the close-up row, the picture strip ---------- */
+/* a created or removed subject: the existing side across the stage (the notes column, when there is one, keeps its place) */
+.stage.solo-before:not(.nonotes),.stage.solo-after:not(.nonotes){grid-template-columns:minmax(0,1fr) var(--notes)}
+.panelabel .plname{flex:0 1 auto;min-width:0;font-size:var(--fs-body);color:var(--ink);overflow:hidden;text-overflow:ellipsis}
+.panelabel .plname[hidden]{display:none}
+/* zoom: the pictures are drawn at --z times fit-width and the column scrolls both ways */
+.zoomctl{flex:none;display:inline-flex;gap:2px;padding:2px;border-radius:var(--r);background:var(--well)}
+.zoomctl[hidden]{display:none}
+.zoomctl button{height:24px;padding:0 var(--s3);border-radius:calc(var(--r) - 2px);font-weight:var(--w-med);font-size:var(--fs-body);color:var(--ink-2);text-align:center;transition:background-color var(--dur-fast) ease,color var(--dur-fast) ease}
+.zoomctl button:focus-visible{outline-offset:0}
+.zoomctl button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--shade) 14%,transparent),0 0 0 .5px var(--hairline)}
+.zoomctl button[aria-pressed=false]:hover{color:var(--ink)}
+#vb.zoomed .pscroll,#va.zoomed .pscroll{overflow-x:auto}
+#vb.zoomed .pslot,#va.zoomed .pslot{width:calc(100% * var(--z,1))}
+#vb.zoomed>.vw[data-pane],#va.zoomed>.vw[data-pane]{overflow:auto;max-height:var(--colh,min(80vh,920px))}
+#vb.zoomed>.vw[data-pane]>.pagewrap,#va.zoomed>.vw[data-pane]>.pagewrap{width:calc(100% * var(--z,1))}
+/* the close-up row: the connector's picture, scaled and clipped, on a white sheet; the change box on it */
+.closeup{margin:0 0 var(--s4)}
+.closeup[hidden]{display:none}
+.closeup.fx{min-height:calc(var(--cuh) + 2px)}
+.cucell{position:relative;width:100%;overflow:hidden;background:var(--sheet);border:1px solid var(--hairline);border-radius:var(--r-lg);box-shadow:var(--shadow-1)}
+.cucell.blank{visibility:hidden}
+/* no close-up for this change: a quiet well the row's height, one line of tertiary words in it */
+.cucell.none{display:flex;align-items:center;justify-content:center;background:transparent;border:1px dashed var(--hairline);box-shadow:none}
+.cunone{font-size:var(--fs-cap);line-height:var(--lh-cap);color:var(--ink-3)}
+.cupic{position:absolute;line-height:0}
+.cupic img{display:block;width:100%;height:100%}
+.cubx{position:absolute;border-radius:var(--r-sm);pointer-events:none;outline:2px solid var(--cbx);outline-offset:1.5px;box-shadow:0 0 0 1.5px var(--keyline),0 0 0 7px color-mix(in srgb,var(--cbx) 22%,transparent)}
+.closeup.before .cubx{--cbx:var(--box-before)} .closeup.after .cubx{--cbx:var(--box-after)}
+/* the picture strip: 64x36 thumbnails or numbered chips, the current picture ringed in before-blue, a 6px after-pink dot on every changed one */
+.pstrip{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s3);position:sticky;bottom:calc(var(--barh) + 8px);z-index:5;padding:var(--s2) 0;background:var(--canvas)}
+.pstrip[hidden]{display:none}
+.pst{position:relative;flex:none;width:64px;height:36px;padding:0;border:1px solid var(--hairline);border-radius:var(--r);background:var(--sheet);overflow:hidden;cursor:pointer;font:inherit}
+.pst img{display:block;width:100%;height:100%;object-fit:contain}
+.pst .pstn{font-size:var(--fs-cap);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pst.none{background:var(--well);opacity:.6}
+.pst:not(:has(img)){background:var(--surface)}
+.pst.on{border-color:var(--before);box-shadow:0 0 0 1px var(--before)}
+.pst.dot::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--after);box-shadow:0 0 0 1.5px var(--surface)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

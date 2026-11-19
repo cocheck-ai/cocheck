@@ -1,0 +1,1 @@
+Created a.txt with alpha, ran the expected failing command, and waited for the helper to create b.txt with beta.

@@ -1,0 +1,29 @@
+{
+ "changes": [
+  {
+   "cards": [],
+   "file": "deck.pptx",
+   "kind": "modified",
+   "moreCards": 0,
+   "note": "Something, during agent calls, changed Slide 2 / Text 14 from at 6.9, 2.5 in to at 7.87, 2.5 in",
+   "rowNotes": [],
+   "viewUrl": "/timeline/1/view/c2"
+  }
+ ],
+ "page": [
+  {
+   "bodyCards": [
+    "Slide 2 / Text 14at 6.9, 2.5 inat 7.87, 2.5 inShape moved"
+   ],
+   "buttons": [],
+   "cards": [],
+   "heading": "Changed deck.pptx",
+   "index": 0,
+   "panes": {
+    "after": 0,
+    "before": 0
+   }
+  }
+ ],
+ "snapshot": "pptx-PM"
+}

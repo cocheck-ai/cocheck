@@ -1,0 +1,13 @@
+[
+  {
+    "sheet": "Sheet1",
+    "cell": "D5",
+    "kind": "formula",
+    "valueBefore": 47.5,
+    "valueAfter": 15.833333333333334,
+    "formulaBefore": "SUM(D2:D4)",
+    "formulaAfter": "AVERAGE(D2:D4)",
+    "numFmtBefore": "\"$\"#,##0.00",
+    "numFmtAfter": "\"$\"#,##0.00"
+  }
+]

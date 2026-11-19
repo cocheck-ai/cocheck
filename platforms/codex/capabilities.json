@@ -1,0 +1,1339 @@
+{
+  "schema": 1,
+  "platform": "codex",
+  "name": "OpenAI Codex CLI",
+  "vendor": "OpenAI",
+  "surfaces": [
+    "cli",
+    "desktop-app-bundled",
+    "app-server-daemon"
+  ],
+  "checked_on": "2026-10-24",
+  "versions_seen": [
+    {
+      "version": "0.164.0-alpha.11.1",
+      "where": "codex binary bundled in ChatGPT.app, run by the probe in a scratch CODEX_HOME (probe:versions/0.164.0-alpha.11.1/)",
+      "date": "2026-10-24"
+    },
+    {
+      "version": "0.164.0",
+      "where": "https://github.com/openai/codex/releases/tag/rust-v0.164.0 (latest stable, published 2026-10-23, commit fe3b294; source read at this tag)",
+      "date": "2026-10-24"
+    },
+    {
+      "version": "0.162.0-alpha.2",
+      "where": "local:~/.codex/packages/app-server-daemon/current (CodexCLI.app/Contents/MacOS/codex; codex-package.json version)",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "0.163.0",
+      "where": "https://api.github.com/repos/openai/codex/releases/latest (latest stable, published 2026-10-15)",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "0.164.0-alpha.3",
+      "where": "https://api.github.com/repos/openai/codex/releases (prerelease, published 2026-10-17)",
+      "date": "2026-10-18"
+    }
+  ],
+  "cocheck_relevance": "Yes, today: CoCheck records Codex through command hooks (PreToolUse, PostToolUse, Stop, UserPromptSubmit) and reads narration from the rollout file. Live probe on 0.164.0-alpha.11.1 (2026-10-24): hooks run outside the sandbox with write and localhost access, helpers are attributable by agent_id, but a hook that is untrusted or changed is skipped with no trace (a CoCheck update that edits the hook command can silently stop capture; app-server hooks/list reports trustStatus), and a failed command carries no exit code in PostToolUse.",
+  "install": [
+    {
+      "claim": "The binary on this Mac is bundled inside the app-server-daemon release folder, as CodexCLI.app/Contents/MacOS/codex (aarch64); `current` is a symlink to the release.",
+      "kind": "observed",
+      "source": "local:~/.codex/packages/app-server-daemon/current",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "The binary reports `codex-cli 0.162.0-alpha.2`; ~/.codex/version.json lists latest_version 0.162.0 (checked 2026-10-09).",
+      "kind": "observed",
+      "source": "binary:--version; local:~/.codex/version.json",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "ChatGPT.app is installed in /Applications and `codex app` launches the Desktop app.",
+      "kind": "observed",
+      "source": "local:/Applications/ChatGPT.app; binary:--help",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed",
+      "note": "Whether ChatGPT.app itself embeds this same binary was not checked; the daemon release is under ~/.codex/packages."
+    },
+    {
+      "claim": "Subcommands include exec, review, resume, fork, queue, archive, delete, app-server, agents, doctor, sandbox, features, plugin, mcp, cloud, update.",
+      "kind": "observed",
+      "source": "binary:--help",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    }
+  ],
+  "processes_and_paths": [
+    {
+      "claim": "A shared local app-server daemon runs from the same release binary; control socket at ~/.codex/app-server-control/app-server-control.sock and ~/.codex/ipc/ipc.sock.",
+      "kind": "observed",
+      "source": "local:~/.codex/app-server-control; ps listing; local:~/.codex/ipc",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed",
+      "note": "Seen as a running process under the release path; `codex agents` browses sessions on this daemon (--help)."
+    },
+    {
+      "claim": "~/.codex holds config.toml, auth.json (existence only checked), sessions/, archived_sessions/, session_index.jsonl, several *.sqlite state files (state_5, logs_2, thread_history_1, goals_1, memories_1, queue_1), shell_snapshots/, skills/, plugins/, models_cache.json, installation_id, version.json.",
+      "kind": "observed",
+      "source": "local:~/.codex (listing only)",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "`codex app-server generate-json-schema --out <dir>` produced the app-server protocol schemas (39 entries incl. v1/ and v2/).",
+      "kind": "observed",
+      "source": "binary:app-server generate-json-schema (output dir not kept in the repo)",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "unverified",
+      "note": "Downgraded: the generated schema folder is not kept, so no in-repo record backs this."
+    },
+    {
+      "claim": "CODEX_HOME relocates the whole ~/.codex tree; used for a scratch home in our runs and in this folder's `features list`.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed",
+      "note": "Documented name: CODEX_HOME. In the recording the hook transcript_path (rollout file) sits under the scratch home's sessions/, so it moves sessions/. Repointed 2026-10-24; the config.toml half of the earlier claim has no in-repo record and is not asserted here."
+    },
+    {
+      "claim": "`codex exec` with a positional prompt and an open stdin waits on stdin ('Reading additional input from stdin...'); automation needs </dev/null.",
+      "kind": "observed",
+      "source": "probe:versions/0.164.0-alpha.11.1/run1-untrusted.err",
+      "date": "2026-10-24",
+      "verified_on": "0.164.0-alpha.11.1",
+      "status": "confirmed"
+    },
+    {
+      "claim": "`codex exec` in a scratch CODEX_HOME with an untrusted project defaults to sandbox read-only, approval never.",
+      "kind": "observed",
+      "source": "probe:versions/0.164.0-alpha.11.1/run1-untrusted.err",
+      "date": "2026-10-24",
+      "verified_on": "0.164.0-alpha.11.1",
+      "status": "confirmed"
+    }
+  ],
+  "auth": [
+    {
+      "claim": "Login is ChatGPT account based; ~/.codex/auth.json exists (contents not read). Subcommands login and logout manage it.",
+      "kind": "observed",
+      "source": "local:~/.codex/auth.json (existence only); binary:--help",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "CoCheck's probe-host.ts copies auth.json (mode 0600) into a scratch CODEX_HOME for live runs and deletes it at exit.",
+      "kind": "observed",
+      "source": "local:~/code/cocheck/docs/hooks.md",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "confirmed"
+    }
+  ],
+  "hooks": {
+    "available": {
+      "claim": "Hooks exist. Docs: on by default, key `[features] hooks` (alias `codex_hooks`); `codex features list` shows `hooks stable true`.",
+      "kind": "documented",
+      "source": "https://learn.chatgpt.com/docs/hooks",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed",
+      "note": "CONTRADICTS the earlier note that hooks need `hooks = true`: our run set it explicitly (so the need was never tested), while docs and `features list` say default on. What is certain is that hooks do not run until trusted."
+    },
+    "config": [
+      {
+        "claim": "Hooks are read from ~/.codex/hooks.json, ~/.codex/config.toml, <repo>/.codex/hooks.json and <repo>/.codex/config.toml; all matching hooks from all sources run; project-local ones load only if the project .codex layer is trusted.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "confirmed"
+      },
+      {
+        "claim": "TOML form is `[[hooks.<Event>]]` (optional `matcher`) then `[[hooks.<Event>.hooks]]` with type=\"command\", command, optional timeout (seconds), statusMessage, async.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "confirmed"
+      },
+      {
+        "claim": "The TOML form was accepted and fired by 0.162.0-alpha.2 (one [[hooks.X]] + [[hooks.X.hooks]] per event, type=command).",
+        "kind": "observed",
+        "source": "recorded run, scratch config.toml (file not kept in the repo)",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "unverified",
+        "note": "Same shape as docs. Downgraded: the scratch config.toml is not kept; the in-repo recording shows hooks fired but not the TOML shape that did it."
+      },
+      {
+        "claim": "Handler types: command and mcp_tool run; prompt and agent are parsed but skipped.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-18",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Command hooks receive one JSON object on stdin, run in the session cwd, and multiple matching hooks for one event run concurrently.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-18",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Plugins can bundle hooks (hooks/hooks.json); admins can force hooks via requirements.toml (managed hooks, allow_managed_hooks_only).",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-18",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Hook state keys in config (`hooks.state.\"...\"` with `trusted_hash`) and HookHandlerConfig fields (type, command, timeout, async, statusMessage, additionalContextLimit, mcp_tool server/tool/input) appear in the binary.",
+        "kind": "observed",
+        "source": "binary:strings of app-server schema output (<scratch>/codex-schema/strings.txt)",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "confirmed"
+      },
+      {
+        "claim": "Codex runs a hook's `command` string through a shell: an env-prefixed, quoted command (`FOO=1 BAR='x y' /bin/sh '<script>' --host codex`) received FOO=1, BAR='x y' and the args intact.",
+        "kind": "observed",
+        "source": "live check (scratch CODEX_HOME, codex exec, trust bypass); no file record kept",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "unverified",
+        "note": "Downgraded 2026-10-24: a probe: source must name a file in the repo and this check left none."
+      },
+      {
+        "claim": "If one layer has both hooks.json and inline [hooks], Codex merges them and warns at startup. Plugin manifest .codex-plugin/plugin.json `hooks` may be a ./ path, an array of paths, an inline object or an array of objects, and if present the default hooks/hooks.json is ignored. Plugin command env: PLUGIN_ROOT, PLUGIN_DATA, CLAUDE_PLUGIN_ROOT, CLAUDE_PLUGIN_DATA.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Command handler fields: command, command_windows or commandWindows, timeout (s), statusMessage, async, additionalContextLimit (default 2500). requirements.toml [hooks] accepts managed_dir, windows_managed_dir and allow_managed_hooks_only; pin [features].hooks = true to force hooks on.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "requirements.toml keys are confirmed from the hooks page only; the config reference text read did not contain them."
+      }
+    ],
+    "trust_or_approval": [
+      {
+        "claim": "Non-managed hooks (user, project, plugin) must be reviewed and trusted (hash-based; changed hooks are skipped until re-trusted) via /hooks in the CLI; `--dangerously-bypass-hook-trust` runs them for one invocation without persisted trust.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "confirmed"
+      },
+      {
+        "claim": "In our runs hooks did not run until trusted or until --dangerously-bypass-hook-trust was passed; the passing run used bypass.",
+        "kind": "observed",
+        "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "unverified",
+        "note": "The untrusted-no-run result was established in a separate run; this folder holds only the passing run (bypassPermissions shown in payloads). Not re-verified here."
+      },
+      {
+        "claim": "Installing or enabling a plugin does not trust its hooks.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-18",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "An untrusted hook is skipped silently: with the hook not trusted, a run produced no hook log and no warning on stdout or stderr, while the model and helper ran normally.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/run1-untrusted.err",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "A CoCheck update that edits the hook command changes its hash, so capture can stop with no trace. Run 2 passed --dangerously-bypass-hook-trust."
+      },
+      {
+        "claim": "`codex app-server` `hooks/list` returns, per hook, eventName, handlerType, source, enabled, isManaged and trustStatus; all four CoCheck hooks (preToolUse, postToolUse, userPromptSubmit, stop) of a scratch copy of the real config reported trusted, source user, enabled.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/app-server-hooks-list.json",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "Event names in this listing are lowerCamelCase (preToolUse), unlike the PascalCase config keys. CoCheck could use it to detect lost trust without firing a session. Tested on a copy of the real config with hooks.state keys rewritten to the scratch path; the real ~/.codex was not used."
+      },
+      {
+        "claim": "hooks/list trustStatus values are managed, untrusted, trusted or modified, and each hook has a currentHash (sha256:...).",
+        "value": {
+          "trustStatus": [
+            "managed",
+            "untrusted",
+            "trusted",
+            "modified"
+          ]
+        },
+        "kind": "observed",
+        "source": "binary:codex app-server generate-json-schema output (hooks/list), run 2026-10-24",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "Only `trusted` was seen in the live listing."
+      },
+      {
+        "claim": "Trust is keyed on command content, not on the config path: after rewriting the hooks.state keys to a new path, the CoCheck hashes still matched and reported trusted.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/app-server-hooks-list.json",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed"
+      },
+      {
+        "claim": "hooks.state per-hook keys are `enabled`, `trusted_hash` and `trusted_content_hash`; the hash covers a normalized, config-derived identity, so the same hook in TOML and in hooks.json has the same trust identity.",
+        "kind": "documented",
+        "source": "https://github.com/openai/codex/blob/rust-v0.164.0/codex-rs/config/src/hook_config.rs",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Normalization read in codex-rs/hooks/src/engine/discovery.rs at rust-v0.164.0: https://github.com/openai/codex/blob/rust-v0.164.0/codex-rs/hooks/src/engine/discovery.rs"
+      }
+    ],
+    "events": [
+      {
+        "name": "SessionStart",
+        "when": "session or subagent starts (source: startup, resume, clear, compact, fork)",
+        "can_block": false,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "permission_mode",
+          "source"
+        ],
+        "fact": {
+          "claim": "Fired once at start with source=startup.",
+          "kind": "observed",
+          "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+          "date": "2026-10-18",
+          "verified_on": "0.162.0-alpha.2",
+          "status": "confirmed",
+          "note": "Re-observed on 0.164.0-alpha.11.1 (2026-10-24, probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl); payload matches the register. permission_mode was bypassPermissions in the 2026-10-24 run only because it used --dangerously-bypass-hook-trust and -s workspace-write; do not read it as the default."
+        },
+        "matcher": "startup|resume|clear|compact|fork",
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "UserPromptSubmit",
+        "when": "before a user prompt is sent to the model",
+        "can_block": true,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "permission_mode",
+          "prompt",
+          "agent_id",
+          "agent_type"
+        ],
+        "fact": {
+          "claim": "Fired with the prompt text.",
+          "kind": "observed",
+          "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+          "date": "2026-10-18",
+          "verified_on": "0.162.0-alpha.2",
+          "status": "confirmed",
+          "note": "Re-observed on 0.164.0-alpha.11.1 (2026-10-24, probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl); payload matches the register."
+        },
+        "matcher": null,
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "PreToolUse",
+        "when": "before a supported tool runs (matcher on tool name)",
+        "can_block": true,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "permission_mode",
+          "tool_name",
+          "tool_use_id",
+          "tool_input",
+          "agent_id",
+          "agent_type"
+        ],
+        "fact": {
+          "claim": "Fired per shell call with tool_name \"Bash\", tool_input {command}, tool_use_id \"exec-<uuid>\".",
+          "kind": "observed",
+          "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+          "date": "2026-10-18",
+          "verified_on": "0.162.0-alpha.2",
+          "status": "confirmed",
+          "note": "Rewrite: permissionDecision allow with updatedInput (Bash and apply_patch need a string `command`); 'ask' is unsupported; a timeout or error fails open. Re-observed on 0.164.0-alpha.11.1 (2026-10-24): agent_id and agent_type (\"default\") are present on every call made inside a helper and absent on the parent's calls; tool_use_id pairs Pre with Post (exec-<uuid> for shell, call_<hex> for collaboration tools). Shell is reported as tool_name Bash; the spawn and wait tools appear as collaborationspawn_agent and collaborationwait_agent."
+        },
+        "matcher": "tool name (Bash, apply_patch, mcp__server__tool, spawn_agent)",
+        "timeout_sec": 600,
+        "can_rewrite": true,
+        "aliases": []
+      },
+      {
+        "name": "PostToolUse",
+        "when": "after a supported tool produces output, including non-zero exits",
+        "can_block": false,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "permission_mode",
+          "tool_name",
+          "tool_use_id",
+          "tool_input",
+          "tool_response",
+          "agent_id",
+          "agent_type"
+        ],
+        "fact": {
+          "claim": "Fired per call; tool_response was a plain string of the output (empty string for a silent write).",
+          "kind": "observed",
+          "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+          "date": "2026-10-18",
+          "verified_on": "0.162.0-alpha.2",
+          "status": "confirmed",
+          "note": "Re-observed on 0.164.0-alpha.11.1 (2026-10-24): agent_id and agent_type (\"default\") are present on every call made inside a helper and absent on the parent's calls; tool_use_id pairs Pre with Post (exec-<uuid> for shell, call_<hex> for collaboration tools). Shell is reported as tool_name Bash; the spawn and wait tools appear as collaborationspawn_agent and collaborationwait_agent. Failure visibility (0.164.0-alpha.11.1 live): tool_response for the failing `ls` is the bare output string; there is no exit code, is_error or structure, and a success returns an empty string. A failure that prints nothing looks like a success."
+        },
+        "matcher": "tool name",
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": [],
+        "absent_fields": [
+          "exit_code",
+          "is_error"
+        ]
+      },
+      {
+        "name": "Stop",
+        "when": "turn stops; decision block starts a continuation",
+        "can_block": true,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "permission_mode",
+          "stop_hook_active",
+          "last_assistant_message"
+        ],
+        "fact": {
+          "claim": "Fired once per turn with stop_hook_active false and last_assistant_message holding the final answer text.",
+          "kind": "observed",
+          "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+          "date": "2026-10-18",
+          "verified_on": "0.162.0-alpha.2",
+          "status": "confirmed",
+          "note": "Re-observed on 0.164.0-alpha.11.1 (2026-10-24, probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl); payload matches the register."
+        },
+        "matcher": null,
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "SessionEnd",
+        "when": "main thread ends (archive/delete, normal close, 30 min idle); advisory, default timeout 1s max 3s",
+        "can_block": false,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "reason"
+        ],
+        "fact": {
+          "claim": "Fired once after Stop with reason \"other\"; carries cwd and transcript_path but no model or permission_mode.",
+          "kind": "observed",
+          "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+          "date": "2026-10-18",
+          "verified_on": "0.162.0-alpha.2",
+          "status": "confirmed",
+          "note": "Re-observed on 0.164.0-alpha.11.1 (2026-10-24, probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl); payload matches the register."
+        },
+        "matcher": "other",
+        "timeout_sec": 1,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "PermissionRequest",
+        "when": "before an approval prompt (not for commands needing none)",
+        "can_block": true,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "permission_mode",
+          "tool_name",
+          "tool_input",
+          "agent_id",
+          "agent_type"
+        ],
+        "fact": {
+          "claim": "PermissionRequest is one of the 12 events on the hooks page (matcher: tool name). Its payload has tool_name and tool_input and no tool_use_id. Whether exit 2 blocks it is not stated on the page. Not yet seen in a probe.",
+          "kind": "documented",
+          "source": "https://learn.chatgpt.com/docs/hooks",
+          "date": "2026-10-24",
+          "verified_on": null,
+          "status": "confirmed",
+          "note": "Read on the official page 2026-10-24 via a summarizer. Interrupt is documented but a probe has not fired it; the 0.162.0-alpha.2 probe never saw these events. Decision: hookSpecificOutput.decision.behavior allow|deny, deny wins; updatedInput is reserved and fails closed (source, rust-v0.164.0). Not fired in the 2026-10-24 probe."
+        },
+        "matcher": "tool name",
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": [],
+        "absent_fields": [
+          "tool_use_id"
+        ]
+      },
+      {
+        "name": "PreCompact",
+        "when": "before chat compaction (trigger manual|auto)",
+        "can_block": true,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "trigger"
+        ],
+        "fact": {
+          "claim": "PreCompact is one of the 12 events on the hooks page (matcher: manual|auto). Whether exit 2 blocks it is not stated on the page. Not yet seen in a probe.",
+          "kind": "documented",
+          "source": "https://learn.chatgpt.com/docs/hooks",
+          "date": "2026-10-24",
+          "verified_on": null,
+          "status": "confirmed",
+          "note": "Read on the official page 2026-10-24 via a summarizer. Interrupt is documented but a probe has not fired it; the 0.162.0-alpha.2 probe never saw these events. can_block true because continue:false stops compaction (source); not fired in the 2026-10-24 probe."
+        },
+        "matcher": "manual|auto",
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "PostCompact",
+        "when": "after chat compaction",
+        "can_block": false,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "trigger"
+        ],
+        "fact": {
+          "claim": "PostCompact is one of the 12 events on the hooks page (matcher: manual|auto). Whether exit 2 blocks it is not stated on the page. Not yet seen in a probe.",
+          "kind": "documented",
+          "source": "https://learn.chatgpt.com/docs/hooks",
+          "date": "2026-10-24",
+          "verified_on": null,
+          "status": "confirmed",
+          "note": "Read on the official page 2026-10-24 via a summarizer. Interrupt is documented but a probe has not fired it; the 0.162.0-alpha.2 probe never saw these events. Not fired in the 2026-10-24 probe."
+        },
+        "matcher": "manual|auto",
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "SubagentStart",
+        "when": "subagent starts; matcher on agent type",
+        "can_block": false,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "agent_id",
+          "agent_type",
+          "permission_mode"
+        ],
+        "fact": {
+          "claim": "SubagentStart fired in a `codex exec` helper run on 0.164.0-alpha.11.1; payload carries agent_id, agent_type (\"default\") and permission_mode.",
+          "kind": "observed",
+          "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "0.164.0-alpha.11.1",
+          "status": "confirmed",
+          "note": "Helpers do run in exec mode (both a.txt and b.txt were written). The helper shares the parent's session_id and has its own turn_id."
+        },
+        "matcher": "agent_type",
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "SubagentStop",
+        "when": "subagent stops; block continues it",
+        "can_block": true,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "agent_id",
+          "agent_type",
+          "agent_transcript_path",
+          "stop_hook_active",
+          "last_assistant_message",
+          "permission_mode"
+        ],
+        "fact": {
+          "claim": "SubagentStop fired in a `codex exec` helper run on 0.164.0-alpha.11.1; payload carries agent_id, agent_type (\"default\") and permission_mode; SubagentStop adds agent_transcript_path (a separate rollout file), stop_hook_active and last_assistant_message.",
+          "kind": "observed",
+          "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "0.164.0-alpha.11.1",
+          "status": "confirmed",
+          "note": "Helpers do run in exec mode (both a.txt and b.txt were written). The helper shares the parent's session_id and has its own turn_id."
+        },
+        "matcher": "agent_type",
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "Interrupt",
+        "when": "user interrupts an active main-thread turn; cannot block; default timeout 1s max 3s",
+        "can_block": false,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "permission_mode"
+        ],
+        "fact": {
+          "claim": "Interrupt is one of the 12 events on the hooks page (matcher: ignored). Not yet seen in a probe.",
+          "kind": "documented",
+          "source": "https://learn.chatgpt.com/docs/hooks",
+          "date": "2026-10-24",
+          "verified_on": null,
+          "status": "confirmed",
+          "note": "Read on the official page 2026-10-24 via a summarizer. Interrupt is documented but a probe has not fired it; the 0.162.0-alpha.2 probe never saw these events. Not fired in the 2026-10-24 probe."
+        },
+        "matcher": null,
+        "timeout_sec": 1,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "PreModelRequest",
+        "when": "around each model request attempt, including retries; observation-only (output logged, never control flow)",
+        "can_block": false,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "agent_id",
+          "agent_type"
+        ],
+        "absent_fields": [
+          "permission_mode"
+        ],
+        "fact": {
+          "claim": "Fired once per model request on 0.164.0-alpha.11.1, in both the main thread and the helper (agent_id and agent_type only inside the helper); payload has turn_id and no permission_mode.",
+          "kind": "observed",
+          "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "0.164.0-alpha.11.1",
+          "status": "confirmed",
+          "note": "New in 0.164.0 (PR #55144, source rust-v0.164.0 hooks/src/events/model_request.rs: observation-only, output never interpreted as control flow). The hooks docs page still lists 12 events and omits this one. timeout_sec 600 is inferred from normalize_command_hook (hooks/src/engine/discovery.rs), not stated in the docs. Sync hooks delay tool dispatch, async ones do not."
+        },
+        "matcher": null,
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      },
+      {
+        "name": "PostModelRequest",
+        "when": "around each model request attempt, including retries; observation-only (output logged, never control flow)",
+        "can_block": false,
+        "payload_fields": [
+          "session_id",
+          "transcript_path",
+          "cwd",
+          "hook_event_name",
+          "model",
+          "turn_id",
+          "status",
+          "error",
+          "token_usage",
+          "agent_id",
+          "agent_type"
+        ],
+        "absent_fields": [
+          "permission_mode"
+        ],
+        "fact": {
+          "claim": "Fired after each model request on 0.164.0-alpha.11.1; payload adds status (completed|failed|cancelled per source), error (null in the probe) and token_usage; no permission_mode.",
+          "kind": "observed",
+          "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "0.164.0-alpha.11.1",
+          "status": "confirmed",
+          "note": "New in 0.164.0 (PR #55144). A failed model call can be seen here (status failed, error); the register has no other model-failure signal. Same timeout inference as PreModelRequest."
+        },
+        "matcher": null,
+        "timeout_sec": 600,
+        "can_rewrite": false,
+        "aliases": []
+      }
+    ],
+    "missing_events": [
+      {
+        "claim": "No tool-failure event: 0.164.0 has 14 events (PreModelRequest and PostModelRequest are new) and none is a failure event; a failing Bash command still arrives as PostToolUse.",
+        "value": {
+          "events": [
+            "PostToolUseFailure"
+          ]
+        },
+        "kind": "documented",
+        "source": "https://github.com/openai/codex/blob/rust-v0.164.0/codex-rs/hooks/src/lib.rs",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Re-checked 2026-10-24 against the HookEventName enum at rust-v0.164.0 (hooks/src/lib.rs) and the live probe on 0.164.0-alpha.11.1. PostModelRequest status/error is the only failure signal, and it concerns model calls."
+      },
+      {
+        "claim": "Hosted tools such as WebSearch get no tool hooks; write_stdin does not re-run PreToolUse; tool hooks are a guardrail, not complete enforcement.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-18",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "PostToolUse carries no exit code for a failed command: tool_response is the bare output string and the exit status is not in the payload (the exec stderr trace showed `exited 1`, the hook did not).",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed"
+      },
+      {
+        "claim": "MessageLifecycleContributor (PR #55657, 0.164.0) is an in-process Rust extension trait with no event name, config key or payload; it is not a hook event.",
+        "value": {
+          "events": []
+        },
+        "kind": "documented",
+        "source": "https://github.com/openai/codex/pull/55657",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Recorded so nobody expects a hook event."
+      }
+    ],
+    "absent_events": [
+      {
+        "claim": "Codex has no PostToolUseFailure event.",
+        "value": [
+          "PostToolUseFailure"
+        ],
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "CoCheck's codex profile never installs it; see discrepancies.json (codex-no-failure-event). Re-checked at rust-v0.164.0 and live on 0.164.0-alpha.11.1."
+      }
+    ],
+    "config_paths": [
+      {
+        "claim": "User scope: ~/.codex/hooks.json or [hooks] tables in ~/.codex/config.toml (CODEX_HOME overrides ~/.codex).",
+        "value": {
+          "scope": "user",
+          "path": "~/.codex/hooks.json"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "User scope TOML form: ~/.codex/config.toml.",
+        "value": {
+          "scope": "user",
+          "path": "~/.codex/config.toml"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Repo scope: <repo>/.codex/hooks.json and <repo>/.codex/config.toml, loaded only when the project .codex layer is trusted. All layers run (additive, not override).",
+        "value": {
+          "scope": "repo",
+          "path": ".codex/hooks.json"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Repo scope TOML form: <repo>/.codex/config.toml, loaded only when the project .codex layer is trusted.",
+        "value": {
+          "scope": "repo",
+          "path": ".codex/config.toml"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Plugin scope: hooks/hooks.json or the \"hooks\" key of .codex-plugin/plugin.json; skipped until trusted (0.164.0 binds approval to plugin contents).",
+        "value": {
+          "scope": "plugin",
+          "path": ".codex-plugin/plugin.json"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Managed scope: requirements.toml [hooks] managed_dir and allow_managed_hooks_only.",
+        "value": {
+          "scope": "managed",
+          "path": "requirements.toml"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      }
+    ],
+    "surfaces": [
+      {
+        "claim": "The codex binary bundled in ChatGPT.app (0.164.0-alpha.11.1) ran hooks in exec mode with a scratch CODEX_HOME.",
+        "value": {
+          "surface": "ChatGPT.app bundled binary (exec mode)",
+          "runs_hooks": true
+        },
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "The ChatGPT.app GUI itself was not driven; whether the desktop app uses the same trust path is unverified."
+      },
+      {
+        "claim": "Local-only Codex and Work threads support hooks; the hooks page does not list the CLI, IDE and desktop app separately. The CLI is the surface CoCheck probed.",
+        "value": {
+          "surface": "CLI (local)",
+          "runs_hooks": true
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "IDE extension and desktop app share the Codex engine and ~/.codex config, so hooks probably run; not stated on the page, not probed. The /hooks trust review UI is CLI-only per the page.",
+        "value": {
+          "surface": "IDE extension / desktop app",
+          "runs_hooks": "unknown"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/codex/ide",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      {
+        "claim": "Work Cloud and cloud orchestration support only admin-managed remote mcp_tool hooks: no command, local, plugin or project hooks.",
+        "value": {
+          "surface": "Work Cloud / cloud orchestration",
+          "runs_hooks": false
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Runs off the Mac; a command hook cannot reach ~/CoCheckData."
+      },
+      {
+        "claim": "Codex cloud tasks (OpenAI containers): no evidence that local hooks run.",
+        "value": {
+          "surface": "Codex cloud tasks",
+          "runs_hooks": "unknown"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "unverified"
+      }
+    ],
+    "skill_and_plugin_paths": [
+      {
+        "claim": "Skills: $CWD/.agents/skills up to the repo root, $HOME/.agents/skills (user), /etc/codex/skills (admin), bundled system skills. The path is .agents/skills, not .codex/skills. Changes are detected; restart if not. A skill cannot register hooks.",
+        "value": {
+          "kind": "skill",
+          "paths": [
+            ".agents/skills",
+            "~/.agents/skills",
+            "/etc/codex/skills"
+          ]
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/build-skills",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "A skill has no run-a-command field: the agent follows SKILL.md and uses its shell tool, subject to sandbox and approval (inference from the page).",
+        "value": {
+          "kind": "skill",
+          "shell": "via agent shell tool"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/build-skills",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      {
+        "claim": "Plugins: .codex-plugin/plugin.json bundles skills, MCP config and hooks (hooks/hooks.json); env PLUGIN_ROOT and PLUGIN_DATA (plus CLAUDE_PLUGIN_* aliases).",
+        "value": {
+          "kind": "plugin",
+          "paths": [
+            ".codex-plugin/plugin.json",
+            "hooks/hooks.json"
+          ]
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/build-skills",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      }
+    ],
+    "sandbox_and_network": [
+      {
+        "claim": "Sandbox modes read-only, workspace-write, danger-full-access; approval on-request, never or granular. Default writable: cwd and /tmp. Extra roots via sandbox_workspace_write.writable_roots. Protected read-only even in workspace-write: .git, .agents, .codex, .aws.",
+        "value": {
+          "kind": "sandbox"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/agent-approvals-security",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Network is off by default (sandbox_workspace_write.network_access = true turns it on); with the network_proxy feature, localhost and private addresses stay blocked unless allow_local_binding or an allow rule.",
+        "value": {
+          "kind": "network"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/agent-approvals-security",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Hook commands run outside the sandbox: all 28 hook calls of a `codex exec -s workspace-write` run ran as uid 501, wrote a file under HOME outside the workspace and reached 127.0.0.1 (HTTP 200).",
+        "value": {
+          "kind": "sandbox",
+          "hooks_sandboxed": false
+        },
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "Only workspace-write was tested; the sandbox applies to model-issued commands, not hooks, so other modes are expected to match. The docs' 'network off, loopback blocked' wording is about agent tool commands, not hooks."
+      },
+      {
+        "claim": "Timeouts and errors are hook failure and the tool still proceeds (fail-open) for PreToolUse; async hooks (max 8 at once) cannot block; plain output above about 2,500 tokens spills to <tmp>/hook_outputs/<session_id>/ unredacted.",
+        "value": {
+          "kind": "timeout"
+        },
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Source read: hook commands spawn as plain child processes ($SHELL -lc <command>, falling back to /bin/sh, current_dir cwd, new session); command_runner.rs contains no sandbox wrapper and dispatcher.rs passes no sandbox policy.",
+        "value": {
+          "kind": "sandbox",
+          "hooks_sandboxed": false
+        },
+        "kind": "documented",
+        "source": "https://github.com/openai/codex/blob/rust-v0.164.0/codex-rs/hooks/src/engine/command_runner.rs",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Agrees with the live probe."
+      }
+    ]
+  },
+  "other_observation_channels": [
+    {
+      "claim": "Rollout file (JSONL) per session under sessions/YYYY/MM/DD/rollout-<local timestamp>-<session uuid>.jsonl; hook payloads carry its path as transcript_path (docs: format not a stable interface).",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Rollout line kinds seen: the session metadata line, event_msg, response_item, world_state, turn_context, token_usage_record. event_msg subtypes seen: task_started, item_completed (UserMessage, AgentMessage, CommandExecution), token_count, task_complete.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed",
+      "note": "Repointed 2026-10-24: the in-repo recording has no Reasoning item (it appeared only in a lost run), so it is no longer listed here."
+    },
+    {
+      "claim": "A CommandExecution item carries id exec-<uuid>, process_id, command (argv incl. /bin/zsh -lc), cwd as file:// URL, parsed_cmd.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "In both calls of the recording, the CommandExecution rollout line timestamp preceded the PostToolUse hook timestamp by about 50 ms (55.093Z vs 55.140Z; 59.302Z vs 59.350Z).",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl with probe:versions/0.162.0-alpha.2/payloads.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "unverified",
+      "note": "Two samples, millisecond-level, rollout line timestamp vs hook ts clock. Suggests the item is written before Post fires; CoCheck's docs list this as unverified. Not enough to rely on. Figures re-read 2026-10-24 from the in-repo recording; the earlier figures (about 20 ms) came from a run record that was lost."
+    },
+    {
+      "claim": "`codex app-server` speaks a JSON-RPC protocol (ClientRequest/ServerNotification etc.); schemas generated locally.",
+      "kind": "observed",
+      "source": "binary:app-server generate-json-schema (output dir not kept in the repo)",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "unverified",
+      "note": "Downgraded: the generated schema folder is not kept, so no in-repo record backs this."
+    },
+    {
+      "claim": "The rollout header (the session metadata line) records originator (codex_exec for exec runs), cli_version, source, model_provider, history_mode \"paginated\".",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "sqlite stores exist beside the rollouts (thread_history_1, state_5, logs_2); `codex migrate-rollouts` mentions moving legacy sessions to paginated thread history.",
+      "kind": "observed",
+      "source": "local:~/.codex (names only); binary:--help",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "unverified",
+      "note": "Their contents were not read. history_mode paginated means the JSONL may stop being the full record on some surfaces: open question."
+    }
+  ],
+  "call_ids": [
+    {
+      "claim": "Hook tool_use_id equals the rollout CommandExecution item id (exec-<uuid>) for both calls in the recording.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl with probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed",
+      "note": "Both calls matched exactly."
+    },
+    {
+      "claim": "It does NOT equal the rollout custom_tool_call call_id (call_<hex>): the model's tool is a custom_tool_call named exec whose input is JS text(await tools.exec_command({cmd:...})), while hooks report tool_name Bash.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Docs say exec_command is matched as Bash for hooks, apply_patch also matches Edit and Write while tool_name stays apply_patch, and spawn_agent matches Agent.",
+      "kind": "documented",
+      "source": "https://learn.chatgpt.com/docs/hooks",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "contradicted",
+      "note": "Live on 0.164.0-alpha.11.1: the spawn tool's tool_name is `collaborationspawn_agent` (and `collaborationwait_agent`), not `spawn_agent`; whether a `spawn_agent` or `Agent` matcher still matches it was not tested. Bash and apply_patch matching is not contradicted."
+    },
+    {
+      "claim": "Hook turn_id equals rollout task_started turn_id.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl with probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "tool_use_id is exec-<uuid> for shell calls and call_<hex> for the collaboration tools; the PreToolUse and PostToolUse ids match; model request events carry only turn_id.",
+      "kind": "observed",
+      "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+      "date": "2026-10-24",
+      "verified_on": "0.164.0-alpha.11.1",
+      "status": "confirmed"
+    }
+  ],
+  "narration_sources": [
+    {
+      "name": "commentary message",
+      "path": "rollout event_msg item_completed AgentMessage phase=commentary (mirrored as response_item message role=assistant phase=commentary)",
+      "readable_at": "pre",
+      "default_on": true,
+      "fact": {
+        "claim": "The model's sentence before each shell call is an AgentMessage with phase \"commentary\", written to the rollout before that call's CommandExecution; in the recording its line timestamp (54.579Z) preceded the PreToolUse hook (55.048Z) by about 0.5 s.",
+        "kind": "observed",
+        "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl with probe:versions/0.162.0-alpha.2/payloads.jsonl",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "confirmed",
+        "note": "Prompt asked for one sentence before each command; unprompted commentary frequency not measured. Whether the line is flushed to disk by the time Pre fires is not proven (file order and timestamp only). CoCheck reads it at Post, which is safe. DOC DIFFERENCE: CoCheck's codex.ts comment says words are written after the call. Figures re-read 2026-10-24 from the in-repo recording; the earlier figures came from a run record that was lost."
+      }
+    },
+    {
+      "name": "final answer message",
+      "path": "rollout AgentMessage phase=final_answer; also Stop hook last_assistant_message",
+      "readable_at": "post",
+      "default_on": true,
+      "fact": {
+        "claim": "The closing text is an AgentMessage phase final_answer and equals Stop payload last_assistant_message.",
+        "kind": "observed",
+        "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl with probe:versions/0.162.0-alpha.2/payloads.jsonl",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "confirmed"
+      }
+    },
+    {
+      "name": "reasoning summary",
+      "path": "rollout event_msg item Reasoning summary_text / response_item reasoning summary",
+      "readable_at": "pre",
+      "default_on": false,
+      "fact": {
+        "claim": "Reasoning items arrive with empty summary_text/summary and an encrypted_content blob even with model_reasoning_summary=\"detailed\" set.",
+        "kind": "observed",
+        "source": "recorded run with model_reasoning_summary=\"detailed\" (scratch config.toml and rollout not kept in the repo)",
+        "date": "2026-10-18",
+        "verified_on": "0.162.0-alpha.2",
+        "status": "unverified",
+        "note": "CONTRADICTS the earlier note that summaries appear when model_reasoning_summary is set: one sample, 13 reasoning tokens, so the model may simply have reasoned too little. Not a usable narration source yet. Source repointed 2026-10-24: the run folder was lost; the in-repo recording has no reasoning item, so this stays unverified."
+      }
+    }
+  ],
+  "session_files": [
+    {
+      "claim": "Sessions live under ~/.codex/sessions/YYYY/MM/DD/ (local date); archived ones under ~/.codex/archived_sessions/ (flat); ~/.codex/session_index.jsonl lines hold id, thread_name, updated_at.",
+      "kind": "observed",
+      "source": "local:~/.codex (names and key types only)",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "The file name is rollout-<YYYY-MM-DD>T<HH-MM-SS>-<session uuid>.jsonl; the session id in hook payloads is the uuid at the end.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Each rollout line is {timestamp, type, payload}.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "A scratch run with CODEX_HOME set wrote its rollouts under that home, and the hook transcript_path pointed there.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/payloads.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    },
+    {
+      "claim": "When Codex policy refuses an exec_command, the rollout records no CommandExecution item for it and its exec-<uuid> id appears nowhere; the only trace is a custom_tool_call_output on the outer exec call whose text is `Script failed ... Script error:\\nexec_command failed: CreateProcess { message: \"Rejected(\\\"`/bin/zsh -lc '<command>'` rejected: <reason>\\\")\" }`. The command is Rust-Debug-escaped twice (newline as \\\\n, quote as \\\", backslash doubled).",
+      "kind": "observed",
+      "source": "local:~/.codex/sessions/2026/10/25/rollout-2026-10-25T11-48-42-01a173bf-f72a-77f1-87ec-82e7276d1799.jsonl line 247 (helper call; reason `rm -f style commands are not permitted`); trimmed copy test/fixtures/codex-refused.jsonl",
+      "date": "2026-10-25",
+      "verified_on": null,
+      "status": "confirmed",
+      "note": "One sample, one reason string. An exec_command that returns early (yield_time_ms) keeps running and prints no Rejected text, so it is no evidence of anything. The Codex version of that run was not recorded. CoCheck reads this text to close the matching open call as `refused`."
+    }
+  ],
+  "helpers_or_subagents": [
+    {
+      "claim": "Subagents exist: the developer message of a root turn says `You are /root, the primary agent in a team`; features multi_agent stable true, multi_agent_v2 false.",
+      "kind": "observed",
+      "source": "probe:versions/0.162.0-alpha.2/sessions/rollout-2026-10-18T11-43-50-01a14fae-faac-7b30-9563-1e1f59fae2c1.jsonl; binary:features list",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed",
+      "note": "No subagent was spawned in our run; role text only."
+    },
+    {
+      "claim": "Helpers are fully attributable: every inner event (PreModelRequest, PostModelRequest, PreToolUse, PostToolUse, SubagentStart, SubagentStop) carries agent_id and agent_type (\"default\"); parent events carry neither. The helper shares the parent's session_id and has its own turn_id. Codex runs helpers in exec mode.",
+      "kind": "observed",
+      "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+      "date": "2026-10-24",
+      "verified_on": "0.164.0-alpha.11.1",
+      "status": "confirmed",
+      "note": "SessionEnd and Interrupt do not fire for subagents (docs)."
+    },
+    {
+      "claim": "Spawning shows on the parent as PreToolUse and PostToolUse for tool_name collaborationspawn_agent, then SubagentStart; the parent's collaborationwait_agent PreToolUse runs while the helper executes, then SubagentStop, then the wait's PostToolUse.",
+      "kind": "observed",
+      "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+      "date": "2026-10-24",
+      "verified_on": "0.164.0-alpha.11.1",
+      "status": "confirmed",
+      "note": "See discrepancies.json codex-spawn-tool-name."
+    }
+  ],
+  "limits_and_timeouts": [
+    {
+      "claim": "Default hook timeout 600 s; SessionEnd and Interrupt default 1 s, max 3 s.",
+      "kind": "documented",
+      "source": "https://learn.chatgpt.com/docs/hooks",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "confirmed"
+    },
+    {
+      "claim": "Plain hook output above about 2,500 tokens is spilled to <temp>/hook_outputs/<session_id>/<uuid>.txt; additionalContextLimit overrides.",
+      "kind": "documented",
+      "source": "https://learn.chatgpt.com/docs/hooks",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "confirmed"
+    },
+    {
+      "claim": "Up to eight async hooks at once per session; async hooks cannot block.",
+      "kind": "documented",
+      "source": "https://learn.chatgpt.com/docs/hooks",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "confirmed"
+    },
+    {
+      "claim": "The binary contains the message 'failed to flush transcript before SessionEnd hook' (and before Interrupt), so the transcript is flushed before those two hooks.",
+      "kind": "observed",
+      "source": "binary:strings (<scratch>/codex-schema/strings.txt)",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "unverified",
+      "note": "A string only. No equivalent message was found for Pre/Post/Stop; flush timing before those is unknown."
+    }
+  ],
+  "update_channel": [
+    {
+      "claim": "GitHub releases at github.com/openai/codex use tags rust-v<version>; stable rust-v0.163.0 published 2026-10-15; prerelease rust-v0.164.0-alpha.3 published 2026-10-17. Local 0.162.0-alpha.2 is an alpha build older than the stable.",
+      "kind": "documented",
+      "source": "https://api.github.com/repos/openai/codex/releases/latest",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "confirmed",
+      "note": "Release bodies were truncated in the fetch; no hook-related notes read."
+    },
+    {
+      "claim": "`codex update` exists; local daemon release layout has `current` symlink and install.lock; ~/.codex/version.json tracks latest_version.",
+      "kind": "observed",
+      "source": "binary:--help; local:~/.codex/packages/app-server-daemon",
+      "date": "2026-10-18",
+      "verified_on": "0.162.0-alpha.2",
+      "status": "confirmed"
+    }
+  ],
+  "open_questions": [
+    "Do hooks run with no [features] section at all (docs and `features list` say default on)? Needs a fenced run with trust bypass and no features key.",
+    "Is the commentary line flushed to disk by the time PreToolUse fires (would let CoCheck read narration at Pre)? Needs a tight read loop inside a hook.",
+    "Is the CommandExecution item on disk when PostToolUse fires? Two samples say yes by ~20 ms; CoCheck's docs list it unverified.",
+    "How does tool_input look for apply_patch and MCP tools in real payloads? Only Bash recorded.",
+    "Does a reasoning summary ever appear with model_reasoning_summary set? One empty sample.",
+    "Does history_mode paginated change where the rollout is written or whether it is complete on the Desktop app?",
+    "ChatGPT.app bundles codex-cli 0.162.0-alpha.2 (chatgpt-work record); is that binary or the ~/.codex/packages daemon release the one the desktop app runs?",
+    "Which Codex surfaces besides the CLI (IDE, desktop app) run hooks: not stated on the hooks page.",
+    "PermissionRequest, PreCompact, PostCompact and Interrupt never fired in the 2026-10-24 probe (the script triggered none); their live payloads are unseen.",
+    "Hooks outside the sandbox was tested under -s workspace-write only; read-only and danger-full-access modes were not run.",
+    "ChatGPT.app GUI surface not driven: does it run hooks and show a trust prompt? Which trust store (hooks.state in ~/.codex/config.toml) does it use?",
+    "Does a `spawn_agent` or `Agent` matcher match the live tool name collaborationspawn_agent?",
+    "Do Pre/PostModelRequest ever fire without agent_id on retries, and how many fire per retried request? Only the clean path was seen."
+  ]
+}

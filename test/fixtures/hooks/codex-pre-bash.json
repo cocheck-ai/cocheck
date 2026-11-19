@@ -1,0 +1,1 @@
+{"session_id":"019a-codex-session","turn_id":"turn-1","transcript_path":"/Users/example/.codex/sessions/2026/10/07/rollout.jsonl","cwd":"/sandbox/task","hook_event_name":"PreToolUse","model":"gpt-5-codex","tool_name":"Bash","tool_input":{"command":"python3 bump_prices.py"},"tool_use_id":"call_01PRE"}

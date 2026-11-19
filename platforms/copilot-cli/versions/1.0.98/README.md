@@ -1,0 +1,10 @@
+# copilot-cli 1.0.98 probe
+
+Made by scripted `copilot -p` runs (prompt in prompt.txt: create a file, run a failing `ls`, delegate to a custom agent `writer`, delegate to the built-in general-purpose agent via the task tool, reply) in scratch workspaces with a scratch `COPILOT_HOME` (keychain auth kept; the real ~/.copilot was not touched). A probe hook appended its stdin plus an outside-workspace write result and a localhost curl status to a log per event.
+- hook-calls-camel.jsonl: main run (camelCase `.github/hooks`), lines 1 to 30 with the default sandbox-off setting; lines 31 onward are a run with `--sandbox` and `sandbox.userPolicy.filesystem.readwritePaths` granting the scratch folder (outside_write fail, curl 200).
+- hook-calls-pascal.jsonl: PascalCase events in `.claude/settings.json` format (includes a view of a missing path, which fired PostToolUseFailure).
+- hook-calls-gh.jsonl and hook-calls-cl.jsonl: the double-fire run, a camelCase `.github/hooks` probe and a PascalCase `.claude/settings.json` probe in one workspace (gh = camelCase file, cl = Claude-format file); also holds the failing `ls` and a missing-path view.
+- out-sandbox-no-policy.txt: CLI output of a `--sandbox` run with no policy; every hook failed with exit 126 (fail-open).
+Recorded here as absences or debug-log facts, with no file showing them: (a) the first run, in a folder not yet in `trustedFolders`, produced no hook log until the scratch workspaces were added to the scratch config.json (untrusted folders skip repo hooks silently); (b) the CLI debug logs of the default runs show `"sandbox":false` on 66 lines, and `copilot help sandbox` says the sandbox is off by default.
+Trimmed for the repo: the logged environment-variable name field was removed from every line, scratch paths became `<scratch>`, the developer home folder became `/Users/<user>`.
+Not exercised: preCompact, errorOccurred, notification, agentStop blocking, --fleet, http hooks. VS Code was not run from the CLI, see copilot-vscode.

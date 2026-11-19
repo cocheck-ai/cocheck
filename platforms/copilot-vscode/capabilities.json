@@ -1,0 +1,693 @@
+{
+  "schema": 1,
+  "platform": "copilot-vscode",
+  "name": "GitHub Copilot in VS Code (agent mode hooks)",
+  "vendor": "GitHub / Microsoft",
+  "surfaces": [
+    "vscode-agent-mode"
+  ],
+  "checked_on": "2026-10-24",
+  "versions_seen": [
+    {
+      "version": "1.140.0",
+      "where": "VS Code app (Copilot harness); the tester ran the scripted agent-mode session by hand at 18:10 EDT in a scratch folder with a repo .github/hooks probe (probe:versions/1.140.0/)",
+      "date": "2026-10-24"
+    }
+  ],
+  "cocheck_relevance": "CoCheck shares the Copilot CLI profile and install file for VS Code agent mode (VS Code reading ~/.copilot/hooks is documented, not probed: copilot-vscode-reads-user-hooks-unverified). Calls inside a subagent carry no agentId and arrive under the subagent's own sessionId: CoCheck links them to the main session by the launching task call's prompt, else holds them until the main session's subagentStop names the helper (src/copilot-helpers.ts), and drops them when the main session is untracked.",
+  "install": [],
+  "processes_and_paths": [],
+  "auth": [],
+  "hooks": {
+    "available": {
+      "claim": "VS Code agent mode runs Copilot hooks; the page is marked Preview.",
+      "kind": "documented",
+      "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+      "date": "2026-10-24",
+      "verified_on": null,
+      "status": "confirmed",
+      "note": "Not run on this Mac; nothing probed."
+    },
+    "config": [
+      {
+        "claim": "The VS Code Copilot harness reads ~/.copilot/hooks ($COPILOT_HOME), .github/hooks/*.json, inline hooks in .github/copilot/settings(.local).json and ~/.copilot/settings.json, repo .claude/settings.json and .claude/settings.local.json, plugins and agent frontmatter hooks.",
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Whether VS Code also reads ~/.claude/settings.json: not listed on the page.",
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      {
+        "claim": "VS Code has a separate 'Claude session target' with its own hook implementation that uses Claude Code's own config.",
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "VS Code 1.140.0 loaded and ran a repo .github/hooks probe in a scratch folder (workspace-level hooks work in agent mode).",
+        "kind": "observed",
+        "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.140.0",
+        "status": "confirmed",
+        "note": "Folder was opened by hand in the tester's VS Code; workspace trust and tool approvals were clicked through."
+      },
+      {
+        "claim": "Whether VS Code reads ~/.copilot/hooks was not tested (it would need the directory in the tester's real home); the page lists it.",
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "unverified"
+      },
+      {
+        "claim": "The older VS Code Local harness has eight events (PreToolUse, PostToolUse, UserPromptSubmit, SessionStart, Stop, SubagentStart, SubagentStop, PreCompact) on a different schema, for migration only; it explains older material listing fewer events.",
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/agents/reference/hooks-reference",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      }
+    ],
+    "trust_or_approval": [
+      {
+        "claim": "Claude and Codex harnesses are disabled when enterprise-managed Copilot settings apply.",
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      }
+    ],
+    "events": [
+      {
+        "name": "sessionStart",
+        "when": "new/resumed session begins",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": null,
+        "aliases": [
+          "SessionStart"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "source",
+          "initialPrompt"
+        ],
+        "fact": {
+          "claim": "sessionStart fired in VS Code 1.140.0 agent mode with the CLI's camelCase payload (sessionId, timestamp, cwd, source, initialPrompt).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "can_block, can_rewrite, timeout (30 s) and matcher are inherited from the shared GitHub reference and were not tested in VS Code; whether VS Code honors `matcher` is unverified (no page read 2026-10-24 says it is ignored, which an earlier register entry claimed). Order differs from the CLI: sessionStart fired after userPromptSubmitted and userPromptTransformed in VS Code."
+        }
+      },
+      {
+        "name": "userPromptSubmitted",
+        "when": "user prompt submitted",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": null,
+        "aliases": [
+          "UserPromptSubmit"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "prompt"
+        ],
+        "fact": {
+          "claim": "userPromptSubmitted fired in VS Code 1.140.0 agent mode with the CLI's camelCase payload (sessionId, timestamp, cwd, prompt).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "can_block, can_rewrite, timeout (30 s) and matcher are inherited from the shared GitHub reference and were not tested in VS Code; whether VS Code honors `matcher` is unverified (no page read 2026-10-24 says it is ignored, which an earlier register entry claimed)."
+        }
+      },
+      {
+        "name": "preToolUse",
+        "when": "before each tool call",
+        "can_block": true,
+        "can_rewrite": true,
+        "timeout_sec": 30,
+        "matcher": "toolName (regex, anchored)",
+        "aliases": [
+          "PreToolUse"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "toolName",
+          "toolArgs"
+        ],
+        "absent_fields": [
+          "toolCallId",
+          "tool_use_id",
+          "toolUseId"
+        ],
+        "fact": {
+          "claim": "preToolUse fired in VS Code 1.140.0 agent mode with the CLI's camelCase payload (sessionId, timestamp, cwd, toolName, toolArgs).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "can_block, can_rewrite, timeout (30 s) and matcher are inherited from the shared GitHub reference and were not tested in VS Code; whether VS Code honors `matcher` is unverified (no page read 2026-10-24 says it is ignored, which an earlier register entry claimed)."
+        }
+      },
+      {
+        "name": "postToolUse",
+        "when": "after each tool call",
+        "can_block": false,
+        "can_rewrite": true,
+        "timeout_sec": 30,
+        "matcher": "toolName (regex, anchored)",
+        "aliases": [
+          "PostToolUse"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "toolName",
+          "toolArgs",
+          "toolResult"
+        ],
+        "absent_fields": [
+          "toolCallId",
+          "tool_use_id",
+          "toolUseId"
+        ],
+        "fact": {
+          "claim": "postToolUse fired in VS Code 1.140.0 agent mode with the CLI's camelCase payload (sessionId, timestamp, cwd, toolName, toolArgs, toolResult).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "can_block, can_rewrite, timeout (30 s) and matcher are inherited from the shared GitHub reference and were not tested in VS Code; whether VS Code honors `matcher` is unverified (no page read 2026-10-24 says it is ignored, which an earlier register entry claimed). A failing `ls` arrived as postToolUse resultType success with the exit code only in the text, as in the CLI. No tool call id in any payload."
+        }
+      },
+      {
+        "name": "preCompact",
+        "when": "before context compaction",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": "trigger",
+        "aliases": [
+          "PreCompact"
+        ],
+        "payload_fields": [],
+        "unverified_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "transcriptPath",
+          "trigger",
+          "customInstructions"
+        ],
+        "fact": {
+          "claim": "preCompact is named on the VS Code hooks page (Preview). The page defers the full schema to the GitHub hooks reference, so payload fields, blocking and rewriting are inherited from the CLI record and unverified for VS Code.",
+          "kind": "documented",
+          "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+          "date": "2026-10-24",
+          "verified_on": null,
+          "status": "confirmed",
+          "note": "Per the page the PreToolUse alias uses snake_case payloads with Claude tool names. Whether VS Code's per-event input differs from the CLI's is not read. Not fired in the 2026-10-24 probe; still documented-only."
+        }
+      },
+      {
+        "name": "subagentStart",
+        "when": "subagent starts",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": "agentName",
+        "aliases": [],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "transcriptPath",
+          "agentName",
+          "agentDescription"
+        ],
+        "fact": {
+          "claim": "subagentStart fired in VS Code 1.140.0 agent mode with the CLI's camelCase payload (sessionId, timestamp, cwd, transcriptPath, agentName, agentDescription).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "can_block, can_rewrite, timeout (30 s) and matcher are inherited from the shared GitHub reference and were not tested in VS Code; whether VS Code honors `matcher` is unverified (no page read 2026-10-24 says it is ignored, which an earlier register entry claimed). subagentStart carries no agentId or parentAgentId here (unlike the CLI) and fired for both the custom and the built-in general-purpose agent."
+        }
+      },
+      {
+        "name": "subagentStop",
+        "when": "subagent finishes",
+        "can_block": true,
+        "can_rewrite": true,
+        "timeout_sec": 30,
+        "matcher": null,
+        "aliases": [
+          "SubagentStop"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "transcriptPath",
+          "agentId",
+          "agentType",
+          "agentName",
+          "response",
+          "stopReason"
+        ],
+        "fact": {
+          "claim": "subagentStop fired in VS Code 1.140.0 agent mode with the CLI's camelCase payload (sessionId, timestamp, cwd, transcriptPath, agentId, agentType, agentName, response, stopReason).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "can_block, can_rewrite, timeout (30 s) and matcher are inherited from the shared GitHub reference and were not tested in VS Code; whether VS Code honors `matcher` is unverified (no page read 2026-10-24 says it is ignored, which an earlier register entry claimed). agentId equals the sessionId the subagent's inner calls ran under, so subagentStop is where the link to the parent sessionId appears."
+        }
+      },
+      {
+        "name": "agentStop",
+        "when": "main agent finishes responding",
+        "can_block": true,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": null,
+        "aliases": [
+          "Stop"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "transcriptPath",
+          "stopReason",
+          "stop_hook_active"
+        ],
+        "fact": {
+          "claim": "agentStop fired in VS Code 1.140.0 agent mode with the CLI's camelCase payload (sessionId, timestamp, cwd, transcriptPath, stopReason, stop_hook_active).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "can_block, can_rewrite, timeout (30 s) and matcher are inherited from the shared GitHub reference and were not tested in VS Code; whether VS Code honors `matcher` is unverified (no page read 2026-10-24 says it is ignored, which an earlier register entry claimed). Also fires for each subagent, under the subagent's own sessionId, with the parent's transcriptPath."
+        }
+      },
+      {
+        "name": "sessionEnd",
+        "when": "session ends",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": null,
+        "aliases": [
+          "SessionEnd"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "reason"
+        ],
+        "fact": {
+          "claim": "sessionEnd fired in VS Code 1.140.0 agent mode with the CLI's camelCase payload (sessionId, timestamp, cwd, reason).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "can_block, can_rewrite, timeout (30 s) and matcher are inherited from the shared GitHub reference and were not tested in VS Code; whether VS Code honors `matcher` is unverified (no page read 2026-10-24 says it is ignored, which an earlier register entry claimed)."
+        }
+      },
+      {
+        "name": "userPromptTransformed",
+        "when": "after the prompt is transformed for the model",
+        "can_block": false,
+        "can_rewrite": true,
+        "timeout_sec": 30,
+        "matcher": null,
+        "aliases": [],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "prompt",
+          "transformedPrompt"
+        ],
+        "fact": {
+          "claim": "userPromptTransformed fired in VS Code 1.140.0 (camelCase; prompt plus transformedPrompt with a <current_datetime> prefix), also inside subagents.",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "Not in the VS Code docs page's nine events; not 'CLI only'. Rewrite via modifiedTransformedPrompt is inherited from the CLI reference, untested here."
+        }
+      },
+      {
+        "name": "permissionRequest",
+        "when": "tool permission prompt",
+        "can_block": true,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": "toolName (regex, anchored)",
+        "aliases": [
+          "PermissionRequest"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "hookName",
+          "toolName",
+          "toolInput",
+          "permissionSuggestions"
+        ],
+        "fact": {
+          "claim": "permissionRequest fired in VS Code 1.140.0 for edit and bash (hookName, toolName, toolInput, permissionSuggestions); inside a subagent it keeps the parent sessionId.",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "Blocking inherited from the CLI reference, untested here."
+        },
+        "absent_fields": [
+          "toolCallId",
+          "tool_use_id",
+          "toolUseId"
+        ]
+      },
+      {
+        "name": "notification",
+        "when": "notification; seen for permission_prompt",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": "notification_type",
+        "aliases": [
+          "Notification"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "message",
+          "title",
+          "hook_event_name",
+          "notification_type"
+        ],
+        "fact": {
+          "claim": "notification fired in VS Code 1.140.0 with notification_type permission_prompt, title 'Permission needed', hook_event_name \"Notification\" (camelCase payload otherwise).",
+          "kind": "observed",
+          "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+          "date": "2026-10-24",
+          "verified_on": "1.140.0",
+          "status": "confirmed",
+          "note": "Not seen in the CLI -p probe. Other notification_type values were not triggered."
+        }
+      },
+      {
+        "name": "postToolUseFailure",
+        "when": "after a failed tool call",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": null,
+        "aliases": [
+          "PostToolUseFailure"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "toolName",
+          "toolArgs",
+          "error"
+        ],
+        "fact": {
+          "claim": "postToolUseFailure is documented in the shared GitHub reference; VS Code 1.140.0 did not fire it in the probe (no tool-level failure occurred, the failing shell command arrived as postToolUse success).",
+          "kind": "documented",
+          "source": "https://docs.github.com/en/copilot/reference/hooks-reference",
+          "date": "2026-10-24",
+          "verified_on": null,
+          "status": "unverified",
+          "note": "The VS Code page says the harness and hook format are shared with the CLI but states no per-event support."
+        },
+        "absent_fields": [
+          "toolCallId",
+          "tool_use_id",
+          "toolUseId"
+        ]
+      },
+      {
+        "name": "errorOccurred",
+        "when": "an error occurs",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": 30,
+        "matcher": null,
+        "aliases": [
+          "ErrorOccurred"
+        ],
+        "payload_fields": [
+          "sessionId",
+          "timestamp",
+          "cwd",
+          "error",
+          "errorContext",
+          "recoverable"
+        ],
+        "fact": {
+          "claim": "errorOccurred is documented in the shared GitHub reference; not fired in the VS Code 1.140.0 probe.",
+          "kind": "documented",
+          "source": "https://docs.github.com/en/copilot/reference/hooks-reference",
+          "date": "2026-10-24",
+          "verified_on": null,
+          "status": "unverified",
+          "note": "No source states outright that VS Code fires it; treat as probable, not missing."
+        }
+      }
+    ],
+    "missing_events": [
+      {
+        "claim": "postToolUseFailure and errorOccurred were not seen in VS Code 1.140.0 and no source says VS Code lacks them; listed as events with status unverified. The earlier register list of five 'missing' events was wrong for userPromptTransformed, permissionRequest and notification, which fire live.",
+        "value": {
+          "events": [
+            "postToolUseFailure",
+            "errorOccurred"
+          ]
+        },
+        "kind": "observed",
+        "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.140.0",
+        "status": "unverified",
+        "note": "The VS Code page names nine events and defers to the GitHub reference for the rest (documentation lag; VS Code 1.141 to 1.143 release notes have no hook items)."
+      }
+    ],
+    "absent_events": [],
+    "config_paths": [
+      {
+        "claim": "User scope: ~/.copilot/hooks/*.json and ~/.copilot/settings.json.",
+        "value": {
+          "scope": "user",
+          "path": "~/.copilot/hooks/*.json"
+        },
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Repo scope: .github/hooks/*.json and .github/copilot/settings(.local).json.",
+        "value": {
+          "scope": "repo",
+          "path": ".github/hooks/*.json"
+        },
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Repo scope, Claude Code's files: .claude/settings.json and .claude/settings.local.json.",
+        "value": {
+          "scope": "repo",
+          "path": ".claude/settings.json"
+        },
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "Plugin scope: plugin hooks.json.",
+        "value": {
+          "scope": "plugin",
+          "path": "hooks.json"
+        },
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      }
+    ],
+    "surfaces": [
+      {
+        "claim": "VS Code agent mode ran command hooks (observed 1.140.0, repo .github/hooks); the page marks the feature Preview.",
+        "value": {
+          "surface": "VS Code agent mode",
+          "runs_hooks": true
+        },
+        "kind": "observed",
+        "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.140.0",
+        "status": "confirmed",
+        "note": "An earlier entry said the VS Code parser ignores matcher values; no page read 2026-10-24 says so and it was not tested, so matcher handling is unverified."
+      },
+      {
+        "claim": "VS Code Claude session target: runs Claude Code's own hook implementation, not Copilot's.",
+        "value": {
+          "surface": "VS Code Claude session target",
+          "runs_hooks": true
+        },
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      }
+    ],
+    "skill_and_plugin_paths": [
+      {
+        "claim": "Agent Skills: project .github/skills/, .claude/skills/, .agents/skills/; personal ~/.copilot/skills/, ~/.agents/skills/ and ~/.claude/skills/.",
+        "value": {
+          "kind": "skill",
+          "paths": [
+            ".github/skills",
+            ".claude/skills",
+            ".agents/skills",
+            "~/.copilot/skills",
+            "~/.agents/skills",
+            "~/.claude/skills"
+          ]
+        },
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/agent-skills",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed"
+      }
+    ],
+    "sandbox_and_network": [
+      {
+        "claim": "Hooks wrote a file under HOME outside the workspace and reached 127.0.0.1 (HTTP 200) on every one of 36 calls in VS Code 1.140.0 agent mode.",
+        "value": {
+          "kind": "sandbox",
+          "hooks_sandboxed": false
+        },
+        "kind": "observed",
+        "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.140.0",
+        "status": "confirmed",
+        "note": "Whether VS Code has a sandbox setting that would change this was not tested."
+      }
+    ]
+  },
+  "other_observation_channels": [
+    {
+      "claim": "VS Code chat session JSON under workspaceStorage (chatSessions): from memory, no official page read.",
+      "kind": "documented",
+      "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+      "date": "2026-10-24",
+      "verified_on": null,
+      "status": "unverified"
+    }
+  ],
+  "call_ids": [
+    {
+      "claim": "No per-call id is documented for the shared Copilot hook payload; VS Code input beyond the shared reference was not read.",
+      "kind": "documented",
+      "source": "https://docs.github.com/en/copilot/reference/hooks-reference",
+      "date": "2026-10-24",
+      "verified_on": null,
+      "status": "unverified"
+    },
+    {
+      "claim": "No tool call id in any of the 36 VS Code 1.140.0 hook payloads; id-like fields are sessionId, and agentId only at subagentStop.",
+      "kind": "observed",
+      "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+      "date": "2026-10-24",
+      "verified_on": "1.140.0",
+      "status": "confirmed"
+    }
+  ],
+  "narration_sources": [],
+  "session_files": [],
+  "helpers_or_subagents": [
+    {
+      "claim": "subagentStart and subagentStop fired for both the custom agent `writer` and the built-in general-purpose agent (task tool) in VS Code 1.140.0, contradicting the docs for the built-in agent.",
+      "kind": "observed",
+      "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+      "date": "2026-10-24",
+      "verified_on": "1.140.0",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Subagent attribution differs from the CLI: calls inside a subagent carry no agentId or parentAgentId; they arrive under the subagent's own sessionId (userPromptSubmitted, userPromptTransformed, preToolUse, postToolUse, agentStop). The link to the parent appears only at subagentStop (its agentId equals that inner sessionId, its sessionId is the parent's) or earlier through permissionRequest, which keeps the parent sessionId. subagentStart carries no id.",
+      "kind": "observed",
+      "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+      "date": "2026-10-24",
+      "verified_on": "1.140.0",
+      "status": "confirmed",
+      "note": "For default-off tracking the inner calls arrive under a session id CoCheck has never seen, so they must be held until the subagent links back."
+    }
+  ],
+  "limits_and_timeouts": [],
+  "update_channel": [],
+  "open_questions": [
+    "Does VS Code read ~/.copilot/hooks? Not tested (needs the directory in the tester's real home).",
+    "Does VS Code honor `matcher`? Untested; the earlier 'ignored' claim had no source.",
+    "preCompact, postToolUseFailure and errorOccurred did not fire in the 1.140.0 probe; blocking, rewriting and timeout behavior in VS Code are inherited from the CLI reference, untested.",
+    "Does a VS Code sandbox setting change hook write or network access?",
+    "Whether VS Code reads ~/.claude/settings.json.",
+    "Other IDEs (JetBrains, Xcode): hooks not found.",
+    "MCP config paths for VS Code (.vscode/mcp.json, user mcp.json) are from memory, not read."
+  ]
+}

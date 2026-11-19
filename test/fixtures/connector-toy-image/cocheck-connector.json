@@ -1,0 +1,10 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "toy-image",
+  "version": "0.0.1",
+  "entry": "state",
+  "matches": { "extensions": [".toy"] },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "platforms": ["darwin", "win32", "linux"]
+}

@@ -1,0 +1,9 @@
+S=/private/tmp/claude-501/-Users-user-Desktop-proj-run-14-claude/571b34c1-382c-45fa-9d37-72abfbd4e497/workdir; D=/Users/user/Desktop/proj-run-14/claude/econ_data
+osascript -e 'tell application "Microsoft Excel" to close active workbook saving no'
+for i in 1 2 3; do cp $S/chart$i.png $D/chart$i.png; done
+cd $D; python3 -c "
+import pandas as pd
+i=pd.read_csv('us_inflation.csv',parse_dates=['date']).set_index('date');print(i.cpi_yoy_pct['2022'].max(),i.loc['2026-05':'2026-09'].iloc[:,4:])
+r=pd.read_csv('us_real_interest_rates.csv',parse_dates=['date']).set_index('date');print(r.real_fed_funds_expost_pct.loc['2021':'2022'].min(), r.loc['2026-01':'2026-09',['real_fed_funds_expost_pct','tips_10y_real_yield_pct']].T)
+g=pd.read_csv('us_gdp.csv');print(g.real_gdp_growth_yoy_pct['2015':].describe() if False else g.tail(8)[['date','real_gdp_growth_yoy_pct']])"
+ls /Users/user/.claude/skills/synced/*/pptx/scripts | head

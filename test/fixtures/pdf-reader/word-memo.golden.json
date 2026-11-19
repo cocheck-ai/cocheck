@@ -1,0 +1,539 @@
+{
+ "pages": [
+  {
+   "index": 1,
+   "width": 1224,
+   "height": 1584,
+   "runs": [
+    {
+     "text": "MEMO",
+     "x": 180,
+     "y": 144.1,
+     "w": 62.99,
+     "h": 26.95,
+     "chars": [
+      {
+       "c": "M",
+       "x": 180,
+       "y": 144.1,
+       "w": 18.83,
+       "h": 26.95
+      },
+      {
+       "c": "E",
+       "x": 198.83,
+       "y": 144.1,
+       "w": 10.72,
+       "h": 26.95
+      },
+      {
+       "c": "M",
+       "x": 209.59,
+       "y": 144.1,
+       "w": 18.83,
+       "h": 26.95
+      },
+      {
+       "c": "O",
+       "x": 228.42,
+       "y": 144.1,
+       "w": 14.56,
+       "h": 26.95
+      }
+     ]
+    },
+    {
+     "text": "To: Operations team",
+     "x": 180,
+     "y": 194.98,
+     "w": 184.1,
+     "h": 26.95
+    },
+    {
+     "text": "From: Finance",
+     "x": 180,
+     "y": 245.86,
+     "w": 126.95,
+     "h": 26.95
+    },
+    {
+     "text": "Date: 2026-01-15",
+     "x": 180,
+     "y": 296.74,
+     "w": 155.97,
+     "h": 26.95
+    },
+    {
+     "text": "Subject: Northwind Industrial plant throughput, fourth quarter",
+     "x": 180,
+     "y": 347.62,
+     "w": 560.41,
+     "h": 26.95
+    },
+    {
+     "text": "Bottom line",
+     "x": 180,
+     "y": 426.61,
+     "w": 137.11,
+     "h": 33.98
+    },
+    {
+     "text": "Northwind Industrial raised plant throughput by 12 percent over the fourth quarter, from",
+     "x": 180,
+     "y": 465.7,
+     "w": 798.95,
+     "h": 26.95
+    },
+    {
+     "text": "41,200 to 46,100 units, while scrap fell from 3.1 percent to 2.4 percent. The gain came mostly",
+     "x": 180,
+     "y": 496.9,
+     "w": 836.32,
+     "h": 26.95
+    },
+    {
+     "text": "from the second assembly line, which ran two full shifts for the first time.",
+     "x": 180,
+     "y": 527.62,
+     "w": 654.33,
+     "h": 26.95
+    },
+    {
+     "text": "Assembly line two",
+     "x": 180,
+     "y": 606.61,
+     "w": 212.46,
+     "h": 33.98
+    },
+    {
+     "text": "Line two produced 21,800 units in the quarter against a plan of 19,500. Changeover time",
+     "x": 180,
+     "y": 645.7,
+     "w": 792.2,
+     "h": 26.95
+    },
+    {
+     "text": "dropped from 38 minutes to 26 after the fixture rack was moved next to the press. Maintenance",
+     "x": 180,
+     "y": 676.9,
+     "w": 861.12,
+     "h": 26.95
+    },
+    {
+     "text": "logged four stoppages, all under an hour.",
+     "x": 180,
+     "y": 707.62,
+     "w": 368.01,
+     "h": 26.95
+    },
+    {
+     "text": "Scrap and rework",
+     "x": 180,
+     "y": 786.61,
+     "w": 203.54,
+     "h": 33.98
+    },
+    {
+     "text": "Scrap fell by 0.7 points. Most of the improvement is in the bracket family, where the new gauge",
+     "x": 180,
+     "y": 825.7,
+     "w": 855.45,
+     "h": 26.95
+    },
+    {
+     "text": "catches out-of-tolerance parts before paint. Rework hours are flat at about 310 per month.",
+     "x": 180,
+     "y": 856.42,
+     "w": 813.76,
+     "h": 26.95
+    },
+    {
+     "text": "Next steps",
+     "x": 180,
+     "y": 935.41,
+     "w": 122.57,
+     "h": 33.98
+    },
+    {
+     "text": "Extend the second-shift schedule to line three in February, and review the bracket gauge results",
+     "x": 180,
+     "y": 974.98,
+     "w": 857.52,
+     "h": 26.95
+    },
+    {
+     "text": "at the end of March before buying a second unit.",
+     "x": 180,
+     "y": 1005.7,
+     "w": 437.36,
+     "h": 26.95
+    }
+   ]
+  }
+ ],
+ "find": {
+  "pages": [
+   {
+    "index": 1,
+    "width": 1224,
+    "height": 1584
+   }
+  ],
+  "results": [
+   {
+    "id": "0",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 144.1,
+       "w": 63,
+       "h": 27
+      },
+      "highlights": [
+       {
+        "x": 198.8,
+        "y": 144.1,
+        "w": 10.7,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "1",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 195,
+       "w": 184.1,
+       "h": 27
+      },
+      "highlights": [
+       {
+        "x": 239.3,
+        "y": 195,
+        "w": 53.2,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "2",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 245.9,
+       "w": 127,
+       "h": 27
+      },
+      "highlights": [
+       {
+        "x": 227,
+        "y": 245.9,
+        "w": 26,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "3",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 296.7,
+       "w": 156,
+       "h": 27
+      },
+      "highlights": [
+       {
+        "x": 233.3,
+        "y": 296.7,
+        "w": 44.6,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "4",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 347.6,
+       "w": 560.4,
+       "h": 27
+      },
+      "highlights": [
+       {
+        "x": 363.8,
+        "y": 347.6,
+        "w": 184.8,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "5",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 426.6,
+       "w": 137.1,
+       "h": 34
+      },
+      "highlights": [
+       {
+        "x": 220.4,
+        "y": 426.6,
+        "w": 47.5,
+        "h": 34
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "6",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 465.7,
+       "w": 836.3,
+       "h": 88.9
+      },
+      "highlights": [
+       {
+        "x": 949.8,
+        "y": 465.7,
+        "w": 29.2,
+        "h": 27
+       },
+       {
+        "x": 180,
+        "y": 496.9,
+        "w": 732.1,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "7",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 606.6,
+       "w": 212.5,
+       "h": 34
+      },
+      "highlights": [
+       {
+        "x": 256.2,
+        "y": 606.6,
+        "w": 55.3,
+        "h": 34
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "8",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 645.7,
+       "w": 861.1,
+       "h": 88.9
+      },
+      "highlights": [
+       {
+        "x": 842.7,
+        "y": 645.7,
+        "w": 129.5,
+        "h": 27
+       },
+       {
+        "x": 180,
+        "y": 676.9,
+        "w": 554.4,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "9",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 786.6,
+       "w": 203.5,
+       "h": 34
+      },
+      "highlights": [
+       {
+        "x": 250.1,
+        "y": 786.6,
+        "w": 43.8,
+        "h": 34
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "10",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 825.7,
+       "w": 855.4,
+       "h": 57.7
+      },
+      "highlights": [
+       {
+        "x": 723.3,
+        "y": 825.7,
+        "w": 312.2,
+        "h": 27
+       },
+       {
+        "x": 180,
+        "y": 856.4,
+        "w": 254.7,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "11",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 935.4,
+       "w": 122.6,
+       "h": 34
+      },
+      "highlights": [
+       {
+        "x": 225.4,
+        "y": 935.4,
+        "w": 27.2,
+        "h": 34
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "12",
+    "found": true,
+    "pass": "strict",
+    "pagebreak": false,
+    "segments": [
+     {
+      "page": 1,
+      "rect": {
+       "x": 180,
+       "y": 975,
+       "w": 857.5,
+       "h": 57.7
+      },
+      "highlights": [
+       {
+        "x": 600.7,
+        "y": 975,
+        "w": 436.8,
+        "h": 27
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "crops": [
+  {
+   "x": 156,
+   "y": 127,
+   "w": 908,
+   "h": 928,
+   "pageWidth": 1224,
+   "pageHeight": 1584,
+   "pixelsAreThePagesOwn": true
+  }
+ ]
+}

@@ -1,0 +1,103 @@
+from pathlib import Path
+import csv, json, sys
+from datetime import datetime
+from statistics import mean
+import xlsxwriter
+
+ROOT = Path(__file__).resolve().parent
+OUT = ROOT / 'outputs' / 'nwdata_review'
+OUT.mkdir(parents=True, exist_ok=True)
+extended = '--extend' in sys.argv
+def read(name, key):
+    with (ROOT/'data'/name).open() as f:
+        return {datetime.fromisoformat(next(iter(r.values()))): float(r[key]) if r[key] not in ('', '.') else None for r in csv.DictReader(f)}
+u = read('unemployment.csv', 'NWUNEMP')
+c = read('cpi_2015_2025.csv', 'NWCPI')
+dates = sorted(d for d in u if extended or d.year >= 2015)
+assert len(dates) == (144 if extended else 132)
+path = OUT/'us_unemployment_cpi.xlsx'
+w = xlsxwriter.Workbook(path)
+w.set_properties({'title':'US unemployment and CPI', 'comments':'NWDATA monthly seasonally adjusted data. Built with Python.'})
+charts = w.add_worksheet('Charts')
+data = w.add_worksheet('Data')
+body = w.add_format({'font_name':'Arial','font_size':10,'font_color':'#243247'})
+title = w.add_format({'font_name':'Arial','font_size':16,'bold':True,'font_color':'#243247','bottom':1,'bottom_color':'#A8B5C5'})
+head = w.add_format({'font_name':'Arial','font_size':10,'bold':True,'bg_color':'#243247','font_color':'white','text_wrap':True,'align':'center','valign':'vcenter'})
+num = w.add_format({'font_name':'Arial','font_size':10,'num_format':'0.000'})
+pct = w.add_format({'font_name':'Arial','font_size':10,'num_format':'0.0"%"'})
+datefmt = w.add_format({'font_name':'Arial','font_size':10,'num_format':'mmm yyyy'})
+note = w.add_format({'font_name':'Arial','font_size':10,'font_color':'#596779'})
+for s in (charts,data):
+    s.hide_gridlines(2)
+    s.set_default_row(19)
+    s.set_column('A:A',3)
+    s.set_landscape()
+    s.set_paper(9)
+    s.fit_to_pages(1,1)
+charts.set_tab_color('#243247')
+charts.set_column('B:O',11,body)
+charts.write('B2','US unemployment and consumer prices',title)
+charts.write('B3','Monthly seasonally adjusted series. CPI is an index, not an inflation rate.',note)
+charts.write('B4','October 2025 is missing in both series. Annual averages use the 11 available months.',note)
+charts.write('B5','Unemployment extended back to 2014; CPI starts in 2015.' if extended else 'Monthly coverage: January 2015 through December 2025.',note)
+data.set_column('B:B',15,datefmt)
+data.set_column('C:C',22,pct)
+data.set_column('D:D',24,num)
+data.set_column('E:E',10,body)
+data.set_column('G:G',12,body)
+data.set_column('H:I',20,num)
+data.set_column('J:K',15,body)
+data.set_column('M:M',100,note)
+data.write('B2','Monthly observations and yearly averages',title)
+data.write('M2','Sources and definitions',title)
+data.write_url('M3','https://nwdata.northwind.example/series/NWUNEMP',string='NWDATA NWUNEMP — BLS unemployment rate, percent, monthly, seasonally adjusted')
+data.write_url('M4','https://nwdata.northwind.example/series/NWCPI',string='NWDATA NWCPI — BLS CPI all items, index 1982–84=100, monthly, seasonally adjusted')
+data.write('M5','Retrieved October 18, 2026. Current revised historical observations.',note)
+data.write('M6','Annual averages are arithmetic means of available months. Counts appear beside each average.',note)
+data.write('M7','October 2025 is unavailable in both NWDATA series and remains blank.',note)
+data.write('M8','2014 CPI is outside the requested coverage and remains blank.' if extended else 'Requested coverage: January 2015 through December 2025.',note)
+data.write_row('B10',['Month','Unemployment (%)','CPI (1982–84=100)','Year'],head)
+data.write_row('G10',['Year','Unemployment (%)','CPI (1982–84=100)','NWUNEMP months','CPI months'],head)
+data.set_row(9,32)
+for r,d in enumerate(dates,10):
+    data.write_datetime(r,1,d,datefmt)
+    for col,val,fmt in [(2,u[d],pct),(3,c.get(d),num)]:
+        if val is not None: data.write_number(r,col,val,fmt)
+    data.write_formula(r,4,f'=YEAR(B{r+1})',body,d.year)
+last = 10+len(dates)
+for r,year in enumerate(range(2015,2026),10):
+    data.write_number(r,6,year,body)
+    for col,src,values,fmt in [(7,'C',u,pct),(8,'D',c,num)]:
+        vals=[v for d,v in values.items() if d.year==year and v is not None]
+        data.write_formula(r,col,f'=AVERAGEIF($E$11:$E${last},G{r+1},${src}$11:${src}${last})',fmt,mean(vals))
+        data.write_formula(r,col+2,f'=COUNTIFS($E$11:$E${last},G{r+1},${src}$11:${src}${last},"<>")',body,len(vals))
+data.freeze_panes(10,2)
+data.autofilter(9,1,last-1,4)
+data.print_area('B2:K28')
+line=w.add_chart({'type':'line'})
+for col,name,color,secondary in [(2,'Unemployment (%)','#2864B4',False),(3,'CPI (1982–84=100)','#D27627',True)]:
+    start=10
+    line.add_series({'name':name,'categories':['Data',start,1,last-1,1],'values':['Data',start,col,last-1,col], 'line':{'color':color,'width':1.8},'y2_axis':secondary})
+line.set_title({'name':'US unemployment and CPI: monthly trends' if extended else 'Monthly US unemployment and CPI, 2015–2025','name_font':{'name':'Arial','size':13}})
+line.set_x_axis({'date_axis':True,'num_format':'yyyy','major_unit':1,'major_unit_type':'years','name':'Month'})
+line.set_y_axis({'name':'Unemployment (%)','min':0,'max':16,'num_format':'0.0','major_gridlines':{'visible':True,'line':{'color':'#E5E9EF'}}})
+line.set_y2_axis({'name':'CPI (1982–84=100)','min':200,'max':340,'num_format':'0'})
+line.show_blanks_as('gap')
+bar=w.add_chart({'type':'column'})
+for col,name,color in [(7,'Unemployment (%)','#2864B4'),(8,'CPI (1982–84=100)','#D27627')]:
+    bar.add_series({'name':name,'categories':['Data',10,6,20,6],'values':['Data',10,col,20,col],'fill':{'color':color},'border':{'none':True}})
+bar.set_title({'name':'Yearly averages, 2015–2025','name_font':{'name':'Arial','size':13}})
+bar.set_x_axis({'name':'Year'})
+bar.set_y_axis({'name':'Series units (see legend)','min':0,'max':350,'num_format':'0.0','major_gridlines':{'visible':True,'line':{'color':'#E5E9EF'}}})
+
+bar.set_legend({'position':'bottom','font':{'name':'Arial','size':10}})
+bar.show_hidden_data()
+for chart,cell in [(line,'B7'),(bar,'B29')]:
+    if chart is line: chart.set_legend({'position':'bottom','font':{'name':'Arial','size':10}})
+    chart.set_chartarea({'border':{'none':True},'fill':{'color':'white'}})
+    chart.set_size({'width':1000,'height':405})
+    charts.insert_chart(cell,chart)
+charts.print_area('B2:O50')
+w.close()
+(OUT/'build_state.json').write_text(json.dumps({'extended':extended,'monthly_rows':len(dates),'line_title':'US unemployment and CPI: monthly trends' if extended else 'Monthly US unemployment and CPI, 2015–2025','unemployment_start':str(dates[0].date()),'cpi_start':'2015-01-01'},indent=2))
+print(path)

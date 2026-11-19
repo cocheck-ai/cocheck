@@ -1,0 +1,16 @@
+{
+  "id": "C14",
+  "title": "state and diff entry points each yield panes",
+  "fixture": "toy",
+  "inputs": {
+    "before": "public-kit/toy-product/states/edit.before.json",
+    "after": "public-kit/toy-product/states/edit.after.json"
+  },
+  "expect": {
+    "entryPointsYieldPanes": [
+      "state",
+      "diff"
+    ]
+  },
+  "note": "a connector declares one or both; each declared entry point is exercised"
+}

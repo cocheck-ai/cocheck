@@ -1,0 +1,15 @@
+{
+  "id": "C10",
+  "title": "passes with network denied",
+  "fixture": "toy",
+  "inputs": {
+    "before": "public-kit/toy-product/states/edit.before.json",
+    "after": "public-kit/toy-product/states/edit.after.json"
+  },
+  "env": {
+    "network": "denied"
+  },
+  "expect": {
+    "sameAsCase": "C3"
+  }
+}

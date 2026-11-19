@@ -1,0 +1,12 @@
+{
+  "id": "C1",
+  "title": "manifest parses with a supported spec version",
+  "fixture": "toy",
+  "inputs": null,
+  "expect": {
+    "manifest": {
+      "spec": "cocheck.connector/1",
+      "runIsArgvArray": true
+    }
+  }
+}

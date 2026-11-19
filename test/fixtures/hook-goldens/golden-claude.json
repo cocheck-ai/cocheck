@@ -1,0 +1,214 @@
+{
+ "tasks": [
+  {
+   "id": 1,
+   "created_at": "<ts>",
+   "title": null,
+   "client": "claude-hook:<folder>"
+  }
+ ],
+ "ops": [
+  {
+   "id": 1,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "hook",
+   "args_json": "{\"hookOpKey\":\"prompt#2\",\"hookAdapter\":1,\"hookEvent\":\"UserPromptSubmit\",\"host\":\"claude\",\"session_id\":\"7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11\",\"at\":1700000002000,\"earlier\":0,\"prompts\":[\"Raise every price by 5 percent\"],\"requests\":[{\"seq\":1,\"at\":1700000001000,\"firstStep\":null}]}",
+   "intent": "user prompt",
+   "client_name": "claude-hook:<folder>",
+   "client_version": null,
+   "duration_ms": -1,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 2,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "hook",
+   "args_json": "{\"hookOpKey\":\"firststep#2\",\"hookAdapter\":1,\"hookEvent\":\"RequestFirstStep\",\"host\":\"claude\",\"session_id\":\"7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11\",\"requests\":[{\"seq\":1,\"at\":1700000001000,\"firstStep\":2}]}",
+   "intent": "request first step",
+   "client_name": "claude-hook:<folder>",
+   "client_version": null,
+   "duration_ms": -1,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 3,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "Bash",
+   "args_json": "{\"hookOpKey\":\"call_1#4\",\"hookAdapter\":1,\"tool_use_id\":\"call_1\",\"closedBy\":\"post\",\"background\":false,\"openedAt\":1700000004000,\"startSeq\":3,\"closedAt\":1700000006000,\"wallMs\":2000,\"processingMs\":<n>,\"host\":\"claude\",\"session_id\":\"7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11\",\"tool_name\":\"Bash\",\"jointWith\":[\"call_1\"],\"steps\":[2],\"namedFiles\":[],\"ownPaths\":[\"<folder>/model.xlsx\"],\"outsideWatching\":true,\"description\":\"edit the model\",\"toolLabel\":{\"fields\":{\"command\":\"python3 bump.py A1\",\"description\":\"edit the model\"}},\"narration\":{\"source\":\"none\",\"text\":\"no narration recorded\"},\"pathUnknown\":true,\"path\":\"<folder>/model.xlsx\"}",
+   "intent": "python3 bump.py A1 - edit the model",
+   "client_name": "claude-hook:<folder>",
+   "client_version": null,
+   "duration_ms": 0,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 4,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "Bash",
+   "args_json": "{\"hookOpKey\":\"call_2#6\",\"hookAdapter\":1,\"tool_use_id\":\"call_2\",\"closedBy\":\"post\",\"background\":false,\"openedAt\":1700000008000,\"startSeq\":5,\"closedAt\":1700000010000,\"wallMs\":2000,\"processingMs\":<n>,\"host\":\"claude\",\"session_id\":\"7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11\",\"tool_name\":\"Bash\",\"jointWith\":[\"call_2\"],\"steps\":[3],\"namedFiles\":[],\"ownPaths\":[\"<folder>/model.xlsx\"],\"outsideWatching\":true,\"description\":\"edit the model\",\"toolLabel\":{\"fields\":{\"command\":\"python3 bump.py A2\",\"description\":\"edit the model\"}},\"narration\":{\"source\":\"none\",\"text\":\"no narration recorded\"},\"pathUnknown\":true,\"path\":\"<folder>/model.xlsx\"}",
+   "intent": "python3 bump.py A2 - edit the model",
+   "client_name": "claude-hook:<folder>",
+   "client_version": null,
+   "duration_ms": 0,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 5,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "Bash",
+   "args_json": "{\"hookOpKey\":\"call_3#8\",\"hookAdapter\":1,\"tool_use_id\":\"call_3\",\"closedBy\":\"failure\",\"error\":\"Exit code 3\\nboom\",\"background\":false,\"openedAt\":1700000012000,\"startSeq\":7,\"closedAt\":1700000014000,\"wallMs\":2000,\"processingMs\":<n>,\"host\":\"claude\",\"session_id\":\"7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11\",\"tool_name\":\"Bash\",\"jointWith\":[\"call_3\"],\"steps\":[],\"namedFiles\":[],\"ownPaths\":[],\"outsideWatching\":true,\"description\":\"edit the model\",\"toolLabel\":{\"fields\":{\"command\":\"python3 broken.py\",\"description\":\"edit the model\"}},\"narration\":{\"source\":\"none\",\"text\":\"no narration recorded\"},\"pathUnknown\":true}",
+   "intent": "python3 broken.py - edit the model",
+   "client_name": "claude-hook:<folder>",
+   "client_version": null,
+   "duration_ms": 0,
+   "result_code": "TOOL_FAILED",
+   "error_text": "Exit code 3\nboom"
+  },
+  {
+   "id": 6,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "hook",
+   "args_json": "{\"hookOpKey\":\"closing#9\",\"hookAdapter\":1,\"hookEvent\":\"Stop\",\"host\":\"claude\",\"session_id\":\"7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11\",\"at\":1700000016000,\"closing\":{\"source\":\"agent\",\"label\":\"the agent's own words\",\"text\":\"Done.\"}}",
+   "intent": "agent closing claim",
+   "client_name": "claude-hook:<folder>",
+   "client_version": null,
+   "duration_ms": -1,
+   "result_code": "OK",
+   "error_text": null
+  }
+ ],
+ "events": [],
+ "steps": [
+  {
+   "id": 1,
+   "task_id": 1,
+   "client": "claude-hook:<folder>",
+   "seq": 1,
+   "phase": "Pre",
+   "ts": "<ts>",
+   "calls_open_json": "[]",
+   "credited_json": "[]"
+  },
+  {
+   "id": 2,
+   "task_id": 1,
+   "client": "claude-hook:<folder>",
+   "seq": 2,
+   "phase": "Post",
+   "ts": "<ts>",
+   "calls_open_json": "[\"call_1\"]",
+   "credited_json": "[\"call_1\"]"
+  },
+  {
+   "id": 3,
+   "task_id": 1,
+   "client": "claude-hook:<folder>",
+   "seq": 3,
+   "phase": "Post",
+   "ts": "<ts>",
+   "calls_open_json": "[\"call_2\"]",
+   "credited_json": "[\"call_2\"]"
+  },
+  {
+   "id": 4,
+   "task_id": 1,
+   "client": "claude-hook:<folder>",
+   "seq": 4,
+   "phase": "Stop",
+   "ts": "<ts>",
+   "calls_open_json": "[]",
+   "credited_json": "[]"
+  }
+ ],
+ "file_states": [
+  {
+   "id": 1,
+   "step_id": 1,
+   "task_id": 1,
+   "file_path": "<folder>/model.xlsx",
+   "sha256": "570450597170215ce263cf1c4c5c04bbf621105cf09474213c6256fc82a3c0b7",
+   "prev_sha256": null,
+   "phase": "Pre",
+   "calls_open_json": "[]",
+   "credited_json": "[]",
+   "size": 929,
+   "kept": "whole",
+   "note": "",
+   "changes_sha256": null,
+   "before_basis": null
+  },
+  {
+   "id": 2,
+   "step_id": 2,
+   "task_id": 1,
+   "file_path": "<folder>/model.xlsx",
+   "sha256": "69589182322c919fd3408807ff8e363af366a46fe73b4f213f980b6659ac75dc",
+   "prev_sha256": "570450597170215ce263cf1c4c5c04bbf621105cf09474213c6256fc82a3c0b7",
+   "phase": "Post",
+   "calls_open_json": "[\"call_1\"]",
+   "credited_json": "[\"call_1\"]",
+   "size": 930,
+   "kept": "whole",
+   "note": "",
+   "changes_sha256": null,
+   "before_basis": null
+  },
+  {
+   "id": 3,
+   "step_id": 3,
+   "task_id": 1,
+   "file_path": "<folder>/model.xlsx",
+   "sha256": "a8c40c4976c0160bc1e0be18cfed745049738502505b9f8eac172ced0b131196",
+   "prev_sha256": "69589182322c919fd3408807ff8e363af366a46fe73b4f213f980b6659ac75dc",
+   "phase": "Post",
+   "calls_open_json": "[\"call_2\"]",
+   "credited_json": "[\"call_2\"]",
+   "size": 930,
+   "kept": "whole",
+   "note": "",
+   "changes_sha256": null,
+   "before_basis": null
+  },
+  {
+   "id": 4,
+   "step_id": 4,
+   "task_id": 1,
+   "file_path": "<folder>/model.xlsx",
+   "sha256": "21ce2b2334f1b218ba116bb21ccc98c8f4b8f529476dd609470605c1a1657408",
+   "prev_sha256": "a8c40c4976c0160bc1e0be18cfed745049738502505b9f8eac172ced0b131196",
+   "phase": "Stop",
+   "calls_open_json": "[]",
+   "credited_json": "[]",
+   "size": 930,
+   "kept": "whole",
+   "note": "not from an agent call",
+   "changes_sha256": null,
+   "before_basis": null
+  }
+ ],
+ "rounds": [
+  {
+   "id": 1,
+   "task_id": 1,
+   "seq": 1,
+   "ts": "<ts>",
+   "intent": "turn closed by the Stop hook",
+   "client_name": "claude-hook:<folder>",
+   "final": 0,
+   "last_op_id": 6
+  }
+ ],
+ "round_results": [],
+ "review_rows": [],
+ "state_removals": []
+}

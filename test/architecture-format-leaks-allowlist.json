@@ -1,0 +1,17 @@
+[
+  {
+    "pattern": "c-spreadsheet-kind",
+    "file": "src/timeline/render/types.ts",
+    "line": "kind: \"grid\" | \"pages\" | \"card\";"
+  },
+  {
+    "pattern": "c-spreadsheet-kind",
+    "file": "src/timeline/render/types.ts",
+    "line": "kind: \"paragraph\" | \"table-cell\" | \"table-row\" | \"shape\" | \"picture\" | \"chart\" | \"cell\" | \"moved\" | \"recolour\" | \"notes\";"
+  },
+  {
+    "pattern": "a-concrete-import",
+    "file": "src/office/connector/docx/layer.ts",
+    "line": "import { createFilesLayer as createCoreFilesLayer, diffSequence } from \"../../../formats/files/layer.ts\";"
+  }
+]

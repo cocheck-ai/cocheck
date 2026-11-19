@@ -1,0 +1,1 @@
+{"spec":"cocheck.connector/1","id":"ipynb-cells","version":"0.1.0","entry":"state","matches":{"extensions":[".ipynb"]},"run":["node","connector.mjs"]}

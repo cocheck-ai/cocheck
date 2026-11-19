@@ -1,0 +1,44 @@
+{
+  "id": "C3",
+  "title": "every emitted change is valid at the connector's level",
+  "fixture": "toy",
+  "inputs": [
+    {
+      "name": "edit",
+      "before": "public-kit/toy-product/states/edit.before.json",
+      "after": "public-kit/toy-product/states/edit.after.json",
+      "expectChanges": [
+        {
+          "kind": "edit",
+          "entity": "n1"
+        }
+      ]
+    },
+    {
+      "name": "create",
+      "before": "public-kit/toy-product/states/create.before.json",
+      "after": "public-kit/toy-product/states/create.after.json",
+      "expectChanges": [
+        {
+          "kind": "create",
+          "entity": "n3"
+        }
+      ]
+    },
+    {
+      "name": "delete",
+      "before": "public-kit/toy-product/states/delete.before.json",
+      "after": "public-kit/toy-product/states/delete.after.json",
+      "expectChanges": [
+        {
+          "kind": "delete",
+          "entity": "n2"
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "everyChangeValidAtItsLevel": true,
+    "changesExactly": "each input pair's expectChanges, kind and entity (as the marks added, changed, removed), order-free"
+  }
+}

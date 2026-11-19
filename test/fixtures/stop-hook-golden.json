@@ -1,0 +1,154 @@
+{
+ "probe": {
+  "states": [
+   {
+    "file": "small.xlsx",
+    "start": true,
+    "credited": []
+   },
+   {
+    "file": "small.xlsx",
+    "start": false,
+    "credited": [
+     "a"
+    ]
+   },
+   {
+    "file": "small.xlsx",
+    "start": false,
+    "credited": [
+     "b"
+    ]
+   },
+   {
+    "file": "small.xlsx",
+    "start": false,
+    "credited": []
+   }
+  ],
+  "summaries": [
+   {
+    "round": 1,
+    "final": false,
+    "totals": {
+     "rows": 0,
+     "explained": 0,
+     "derived": 0,
+     "unlogged": 0
+    },
+    "files": [
+     {
+      "path": "<folder>/small.xlsx",
+      "layer": "claimed",
+      "snapshotMode": "copy",
+      "rows": 0,
+      "explained": 0,
+      "derived": 0,
+      "unlogged": 0
+     }
+    ],
+    "rows": [],
+    "openItems": 0
+   },
+   {
+    "round": 2,
+    "final": false,
+    "totals": {
+     "rows": 0,
+     "explained": 0,
+     "derived": 0,
+     "unlogged": 0
+    },
+    "files": [
+     {
+      "path": "<folder>/small.xlsx",
+      "layer": "claimed",
+      "snapshotMode": "copy",
+      "rows": 0,
+      "explained": 0,
+      "derived": 0,
+      "unlogged": 0
+     }
+    ],
+    "rows": [],
+    "openItems": 0
+   }
+  ]
+ },
+ "formula": {
+  "states": [
+   {
+    "file": "small.xlsx",
+    "start": true,
+    "credited": []
+   },
+   {
+    "file": "small.xlsx",
+    "start": false,
+    "credited": [
+     "a"
+    ]
+   },
+   {
+    "file": "small.xlsx",
+    "start": false,
+    "credited": [
+     "b"
+    ]
+   },
+   {
+    "file": "small.xlsx",
+    "start": false,
+    "credited": []
+   }
+  ],
+  "summaries": [
+   {
+    "round": 1,
+    "final": false,
+    "totals": {
+     "rows": 0,
+     "explained": 0,
+     "derived": 0,
+     "unlogged": 0
+    },
+    "files": [
+     {
+      "path": "<folder>/small.xlsx",
+      "layer": "claimed",
+      "snapshotMode": "copy",
+      "rows": 0,
+      "explained": 0,
+      "derived": 0,
+      "unlogged": 0
+     }
+    ],
+    "rows": [],
+    "openItems": 0
+   },
+   {
+    "round": 2,
+    "final": false,
+    "totals": {
+     "rows": 0,
+     "explained": 0,
+     "derived": 0,
+     "unlogged": 0
+    },
+    "files": [
+     {
+      "path": "<folder>/small.xlsx",
+      "layer": "claimed",
+      "snapshotMode": "copy",
+      "rows": 0,
+      "explained": 0,
+      "derived": 0,
+      "unlogged": 0
+     }
+    ],
+    "rows": [],
+    "openItems": 0
+   }
+  ]
+ }
+}

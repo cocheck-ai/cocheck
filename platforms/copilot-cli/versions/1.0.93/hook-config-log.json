@@ -1,0 +1,11 @@
+{"version":1,"hooks":{
+"sessionStart":[{"type":"command","bash":"cat >> $PROBE_OUT/sessionStart.jsonl; echo >> $PROBE_OUT/sessionStart.jsonl; env | grep -E '^(COPILOT|PWD|HOME)' | sed -E 's/(TOKEN|KEY)=.*/\\1=X/' > $PROBE_OUT/env.txt"}],
+"sessionEnd":[{"type":"command","bash":"cat >> $PROBE_OUT/sessionEnd.jsonl; echo >> $PROBE_OUT/sessionEnd.jsonl"}],
+"userPromptSubmitted":[{"type":"command","bash":"cat >> $PROBE_OUT/userPromptSubmitted.jsonl; echo >> $PROBE_OUT/userPromptSubmitted.jsonl"}],
+"preToolUse":[{"type":"command","bash":"cat >> $PROBE_OUT/preToolUse.jsonl; echo >> $PROBE_OUT/preToolUse.jsonl"}],
+"postToolUse":[{"type":"command","bash":"cat >> $PROBE_OUT/postToolUse.jsonl; echo >> $PROBE_OUT/postToolUse.jsonl"}],
+"postToolUseFailure":[{"type":"command","bash":"cat >> $PROBE_OUT/postToolUseFailure.jsonl; echo >> $PROBE_OUT/postToolUseFailure.jsonl"}],
+"agentStop":[{"type":"command","bash":"cat >> $PROBE_OUT/agentStop.jsonl; echo >> $PROBE_OUT/agentStop.jsonl"}],
+"subagentStop":[{"type":"command","bash":"cat >> $PROBE_OUT/subagentStop.jsonl; echo >> $PROBE_OUT/subagentStop.jsonl"}],
+"errorOccurred":[{"type":"command","bash":"cat >> $PROBE_OUT/errorOccurred.jsonl; echo >> $PROBE_OUT/errorOccurred.jsonl"}]
+}}

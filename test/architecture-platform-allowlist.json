@@ -1,0 +1,38 @@
+{
+  "src/attribution/tag.ts": {
+    "os-path": 1
+  },
+  "src/credit-guard.ts": {
+    "osascript": 1
+  },
+  "src/hosts/codex-bin-macos.ts": {
+    "os-path": 1
+  },
+  "src/install.ts": {
+    "os-path": 1,
+    "process.platform": 2
+  },
+  "src/office/connector/office-macos.ts": {
+    "osascript": 1,
+    "os-tool": 4
+  },
+  "src/office/connector/xlsx/numfmt.ts": {
+    "os-path": 1
+  },
+  "src/registry.ts": {
+    "process.platform": 1
+  },
+  "src/timeline/describe.ts": {
+    "osascript": 1
+  },
+  "src/timeline/read-signal.ts": {
+    "osascript": 2
+  },
+  "src/timeline/render/pdf-helper.ts": {
+    "process.platform": 1,
+    "os-path": 1
+  },
+  "src/timeline/write-signal.ts": {
+    "osascript": 1
+  }
+}

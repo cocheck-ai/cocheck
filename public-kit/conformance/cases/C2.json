@@ -1,0 +1,13 @@
+{
+  "id": "C2",
+  "title": "hello answers over stdio JSON within 5 s",
+  "fixture": "toy",
+  "inputs": null,
+  "expect": {
+    "helloWithinMs": 5000,
+    "helloHas": [
+      "spec",
+      "methods"
+    ]
+  }
+}

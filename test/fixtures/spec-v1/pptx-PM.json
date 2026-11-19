@@ -1,0 +1,44 @@
+{
+  "spec": "cocheck.changes/1",
+  "changes": [
+    {
+      "id": "k1",
+      "mark": "moved",
+      "label": "Slide 2: an object moved",
+      "kind": "moved",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page2",
+          "rect": {
+            "h": 111.1,
+            "w": 218.3,
+            "x": 989.5,
+            "y": 365.2
+          }
+        },
+        {
+          "picture": "after:page2",
+          "rect": {
+            "h": 111.1,
+            "w": 218.3,
+            "x": 1129.5,
+            "y": 365.2
+          }
+        }
+      ]
+    }
+  ],
+  "pictures": [
+    {
+      "id": "after:page2",
+      "side": "after",
+      "type": "image"
+    },
+    {
+      "id": "before:page2",
+      "side": "before",
+      "type": "image"
+    }
+  ]
+}

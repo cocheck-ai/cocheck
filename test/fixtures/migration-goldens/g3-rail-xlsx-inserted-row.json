@@ -1,0 +1,82 @@
+{
+ "actors": [
+  {
+   "chip": "Y",
+   "color": "#1c2740",
+   "fromStart": true,
+   "id": "you",
+   "name": "You"
+  },
+  {
+   "chip": "A",
+   "color": "#6fb0e3",
+   "fromStart": true,
+   "id": "claude",
+   "main": true,
+   "name": "The agent"
+  },
+  {
+   "chip": "U",
+   "color": "#7a7f88",
+   "id": "unsure",
+   "name": "Unknown"
+  },
+  {
+   "chip": "U",
+   "color": "#7a7f88",
+   "id": "other",
+   "name": "Unknown"
+  }
+ ],
+ "files": [
+  {
+   "connector": {
+    "id": "microsoft-excel",
+    "subject": "model.xlsx"
+   },
+   "file": "model.xlsx",
+   "name": "model.xlsx",
+   "versions": [
+    {
+     "change": "c2",
+     "chip": "U",
+     "kept": true,
+     "kind": "modified",
+     "label": "Changed",
+     "lane": "unsure",
+     "sha": "ed3224f43fa34af534f40a24fb33141d199c5320e71314af0bceb0bb8a624a2f",
+     "stop": "chg-c2"
+    }
+   ]
+  }
+ ],
+ "folder": "work",
+ "stops": [
+  {
+   "change": {
+    "ask": null,
+    "failed": null,
+    "file": "model.xlsx",
+    "key": "c2",
+    "kind": "modified",
+    "moreNote": null,
+    "newFile": null,
+    "note": "Something, during agent calls, made several changes inside model.xlsx",
+    "rowNotes": [],
+    "secret": false,
+    "secretLine": null,
+    "treeAfter": null,
+    "treeBefore": null,
+    "viewUrl": "/timeline/1/view/c2"
+   },
+   "head": "Something, during agent calls, changed model.xlsx",
+   "id": "chg-c2",
+   "label": "Changed model.xlsx",
+   "lane": "unsure",
+   "path": "model.xlsx",
+   "sub": "Found as an agent call ended that CoCheck had not seen start, so it is not credited with it. That call may have written it, or something else did (you, an app, or another process).",
+   "title": "Changed model.xlsx"
+  }
+ ],
+ "task": 1
+}

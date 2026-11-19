@@ -1,0 +1,10 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "my-connector",
+  "version": "0.0.1",
+  "entry": "state",
+  "matches": { "extensions": [".mystate.json"] },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "platforms": ["darwin", "win32"]
+}

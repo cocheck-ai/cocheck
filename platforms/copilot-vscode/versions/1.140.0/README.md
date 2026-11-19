@@ -1,0 +1,13 @@
+# copilot-vscode 1.140.0 probe
+
+The developer ran the scripted agent-mode session by hand at 18:10 EDT in VS Code 1.140.0, in a scratch folder (Desktop/vscode-probe) holding a repo `.github/hooks` probe hook and a custom agent `writer`. The prompt matches the Copilot CLI one (create a file, failing `ls`, custom agent, built-in general-purpose agent via task, reply). The hook appended its stdin plus an outside-workspace write result and a localhost curl status to a log per event.
+- hook-calls-vscode.jsonl: 36 hook calls. Events seen: sessionStart, userPromptSubmitted, userPromptTransformed, preToolUse, permissionRequest, notification, postToolUse, subagentStart, subagentStop, agentStop, sessionEnd.
+Trimmed for the repo: the logged environment-variable name field was removed from every line and the developer home folder became `/Users/<user>`.
+Not seen: postToolUseFailure, preCompact, errorOccurred. Untested: whether VS Code reads ~/.copilot/hooks, matcher handling, blocking, rewriting.
+
+## Additions: system notifications
+Two more VS Code 1.140.0 sessions, both the same prompt (three helpers, then a failing `ls`). Scratch paths became `<scratch>/ws`, the repo path `<cocheck>`, the developer home folder `/Users/<user>`; strings over 1500 characters were cut. `userPromptTransformed` records were dropped (kind "other"). Format of the hook files matches `hook-calls-vscode.jsonl` (`event_arg`, `stdin`).
+- hook-calls-vscode-notified.jsonl (61 records): session 30bc4d98. Built from the `hook.start` inputs in VS Code's own transcript. That transcript logs a `preToolUse` input as `toolCalls: [{id, name, args}]`, not the hook's real stdin, so each was rewritten to `toolName` + `toolArgs` + `timestamp` (the control's raw files show that is the real stdin). It holds the real `userPromptSubmitted` whose prompt is a `<system_notification>` (record 4 after the first agentStop).
+- events-vscode-notified.jsonl: that session's events.jsonl reduced to `user.message`, `system.notification` and `final_answer` lines, with only `content`, `source`, `phase`, `parentToolCallId`, `interactionId`, `kind` kept. Shows helpers' final answers (with `parentToolCallId`) and task prompts (with `source: agent-<session>`) in the main session's file.
+- hook-calls-vscode-control.jsonl (84 records) and events-vscode-control.jsonl: session 25ee9a7c, the raw hook stdin, one file per call (88 calls, no notification in it), same reduction. A no-notification control.
+Also read and not copied: the Copilot CLI session a4fc20df. Its events.jsonl has no `userPromptSubmitted` hook for any notification (4 prompt hooks: the task prompt and three helper prompts), so the CLI path never opens a spurious request.

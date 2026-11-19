@@ -1,0 +1,10 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "flaky-p6",
+  "version": "0.0.1",
+  "entry": "state",
+  "matches": { "extensions": [".notes.json"] },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "platforms": ["darwin", "win32", "linux"]
+}

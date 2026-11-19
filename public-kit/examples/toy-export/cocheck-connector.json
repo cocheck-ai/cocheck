@@ -1,0 +1,10 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "toy-export",
+  "version": "0.0.1",
+  "entry": "export",
+  "matches": { "schemes": ["toy-export://"], "extensions": [".export.notes.json"] },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "platforms": ["darwin", "win32"]
+}

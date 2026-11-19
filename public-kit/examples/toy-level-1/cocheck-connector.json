@@ -1,0 +1,10 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "toy-level-1",
+  "version": "0.0.1",
+  "entry": "state",
+  "matches": { "schemes": ["toy-level-1://"], "extensions": [".level1.notes.json"] },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "platforms": ["darwin", "win32"]
+}

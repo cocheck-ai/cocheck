@@ -1,0 +1,23 @@
+{
+  "id": "C13",
+  "title": "time and memory bounds on a large pair",
+  "fixture": "toy",
+  "inputs": {
+    "generate": {
+      "script": "public-kit/conformance/generate-large.mjs",
+      "args": [
+        "5000",
+        "<outDir>"
+      ],
+      "writes": [
+        "large.before.json",
+        "large.after.json"
+      ],
+      "expectChanges": 500
+    }
+  },
+  "expect": {
+    "maxSeconds": 30,
+    "maxRssMb": 512
+  }
+}

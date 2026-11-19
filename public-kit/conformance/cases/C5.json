@@ -1,0 +1,16 @@
+{
+  "id": "C5",
+  "title": "identical states give zero changes",
+  "fixture": "toy",
+  "inputs": {
+    "before": "public-kit/toy-product/states/no-change.before.json",
+    "after": "public-kit/toy-product/states/no-change.after.json"
+  },
+  "expect": {
+    "changes": 0
+  },
+  "failingFixtures": [
+    "bad-c5-noisy"
+  ],
+  "dangerous": "a connector that reports changes for identical states must fail C5"
+}

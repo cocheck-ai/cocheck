@@ -1,0 +1,31 @@
+{
+ "changes": [
+  {
+   "cards": [],
+   "file": "memo.docx",
+   "kind": "modified",
+   "moreCards": 0,
+   "note": "Something, during agent calls, made several changes inside memo.docx",
+   "rowNotes": [],
+   "viewUrl": "/timeline/1/view/c2"
+  }
+ ],
+ "page": [
+  {
+   "bodyCards": [
+    "paragraph 2This report outlines the planned delivery approach, the work sequence, and the review points needed to keep the project on schedule.This report sets out the delivery approach, the review points, and the decisions needed to keep the project moving on a predictable schedule.paragraph 2: 'This report outlines the planned delivery approach, the work sequence, and th...' -> 'This report sets out the delivery approach, the review points, and the decisi...'",
+    "paragraph 28 (removed)Confirm baseline dates with the project teamparagraph 28 removed: 'Confirm baseline dates with the project team'",
+    "paragraphs 37-41 (added)Next StepsThe project lead will confirm the next review date and share the current decision record with the delivery team.Each owner will update assigned actions before the review so that unresolved work and timing changes are visible.The team will use the review outcome to confirm the work planned for the next delivery period.paragraphs 37-41 added: ' / Next Steps / The project lead will confirm the next review date and share ...'"
+   ],
+   "buttons": [],
+   "cards": [],
+   "heading": "Changed memo.docx",
+   "index": 0,
+   "panes": {
+    "after": 0,
+    "before": 0
+   }
+  }
+ ],
+ "snapshot": "docx-W1"
+}

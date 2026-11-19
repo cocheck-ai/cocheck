@@ -1,0 +1,30 @@
+{
+ "changes": [
+  {
+   "cards": [],
+   "file": "model.xlsx",
+   "kind": "modified",
+   "moreCards": 0,
+   "note": "Something, during agent calls, made several changes inside model.xlsx",
+   "rowNotes": [],
+   "viewUrl": "/timeline/1/view/c2"
+  }
+ ],
+ "page": [
+  {
+   "bodyCards": [
+    "Sheet1!3:3 (added)1 row inserted after row 2 (now row 3)Column D: =B3*C3 filled down",
+    "Sheet1!D61 cell recalculated: formula unchanged, value changedNot in the pictures: values Excel recalculated from a changed input; the input is what is pictured."
+   ],
+   "buttons": [],
+   "cards": [],
+   "heading": "Changed model.xlsx",
+   "index": 0,
+   "panes": {
+    "after": 0,
+    "before": 0
+   }
+  }
+ ],
+ "snapshot": "xlsx-inserted-row"
+}

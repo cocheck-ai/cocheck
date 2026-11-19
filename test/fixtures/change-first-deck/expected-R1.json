@@ -1,0 +1,245 @@
+{
+ "step": "R1",
+ "fmt": "pptx",
+ "before": "/private/tmp/claude-501/-Users-user-proj/51ebba20-1351-4b1e-867b-f7b9c868fada/workdir/run/bbox-change-first/deck/../census-src/realsrc/d2.pptx",
+ "after": "/private/tmp/claude-501/-Users-user-proj/51ebba20-1351-4b1e-867b-f7b9c868fada/workdir/run/bbox-change-first/deck/../census-src/realsrc/R1-after.pptx",
+ "provenance": "computed",
+ "note": "computed by deck/pptx_changes.py from the slide XML plus deck/gap/trim.py: boxes of text shapes with no visible fill or line (placeholders resolved through layout/master) are the union of the rendered PDF text lines inside the frame padded 4 px, other shapes keep the xfrm frame (placeholders via layout/master, groups via chOff/chExt); a group change whose own frame and fill are unchanged is dropped (its child carries the change); all boxes clipped to the page; text highlights x estimated by character proportion",
+ "changes": [
+  {
+   "id": "c1",
+   "card": "Slide 2, Text 1: text edited (\"Real GDP is growing about 2.1% a year and unemployment is 4.\" -> \"Real GDP is growing about 2.1% a year and unemployment is 4.\")",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 2,
+     "rect": {
+      "x": 67.9,
+      "y": 170.1,
+      "w": 1225.5,
+      "h": 75.8
+     },
+     "highlights": [
+      {
+       "x": 1013.8,
+       "y": 174.1,
+       "w": 57.4,
+       "h": 34.2
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 2,
+     "rect": {
+      "x": 67.9,
+      "y": 170.1,
+      "w": 1225.5,
+      "h": 75.8
+     },
+     "highlights": [
+      {
+       "x": 1013.8,
+       "y": 174.1,
+       "w": 57.4,
+       "h": 34.2
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c2",
+   "card": "Slide 2, Text 9: text edited (\"3.7%\" -> \"3.8%\")",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 2,
+     "rect": {
+      "x": 543.1,
+      "y": 365.2,
+      "w": 218.3,
+      "h": 111.1
+     },
+     "highlights": [
+      {
+       "x": 547.1,
+       "y": 369.2,
+       "w": 210.3,
+       "h": 103.1
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 2,
+     "rect": {
+      "x": 543.1,
+      "y": 365.2,
+      "w": 218.3,
+      "h": 111.1
+     },
+     "highlights": [
+      {
+       "x": 547.1,
+       "y": 369.2,
+       "w": 210.3,
+       "h": 103.1
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c3",
+   "card": "Slide 4, Text 0: text edited (\"Inflation is the soft spot: 3.7%, well above the 2% benchmar\" -> \"Inflation is the soft spot: 3.8%, well above the 2% benchmar\")",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 4,
+     "rect": {
+      "x": 67.9,
+      "y": 41.8,
+      "w": 1178.4,
+      "h": 131.3
+     },
+     "highlights": [
+      {
+       "x": 714.5,
+       "y": 45.8,
+       "w": 114.7,
+       "h": 60.9
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 4,
+     "rect": {
+      "x": 67.9,
+      "y": 41.8,
+      "w": 1178.4,
+      "h": 131.3
+     },
+     "highlights": [
+      {
+       "x": 714.5,
+       "y": 45.8,
+       "w": 114.7,
+       "h": 60.9
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c4",
+   "card": "Slide 4, Text 3: text edited (\"3.7%\" -> \"3.8%\")",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 4,
+     "rect": {
+      "x": 1054.3,
+      "y": 274.7,
+      "w": 141.8,
+      "h": 73.6
+     },
+     "highlights": [
+      {
+       "x": 1058.3,
+       "y": 278.7,
+       "w": 133.8,
+       "h": 65.6
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 4,
+     "rect": {
+      "x": 1054.3,
+      "y": 274.7,
+      "w": 141.8,
+      "h": 73.6
+     },
+     "highlights": [
+      {
+       "x": 1058.3,
+       "y": 278.7,
+       "w": 133.8,
+       "h": 65.6
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c5",
+   "card": "Slide 6, Text 3: text edited (\"Watch: CPI at 3.7% y/y, up from 3.3% in July and above the 2\" -> \"Watch: CPI at 3.8% y/y, up from 3.3% in July and above the 2\")",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 6,
+     "rect": {
+      "x": 96.7,
+      "y": 549.9,
+      "w": 1209.7,
+      "h": 56.8
+     },
+     "highlights": [
+      {
+       "x": 337.7,
+       "y": 553.9,
+       "w": 67.7,
+       "h": 48.8
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 6,
+     "rect": {
+      "x": 96.7,
+      "y": 549.9,
+      "w": 1209.7,
+      "h": 56.8
+     },
+     "highlights": [
+      {
+       "x": 337.7,
+       "y": 553.9,
+       "w": 67.7,
+       "h": 48.8
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  }
+ ]
+}

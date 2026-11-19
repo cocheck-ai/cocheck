@@ -1,0 +1,15 @@
+# Text files check out with LF on every OS, so a Windows checkout (autocrlf) reads the same bytes the tests and docs expect.
+* text=auto eol=lf
+# These fixtures hold CRLF on purpose (a re-save's line endings); leave their bytes alone.
+test/fixtures/save-guid/*.xml -text
+
+# Files that stay in the private repo. `git archive` (scripts/export-public.sh) leaves them out of the public export.
+scripts/baseline-capture.ts export-ignore
+scripts/baseline-compare.ts export-ignore
+scripts/live-office-check.ts export-ignore
+scripts/rediff-step.ts export-ignore
+test/baseline-capture.test.ts export-ignore
+test/baseline-compare.test.ts export-ignore
+docs/readme-pitch-draft.md export-ignore
+scripts/public-denylist.txt export-ignore
+scripts/public-gate-allow.txt export-ignore

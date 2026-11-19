@@ -1,0 +1,10 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "entry-diff",
+  "version": "0.0.1",
+  "entry": "diff",
+  "matches": { "extensions": [".notes.json"] },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "platforms": ["darwin", "win32", "linux"]
+}

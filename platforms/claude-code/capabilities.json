@@ -1,0 +1,1882 @@
+{
+ "schema": 1,
+ "platform": "claude-code",
+ "name": "Anthropic Claude Code CLI",
+ "vendor": "Anthropic",
+ "surfaces": [
+  "cli",
+  "desktop-app-bundled",
+  "vscode-extension",
+  "sdk-headless (claude -p)"
+ ],
+ "checked_on": "2026-10-24",
+ "versions_seen": [
+  {
+   "version": "2.1.310",
+   "where": "https://api.github.com/repos/anthropics/claude-code/releases (latest, published 2026-10-23); hooks reference https://code.claude.com/docs/en/hooks read 2026-10-24, not installed or probed",
+   "date": "2026-10-24"
+  },
+  {
+   "version": "2.1.302",
+   "where": "local:~/.local/share/claude/versions/2.1.302",
+   "date": "2026-10-18"
+  },
+  {
+   "version": "2.1.301",
+   "where": "local:~/.local/share/claude/versions/2.1.301",
+   "date": "2026-10-18"
+  },
+  {
+   "version": "2.1.300",
+   "where": "local:~/.local/share/claude/versions/2.1.300",
+   "date": "2026-10-18"
+  }
+ ],
+ "cocheck_relevance": "Observable today through user-level settings hooks (PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop). Narration comes from the transcript JSONL named in transcript_path; per-call reason from tool_input.description.",
+ "install": [
+  {
+   "claim": "Native install puts launcher ~/.local/bin/claude as a symlink into ~/.local/share/claude/versions/<ver>.",
+   "value": "~/.local/share/claude/versions/2.1.302",
+   "kind": "observed",
+   "source": "local:~/.local/bin/claude",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Native install is the recommended path; Homebrew casks (claude-code stable, claude-code@latest), WinGet, apt/dnf/apk and npm also exist.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/setup",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  }
+ ],
+ "processes_and_paths": [
+  {
+   "claim": "User state lives in ~/.claude (settings.json, projects/, plugins/, hooks/, skills/, agents/, sessions/, history.jsonl); ~/.claude.json holds more state.",
+   "kind": "observed",
+   "source": "local:~/.claude",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "CLAUDE_CONFIG_DIR relocates the home directory files.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/settings",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "A ClaudeCode.app bundle sits in ~/.local/share/claude/ (desktop surface).",
+   "kind": "observed",
+   "source": "local:~/.local/share/claude/ClaudeCode.app",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "unverified",
+   "note": "Not inspected further."
+  }
+ ],
+ "auth": [
+  {
+   "claim": "Needs Pro/Max/Team/Enterprise or Console account, or a cloud provider; login via browser. Credentials not read.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/setup",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  }
+ ],
+ "hooks": {
+  "available": {
+   "claim": "Hooks are a first-class feature; events run commands (also http, mcp_tool, prompt, agent handlers) with JSON on stdin.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  "config": [
+   {
+    "claim": "User hooks in ~/.claude/settings.json; project in .claude/settings.json; local in .claude/settings.local.json; plugin hooks/hooks.json; skill and subagent frontmatter. Entries merge across levels; identical handlers run once.",
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed"
+   },
+   {
+    "claim": "Managed policy settings apply above all: macOS /Library/Application Support/ClaudeCode/managed-settings.json (+ managed-settings.d/), Linux /etc/claude-code/, MDM domain com.anthropic.claudecode, or server-managed.",
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/managed-settings",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed"
+   },
+   {
+    "claim": "Precedence: managed, command line (--settings), project local, shared project, user.",
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/settings",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed"
+   },
+   {
+    "claim": "Real settings.json on this Mac has hook keys for UserPromptSubmit, PreToolUse, PostToolUse, PostToolUseFailure, Stop, SubagentStop (key names only read).",
+    "kind": "observed",
+    "source": "local:~/.claude/settings.json",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed",
+    "note": "CoCheck entries were uninstalled 2026-10-15 per backup file names; remaining hooks are the user's own. Values not read; whose entries these are is not established."
+   },
+   {
+    "claim": "Matcher entry shape is {matcher, hooks:[{type:'command',command}]}; a matcher of \"*\", \"\" or none matches all. CoCheck writes matcher '*' for the three tool events and none for the others.",
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed",
+    "note": "Shape from the hooks page; CoCheck's writer is src/hosts/claude.ts."
+   },
+   {
+    "claim": "Handler fields: common `type`, `if`, `timeout`, `statusMessage`, `once` (skill frontmatter only); command-only `command`, `args` (exec form), `async`, `asyncRewake`, `shell` (bash or powershell), `onFailure`; http-only `url`, `headers`, `allowedEnvVars`, `onFailure`. `onFailure: continue|block` arrived in 2.1.295 (2026-10-08).",
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed",
+    "note": "Not in the register before 2026-10-24."
+   },
+   {
+    "claim": "Universal output fields: `continue`, `stopReason`, `suppressOutput` (accepted, no effect), `systemMessage`, `terminalSequence`; output strings are capped at 10,000 characters; Stop is capped at 8 consecutive continuations.",
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Changelog 2.1.299 to 2.1.310 hook changes: 2.1.299 UserPromptSubmit runs before skill/slash-command expansion and actions a plugin hook can block are refused; 2.1.300 updatedInput from PreToolUse and PermissionRequest is validated, plugin WorktreeCreate/Remove run with --worktree, SessionEnd hooks no longer skipped when exiting during a background command; 2.1.302 at most 12 prompt or agent hooks of one event run at a time; 2.1.304 a PreToolUse deny reason is no longer replaced by a timeout error and skills may register at most 1,024 hooks; 2.1.309 PowerShell hooks block on exit 2; 2.1.310 Windows PreToolUse and PermissionRequest hooks no longer let a call through when Git Bash is missing.",
+    "kind": "documented",
+    "source": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed",
+    "note": "Release dates come from the GitHub releases API, not from CHANGELOG.md. Windows items do not apply to this Mac."
+   }
+  ],
+  "trust_or_approval": [
+   {
+    "claim": "disableAllHooks cannot disable managed hooks; allowManagedHooksOnly blocks user/project/local/plugin hooks; project-skill/subagent hooks follow workspace trust.",
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed"
+   },
+   {
+    "claim": "--bare skips hooks; --setting-sources '' with --settings isolates config (used by the probe).",
+    "kind": "observed",
+    "source": "binary:claude --help",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed"
+   },
+   {
+    "claim": "Policy flags: `allowedHttpHookUrls` (when set at any level, http hooks run only for allowlisted URLs) and `httpHookAllowedEnvVars` (limits env interpolation into http hook headers); `/hooks` is a read-only menu of configured hooks and their sources; an identical handler defined in several settings files runs once, plugin and skill copies stay separate.",
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ],
+  "events": [
+   {
+    "name": "SessionStart",
+    "when": "session begins or resumes",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "source",
+     "model",
+     "session_title",
+     "seconds_since_last_response",
+     "context_tokens",
+     "prompt_cache_likely_expired",
+     "estimated_cache_write_usd"
+    ],
+    "fact": {
+     "claim": "Payload in recording: source=startup; docs list startup/resume/clear/compact/fork.",
+     "kind": "observed",
+     "source": "probe:versions/2.1.302/payloads.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "2.1.302",
+     "status": "confirmed",
+     "note": "The four cache-staleness fields appear on resume or fork only (v2.1.251+, docs 2026-10-24, not in the 2.1.302 recording). `effort` ({level}) is a documented common field but was absent from this event in the 2.1.302 recording (see discrepancies.json claude-effort-docs-vs-recording)."
+    },
+    "matcher": "startup|resume|clear|compact|fork",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": [],
+    "unverified_fields": [
+     "effort"
+    ]
+   },
+   {
+    "name": "Setup",
+    "when": "started with --init-only, or --init/--maintenance in -p mode",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "trigger"
+    ],
+    "fact": {
+     "claim": "Setup is listed in the hooks lifecycle table (matcher: init|maintenance). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "init|maintenance",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "UserPromptSubmit",
+    "when": "prompt submitted, before processing and (since 2.1.299) before a skill or slash command expands (also on self-started turns)",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "prompt",
+     "session_title"
+    ],
+    "fact": {
+     "claim": "Recording carries prompt_id, permission_mode, prompt. No effort field here.",
+     "kind": "observed",
+     "source": "probe:versions/2.1.302/payloads.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "2.1.302",
+     "status": "confirmed",
+     "note": "`effort` ({level}) is a documented common field but was absent from this event in the 2.1.302 recording (see discrepancies.json claude-effort-docs-vs-recording). Output is additionalContext only; the prompt text cannot be replaced. Since 2.1.299 it runs before a skill or custom slash command expands."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [],
+    "unverified_fields": [
+     "effort"
+    ]
+   },
+   {
+    "name": "UserPromptExpansion",
+    "when": "user-typed command expands into a prompt",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "expansion_type",
+     "command_name",
+     "command_args",
+     "command_source",
+     "prompt"
+    ],
+    "fact": {
+     "claim": "UserPromptExpansion is listed in the hooks lifecycle table (matcher: command name). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "command name",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "PreToolUse",
+    "when": "before each tool call",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "tool_name",
+     "tool_input",
+     "tool_use_id",
+     "mcp_server"
+    ],
+    "fact": {
+     "claim": "Recording: tool_name Bash, tool_input {command, description}, tool_use_id toolu_...",
+     "kind": "observed",
+     "source": "probe:versions/2.1.302/payloads.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "2.1.302",
+     "status": "confirmed"
+    },
+    "matcher": "tool name",
+    "timeout_sec": 600,
+    "can_rewrite": true,
+    "aliases": []
+   },
+   {
+    "name": "PermissionRequest",
+    "when": "tool call needs a permission decision",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "tool_name",
+     "tool_input",
+     "permission_suggestions",
+     "mcp_server"
+    ],
+    "fact": {
+     "claim": "PermissionRequest is listed in the hooks lifecycle table (matcher: tool name). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Output hookSpecificOutput.decision {behavior allow|deny, updatedInput}; exit 2 is ignored for this event. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "tool name",
+    "timeout_sec": 600,
+    "can_rewrite": true,
+    "aliases": [],
+    "absent_fields": [
+     "tool_use_id"
+    ]
+   },
+   {
+    "name": "PermissionDenied",
+    "when": "auto mode denies a tool call",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "tool_name",
+     "tool_input",
+     "tool_use_id",
+     "reason",
+     "mcp_server"
+    ],
+    "fact": {
+     "claim": "PermissionDenied is listed in the hooks lifecycle table (matcher: tool name). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased). Output: retry true."
+    },
+    "matcher": "tool name",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "PostToolUse",
+    "when": "after a tool call succeeds",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "tool_name",
+     "tool_input",
+     "tool_response",
+     "tool_use_id",
+     "duration_ms",
+     "mcp_server"
+    ],
+    "fact": {
+     "claim": "Recording: tool_response for Bash is {stdout, stderr, interrupted, isImage, noOutputExpected}; duration_ms present.",
+     "kind": "observed",
+     "source": "probe:versions/2.1.302/payloads.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "2.1.302",
+     "status": "confirmed",
+     "note": "can_block false: the call has already run so the hook cannot undo it, but it can return decision:block with a reason that is fed back to Claude."
+    },
+    "matcher": "tool name",
+    "timeout_sec": 600,
+    "can_rewrite": true,
+    "aliases": []
+   },
+   {
+    "name": "PostToolUseFailure",
+    "when": "after a tool call fails",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "tool_name",
+     "tool_input",
+     "tool_use_id",
+     "error",
+     "is_interrupt",
+     "duration_ms",
+     "mcp_server"
+    ],
+    "fact": {
+     "claim": "PostToolUseFailure carries error, is_interrupt and duration_ms and does not fire for calls rejected before they run (unknown tool, validation failure, permission denial).",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": "2.1.302",
+     "status": "confirmed",
+     "note": "Also seen live: 14+ PostToolUseFailure records in recorded real-run journals (test/fixtures/platforms/recorded-hook-events.json). The earlier source was CoCheck's own test fixture, which is not an official page. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased). Output: top-level decision, additionalContext."
+    },
+    "matcher": "tool name",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "PostToolBatch",
+    "when": "after a full batch of parallel tool calls resolves; exit 2 stops the loop before the next model call",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "tool_calls"
+    ],
+    "fact": {
+     "claim": "PostToolBatch is listed in the hooks lifecycle table with its payload fields (matcher: none).",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field."
+    },
+    "matcher": null,
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "Notification",
+    "when": "Claude Code sends a notification",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "message",
+     "title",
+     "notification_type"
+    ],
+    "fact": {
+     "claim": "Notification is listed in the hooks lifecycle table (matcher: permission_prompt|idle_prompt|auth_success|elicitation_dialog|...). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "permission_prompt|idle_prompt|auth_success|elicitation_dialog|elicitation_url_dialog|elicitation_complete|elicitation_response|agent_needs_input|agent_completed|quota_auto_resume_fired|quota_auto_resume_stale|quota_auto_resume_disabled|plugin_notification",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "MessageDisplay",
+    "when": "while assistant message text is displayed",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "turn_id",
+     "message_id",
+     "index",
+     "final",
+     "delta"
+    ],
+    "fact": {
+     "claim": "MessageDisplay is listed in the hooks lifecycle table (matcher: none). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased). can_rewrite true: output `displayContent` changes what is shown, display only (hooks reference 2026-10-24)."
+    },
+    "matcher": null,
+    "timeout_sec": 10,
+    "can_rewrite": true,
+    "aliases": []
+   },
+   {
+    "name": "SubagentStart",
+    "when": "subagent spawned",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir"
+    ],
+    "fact": {
+     "claim": "SubagentStart is listed in the hooks lifecycle table with its payload fields (matcher: agent type).",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. agent_id and agent_type are common fields inside subagents or with --agent; not observed live (no subagent in the recording)."
+    },
+    "matcher": "agent type",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "SubagentStop",
+    "when": "subagent finishes",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "stop_hook_active",
+     "agent_transcript_path",
+     "last_assistant_message",
+     "background_tasks",
+     "session_crons"
+    ],
+    "fact": {
+     "claim": "SubagentStop is listed in the hooks lifecycle table with its payload fields (matcher: agent type).",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Also seen live: the five SubagentStop payload bodies in a recorded real run carry exactly these fields (test/fixtures/platforms/recorded-hook-events.json). Output: decision, additionalContext."
+    },
+    "matcher": "agent type",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "TaskCreated",
+    "when": "task created via TaskCreate",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "task_id",
+     "task_subject",
+     "task_description",
+     "teammate_name",
+     "team_name"
+    ],
+    "fact": {
+     "claim": "TaskCreated is listed in the hooks lifecycle table (matcher: none). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": null,
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "TaskCompleted",
+    "when": "task marked completed",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "task_id",
+     "task_subject",
+     "task_description",
+     "teammate_name",
+     "team_name"
+    ],
+    "fact": {
+     "claim": "TaskCompleted is listed in the hooks lifecycle table (matcher: none). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. can_block is unverified (null): the earlier true was a guess and the page text read did not state that this hook can block. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased). can_block set true 2026-10-24: exit 2 prevents completion (hooks reference)."
+    },
+    "matcher": null,
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "Stop",
+    "when": "Claude finishes responding",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "stop_hook_active",
+     "last_assistant_message",
+     "background_tasks",
+     "session_crons"
+    ],
+    "fact": {
+     "claim": "Recording: stop_hook_active false, last_assistant_message holds final text, background_tasks [], session_crons [].",
+     "kind": "observed",
+     "source": "probe:versions/2.1.302/payloads.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "2.1.302",
+     "status": "confirmed",
+     "note": "Output: decision block with reason, additionalContext; capped at 8 consecutive continuations."
+    },
+    "matcher": null,
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "StopFailure",
+    "when": "turn ends due to an API error",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "error",
+     "error_details",
+     "last_assistant_message"
+    ],
+    "fact": {
+     "claim": "StopFailure is listed in the hooks lifecycle table (matcher: rate_limit|overloaded|authentication_failed|billing_error|...|cloud_credential_error|unknown). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "rate_limit|overloaded|authentication_failed|oauth_org_not_allowed|account_on_hold|billing_error|invalid_request|model_not_found|server_error|max_output_tokens|cloud_credential_error|unknown",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "TeammateIdle",
+    "when": "agent-team teammate about to go idle",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "teammate_name",
+     "team_name"
+    ],
+    "fact": {
+     "claim": "TeammateIdle is listed in the hooks lifecycle table (matcher: none). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. can_block is unverified (null): the earlier true was a guess and the page text read did not state that this hook can block. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased). can_block set true 2026-10-24: exit 2 keeps the teammate working (hooks reference)."
+    },
+    "matcher": null,
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "InstructionsLoaded",
+    "when": "CLAUDE.md or rules file loaded",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "file_path",
+     "memory_type",
+     "load_reason",
+     "globs",
+     "trigger_file_path",
+     "parent_file_path"
+    ],
+    "fact": {
+     "claim": "InstructionsLoaded is listed in the hooks lifecycle table (matcher: session_start|nested_traversal|path_glob_match|include|compact). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "session_start|nested_traversal|path_glob_match|include|compact",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "ConfigChange",
+    "when": "config file changes during a session",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "source",
+     "file_path"
+    ],
+    "fact": {
+     "claim": "ConfigChange is listed in the hooks lifecycle table (matcher: user_settings|project_settings|local_settings|policy_settings|skills). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "user_settings|project_settings|local_settings|policy_settings|skills",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "CwdChanged",
+    "when": "working directory changes",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "old_cwd",
+     "new_cwd"
+    ],
+    "fact": {
+     "claim": "CwdChanged is listed in the hooks lifecycle table (matcher: none). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": null,
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "DirectoryAdded",
+    "when": "directory added via /add-dir",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "directory",
+     "source"
+    ],
+    "fact": {
+     "claim": "DirectoryAdded is listed in the hooks lifecycle table (matcher: slash_command|register_repo_root). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "slash_command|register_repo_root",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "FileChanged",
+    "when": "watched file changes on disk",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "file_path",
+     "event"
+    ],
+    "fact": {
+     "claim": "FileChanged is listed in the hooks lifecycle table (matcher: literal file names, `a|b`). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "literal file names, `a|b`",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "WorktreeCreate",
+    "when": "worktree created (--worktree, isolation worktree)",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "name"
+    ],
+    "fact": {
+     "claim": "WorktreeCreate is listed in the hooks lifecycle table (matcher: none). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": null,
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "WorktreeRemove",
+    "when": "worktree from a WorktreeCreate hook removed",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "worktree_path"
+    ],
+    "fact": {
+     "claim": "WorktreeRemove is listed in the hooks lifecycle table (matcher: none). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": null,
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "PreCompact",
+    "when": "before context compaction",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "trigger",
+     "custom_instructions"
+    ],
+    "fact": {
+     "claim": "PreCompact is listed in the hooks lifecycle table (matcher: manual|auto). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "manual|auto",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "PostCompact",
+    "when": "after context compaction",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "trigger",
+     "compact_summary"
+    ],
+    "fact": {
+     "claim": "PostCompact is listed in the hooks lifecycle table (matcher: manual|auto). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased)."
+    },
+    "matcher": "manual|auto",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "PreModelSwitch",
+    "when": "before a requested model switch",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "from_model",
+     "to_model",
+     "requested_model",
+     "source",
+     "context_tokens",
+     "prompt_cache_warm",
+     "cache_ttl",
+     "estimated_cache_write_usd",
+     "pricing"
+    ],
+    "fact": {
+     "claim": "PreModelSwitch is listed in the hooks lifecycle table (matcher: canonical model name). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased). Output: permissionDecision allow|deny|ask or decision block."
+    },
+    "matcher": "canonical model name",
+    "timeout_sec": 30,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "PostModelSwitch",
+    "when": "after the session model changes",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "from_model",
+     "to_model",
+     "requested_model",
+     "source",
+     "context_tokens",
+     "prompt_cache_warm",
+     "cache_ttl",
+     "estimated_cache_write_usd",
+     "pricing"
+    ],
+    "fact": {
+     "claim": "PostModelSwitch is listed in the hooks lifecycle table (matcher: canonical model name). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased). Output: additionalContext."
+    },
+    "matcher": "canonical model name",
+    "timeout_sec": 30,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "Elicitation",
+    "when": "MCP server requests user input",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "mcp_server_name",
+     "message",
+     "mode",
+     "url",
+     "elicitation_id",
+     "requested_schema"
+    ],
+    "fact": {
+     "claim": "Elicitation is listed in the hooks lifecycle table (matcher: MCP server name). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. can_block is unverified (null): the earlier true was a guess and the page text read did not state that this hook can block. Payload field list refreshed 2026-10-24 from the hooks reference (read through a page summarizer, wording may be paraphrased). can_block set true 2026-10-24: exit 2 declines the request (hooks reference)."
+    },
+    "matcher": "MCP server name",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "ElicitationResult",
+    "when": "after user responds to an elicitation",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "effort",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir"
+    ],
+    "fact": {
+     "claim": "ElicitationResult is listed in the hooks lifecycle table (matcher: MCP server name). Payload fields beyond the common set were not read; the earlier guesses sit in unverified_fields.",
+     "kind": "documented",
+     "source": "https://code.claude.com/docs/en/hooks",
+     "date": "2026-10-24",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Read on the official page 2026-10-24 via a summarizer; a paraphrase is possible. Re-read the page before relying on a field. can_block is unverified (null): the earlier true was a guess and the page text read did not state that this hook can block. can_block set true 2026-10-24: exit 2 blocks the response (hooks reference)."
+    },
+    "matcher": "MCP server name",
+    "timeout_sec": 600,
+    "can_rewrite": null,
+    "aliases": []
+   },
+   {
+    "name": "SessionEnd",
+    "when": "session terminates",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "prompt_id",
+     "permission_mode",
+     "agent_id",
+     "agent_type",
+     "scratchpad_dir",
+     "reason"
+    ],
+    "fact": {
+     "claim": "Recording: reason=other. Docs: shared 1.5 s budget (raised to per-hook timeout up to 60 s).",
+     "kind": "observed",
+     "source": "probe:versions/2.1.302/payloads.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "2.1.302",
+     "status": "confirmed",
+     "note": "`effort` ({level}) is a documented common field but was absent from this event in the 2.1.302 recording (see discrepancies.json claude-effort-docs-vs-recording). Matcher value bypass_permissions_disabled was removed in v2.1.234; do not write a matcher for it."
+    },
+    "matcher": "clear|resume|logout|prompt_input_exit|other",
+    "timeout_sec": 1.5,
+    "can_rewrite": null,
+    "aliases": [],
+    "unverified_fields": [
+     "effort"
+    ]
+   }
+  ],
+  "missing_events": [
+   {
+    "claim": "No per-token or per-assistant-message hook except MessageDisplay; no hook carries the model's text before a tool call (Pre has no narration field). Narration must come from the transcript.",
+    "kind": "observed",
+    "source": "probe:versions/2.1.302/payloads.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed"
+   }
+  ],
+  "absent_events": [],
+  "config_paths": [
+   {
+    "claim": "User scope: ~/.claude/settings.json (hooks key).",
+    "value": {
+     "scope": "user",
+     "path": "~/.claude/settings.json"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Repo scope, shared: <repo>/.claude/settings.json.",
+    "value": {
+     "scope": "repo",
+     "path": ".claude/settings.json"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Repo scope, local and uncommitted: <repo>/.claude/settings.local.json.",
+    "value": {
+     "scope": "repo",
+     "path": ".claude/settings.local.json"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Plugin scope: <plugin>/hooks/hooks.json, or an inline `hooks` key in the plugin manifest; registered at plugin load.",
+    "value": {
+     "scope": "plugin",
+     "path": "hooks/hooks.json"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/plugins/components",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Skill scope: `hooks:` frontmatter in SKILL.md registers when the skill is invoked and lasts the session.",
+    "value": {
+     "scope": "skill",
+     "path": "SKILL.md frontmatter hooks:"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/skills",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Agent scope: subagent frontmatter hooks, removed when the subagent ends (Stop becomes SubagentStop); plugin agents ignore `hooks` frontmatter.",
+    "value": {
+     "scope": "agent",
+     "path": "agent frontmatter hooks:"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Managed scope on macOS: /Library/Application Support/ClaudeCode/managed-settings.json.",
+    "value": {
+     "scope": "managed",
+     "path": "/Library/Application Support/ClaudeCode/managed-settings.json"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/managed-settings",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ],
+  "surfaces": [
+   {
+    "claim": "Terminal CLI runs hooks.",
+    "value": {
+     "surface": "terminal CLI",
+     "runs_hooks": true
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "IDE extensions run hooks.",
+    "value": {
+     "surface": "IDE extensions (VS Code, JetBrains)",
+     "runs_hooks": true
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "The Desktop app Code tab runs hooks and shares settings with the CLI.",
+    "value": {
+     "surface": "Desktop app Code tab",
+     "runs_hooks": true
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Cloud (web) sessions run hooks, but do not read ~/.claude/settings.json and do not load local or repo-enabled plugins (only org-managed ones); they do read the repo's .claude/settings.json. SessionStart hooks have time limits there. CLAUDE_CODE_REMOTE=true is set.",
+    "value": {
+     "surface": "cloud (web) sessions",
+     "runs_hooks": true
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/claude-code-on-the-web",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed",
+    "note": "A cloud hook runs on Anthropic's machine, not the Mac, so it cannot write ~/CoCheckData."
+   },
+   {
+    "claim": "In self-hosted environments only operator-seeded or managed hooks run.",
+    "value": {
+     "surface": "self-hosted environments",
+     "runs_hooks": true
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/claude-code-on-the-web",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Agent SDK: callback hooks (options.hooks) and, when settingSources is enabled (default for query()), shell hooks from settings files. The Python SDK lacks SessionStart, SessionEnd and PostToolBatch callbacks; TypeScript has all 33. Hooks may not fire when max_turns is hit.",
+    "value": {
+     "surface": "Agent SDK",
+     "runs_hooks": true
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/agent-sdk/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Not covered by hooks: a user interrupt skips Stop; a call rejected before it runs skips PostToolUseFailure.",
+    "value": {
+     "surface": "user interrupt / rejected calls",
+     "runs_hooks": false
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ],
+  "skill_and_plugin_paths": [
+   {
+    "claim": "Skills: ~/.claude/skills/<name>/SKILL.md (personal), <repo>/.claude/skills/ (project), nested <subdir>/.claude/skills, plugin <plugin>/skills/<name> (as /plugin:skill), enterprise managed dir; --add-dir adds more. Edits apply mid-session; a brand-new top-level skills dir needs /reload-skills.",
+    "value": {
+     "kind": "skill",
+     "paths": [
+      "~/.claude/skills",
+      ".claude/skills",
+      "<plugin>/skills"
+     ]
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/skills",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "A skill can run a shell command before Claude sees it: !`cmd` or a ```! block, 2 minute default timeout, checked against permission rules, disabled by disableSkillShellExecution.",
+    "value": {
+     "kind": "skill",
+     "shell": true
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/skills",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "A plugin is a directory with .claude-plugin/plugin.json (only name required), skills/, commands/, agents/, hooks/hooks.json, .mcp.json, bin/. One plugin delivers skill plus hooks. Env passed to hooks: CLAUDE_PLUGIN_ROOT, CLAUDE_PLUGIN_DATA, CLAUDE_PLUGIN_OPTION_<KEY>.",
+    "value": {
+     "kind": "plugin",
+     "paths": [
+      ".claude-plugin/plugin.json",
+      "hooks/hooks.json",
+      "skills/",
+      ".mcp.json"
+     ]
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/plugins/components",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Plugin install: claude plugin marketplace add, claude plugin install name@marketplace [--scope user|project|local]; scopes write enabledPlugins to ~/.claude/settings.json, .claude/settings.json or .claude/settings.local.json; --plugin-dir loads one for a session; /reload-plugins applies changes.",
+    "value": {
+     "kind": "plugin-install",
+     "scopes": [
+      "user",
+      "project",
+      "local"
+     ]
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/plugins/install",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ],
+  "sandbox_and_network": [
+   {
+    "claim": "Timeout cancels a hook and discards its output. Defaults: 600 s command/http/mcp_tool, 30 s prompt, 60 s agent, 30 s on UserPromptSubmit and the model-switch events, 10 s MessageDisplay.",
+    "value": {
+     "kind": "timeout"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "http hooks POST the input JSON to a URL; headers may use $VAR listed in allowedEnvVars. async:true command hooks run in the background, cannot block, and are killed at teardown in -p mode.",
+    "value": {
+     "kind": "network"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Cloud sessions run on Anthropic's machines; a repo-committed .claude/settings.json hook runs there but cannot reach the user's disk.",
+    "value": {
+     "kind": "network",
+     "surface": "cloud"
+    },
+    "kind": "documented",
+    "source": "https://code.claude.com/docs/en/claude-code-on-the-web",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ]
+ },
+ "other_observation_channels": [
+  {
+   "claim": "Session transcript JSONL at transcript_path (~/.claude/projects/<cwd-slug>/<session>.jsonl), written asynchronously and may lag the hook.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Stop and SubagentStop carry last_assistant_message so the closing text needs no transcript read.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "claude --debug logs each command hook with command, plugin, outcome, duration (2.1.296+).",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/changelog",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "unverified",
+   "note": "Changelog entry for 2.1.296."
+  },
+  {
+   "claim": "OpenTelemetry events: prompt_id matches the prompt.id attribute.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "unverified"
+  }
+ ],
+ "call_ids": [
+  {
+   "claim": "tool_use_id (toolu_...) is on PreToolUse, PostToolUse, PostToolUseFailure, PermissionDenied and is the same id as the tool_use block in the transcript.",
+   "kind": "observed",
+   "source": "probe:versions/2.1.302/payloads.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed",
+   "note": "Equality of hook id and transcript id seen in the recording."
+  },
+  {
+   "claim": "PermissionRequest has no tool_use_id.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "tool_input.description (Bash) is the model's one-line reason for the call, optional; seen on both calls in the recording.",
+   "value": "Show contents of data.csv",
+   "kind": "observed",
+   "source": "probe:versions/2.1.302/payloads.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Parallel tool calls of one assistant message are separate transcript lines sharing message.id.",
+   "kind": "observed",
+   "source": "local:~/code/cocheck/src/hosts/claude.ts",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "unverified",
+   "note": "CoCheck's own claim; recording has none parallel."
+  }
+ ],
+ "narration_sources": [
+  {
+   "name": "assistant text block before a tool_use",
+   "path": "transcript JSONL: type=assistant line, message.content[type=text] immediately before the tool_use line (same message.id, separate lines, apiBlockIndex 0 then 1)",
+   "readable_at": "pre",
+   "default_on": true,
+   "fact": {
+    "claim": "Recording: the narration text line (15:44:32.920Z) and tool_use line (33.513Z) are written before the PreToolUse hook (33.563Z) by timestamp; that they are flushed to disk when Pre fires is not shown (docs say the transcript is written asynchronously).",
+    "kind": "observed",
+    "source": "probe:versions/2.1.302/sessions/b0f5204b-5694-452a-b345-e478329f2f19.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "unverified"
+   }
+  },
+  {
+   "name": "closing message",
+   "path": "Stop.last_assistant_message, or last assistant text block with stop_reason end_turn",
+   "readable_at": "post",
+   "default_on": true,
+   "fact": {
+    "claim": "Recording: Stop.last_assistant_message equals the final text block.",
+    "kind": "observed",
+    "source": "probe:versions/2.1.302/payloads.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed"
+   }
+  },
+  {
+   "name": "thinking block",
+   "path": "message.content[type=thinking]",
+   "readable_at": "post",
+   "default_on": false,
+   "fact": {
+    "claim": "Recording thinking text is empty (thinkingDisplay omitted); not usable as narration.",
+    "kind": "observed",
+    "source": "probe:versions/2.1.302/sessions/b0f5204b-5694-452a-b345-e478329f2f19.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "2.1.302",
+    "status": "confirmed"
+   }
+  }
+ ],
+ "session_files": [
+  {
+   "claim": "Main transcript: ~/.claude/projects/<cwd with / and . replaced by ->/<session_id>.jsonl.",
+   "kind": "observed",
+   "source": "probe:versions/2.1.302/payloads.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Line types in the recording: user, assistant, attachment, system (subtype stop_hook_summary), queue-operation, last-prompt, api-request, api-request-shape, api-request-blob, atis-latch, cost-state. Only assistant text and tool_use blocks matter for narration.",
+   "kind": "observed",
+   "source": "probe:versions/2.1.302/sessions/b0f5204b-5694-452a-b345-e478329f2f19.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Every line carries isSidechain; False in main thread. Subagent transcript lines carry isSidechain true and agentId.",
+   "kind": "observed",
+   "source": "local:~/.claude/projects (a subagent transcript, structure only)",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Tool results come back as user lines with content tool_result; a user line without tool_result starts a new turn.",
+   "kind": "observed",
+   "source": "probe:versions/2.1.302/sessions/b0f5204b-5694-452a-b345-e478329f2f19.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  }
+ ],
+ "helpers_or_subagents": [
+  {
+   "claim": "Subagent transcripts: <projects>/<cwd-slug>/<session_id>/subagents/agent-<agent_id>.jsonl with sidecar agent-<agent_id>.meta.json.",
+   "kind": "observed",
+   "source": "local:~/.claude/projects (structure only)",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "meta.json keys: agentType, description, toolUseId (the launching call), spawnDepth, requestShape, requestNonInteractive, model, finished.",
+   "kind": "observed",
+   "source": "local:~/.claude/projects (structure only)",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Hooks fired inside a subagent carry agent_id and agent_type in the common fields; SubagentStart/SubagentStop bracket it.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "2.1.302 turned fork subagents on by default in claude -p, SDK, desktop and VS Code.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/changelog",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  }
+ ],
+ "limits_and_timeouts": [
+  {
+   "claim": "Default hook timeout 600 s (command/http/mcp_tool); 30 s on UserPromptSubmit and model-switch events; 10 s MessageDisplay; prompt 30 s; agent 60 s; SessionEnd shared 1.5 s budget up to 60 s.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Exit 0 success (stdout JSON parsed); exit 2 blocking error on blocking events with stderr as reason; other exit codes non-blocking. Exit 2 does not block PostToolUse, PostToolUseFailure, Notification, SubagentStart, SessionStart, SessionEnd.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "PreToolUse JSON hookSpecificOutput.permissionDecision allow|deny|ask|defer; top-level decision block for Post*, Stop, SubagentStop, UserPromptSubmit.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "A timed-out hook's output is discarded. hooks.md says PreToolUse is then not blocked unless onFailure is 'block' (2.1.295+); the Agent SDK page says a timed-out PreToolUse blocks the call with a 'hook didn't respond' result (2.1.210+).",
+   "value": {
+    "pages": [
+     "https://code.claude.com/docs/en/hooks",
+     "https://code.claude.com/docs/en/agent-sdk/hooks"
+    ]
+   },
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-24",
+   "verified_on": null,
+   "status": "contradicted",
+   "note": "Two official pages disagree (hooks vs agent-sdk/hooks https://code.claude.com/docs/en/agent-sdk/hooks). Set onFailure explicitly if it matters; a probe with a sleeping PreToolUse hook would settle it."
+  },
+  {
+   "claim": "Hook output strings are capped at 10,000 characters.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/hooks",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  }
+ ],
+ "update_channel": [
+  {
+   "claim": "claude --version prints '2.1.302 (Claude Code)'; native installs auto-update in the background, effective next start; claude update forces it.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/setup",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Channel via autoUpdatesChannel (latest default, stable about a week old); minimumVersion floor; DISABLE_AUTOUPDATER stops background check, DISABLE_UPDATES blocks all.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/setup",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Native installer keeps the launcher's version plus two newest on disk; three versions 2.1.300-2.1.302 present.",
+   "kind": "observed",
+   "source": "local:~/.local/share/claude/versions",
+   "date": "2026-10-18",
+   "verified_on": "2.1.302",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Latest changelog entry at fetch: 2.1.302, 2026-10-16.",
+   "kind": "documented",
+   "source": "https://code.claude.com/docs/en/changelog",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  }
+ ],
+ "open_questions": [
+  "Is the Pre-time transcript read race-free: is the assistant text line always flushed before PreToolUse fires (hook doc says transcript is written asynchronously and may lag)? Recording cannot show timing.",
+  "Exact agent_id presence on tool hooks inside subagents was not observed (no subagent in the recording); docs list it as a common field.",
+  "Whether MessageDisplay could replace transcript reads for narration.",
+  "Windows managed settings path was not read; macOS/Linux paths are from docs, not checked on disk (none exists on this Mac).",
+  "Full changelog before 2.1.293 not read; hook-affecting changes older than that are unreviewed.",
+  "Do Claude Code hook commands run inside the Bash sandbox (filesystem and network limits)? The 2026-10-24 research did not read a statement either way.",
+  "Exact stdin for PermissionDenied, FileChanged, UserPromptSubmit (beyond prompt), Notification and Elicitation: not read in the 2026-10-24 extraction (per-event fields listed as unverified_fields).",
+  "Whether a settings edit mid-session is applied silently or needs /hooks confirmation: not visible in what was read (hooks-guide says the file watcher normally picks up hook changes).",
+  "Changelog before 2.1.296 (Jul to Sep 2026) was not read.",
+  "Is `updatedMCPToolOutput` (named in the 2.1.296 changelog) an old name or an alias of `updatedToolOutput` (hooks page)? Unresolved on 2026-10-24; see discrepancies.json claude-updatedmcptooloutput-name.",
+  "ElicitationResult's own payload field list and the resume-related `source` value of PostModelSwitch were cut off in the 2026-10-24 page text; register lists only the common fields for ElicitationResult.",
+  "Changelog 2.1.299 to 2.1.304 lists a separate 'mods' hook system (tool.check, prompt.submit, turn.start, agent.spawn ...) that is not part of the 33 settings-hook events; not investigated, candidate for its own register entry.",
+  "Precedence order and managed-settings paths were not re-fetched on 2026-10-24 (carried from 2026-10-18)."
+ ]
+}

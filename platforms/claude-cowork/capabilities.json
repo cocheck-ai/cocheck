@@ -1,0 +1,305 @@
+{
+  "schema": 1,
+  "platform": "claude-cowork",
+  "name": "Claude Cowork (agent mode in Claude desktop app)",
+  "vendor": "Anthropic",
+  "surfaces": [
+    "desktop-macos",
+    "desktop-windows",
+    "web",
+    "mobile",
+    "chrome-side-panel"
+  ],
+  "checked_on": "2026-10-18",
+  "versions_seen": [
+    {
+      "version": "2.31226.1",
+      "where": "local:/Applications/Claude.app/Contents/Info.plist",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "claude-code 2.1.295 (bundled)",
+      "where": "local:~/Library/Application Support/Claude/claude-code/2.1.295",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "claude-code 2.1.121 (in an April 2026 session audit log)",
+      "where": "local:local-agent-mode-sessions/*/*/agent/local_ditto_*/audit.jsonl",
+      "date": "2026-10-18"
+    }
+  ],
+  "cocheck_relevance": "Cowork runs Claude Code underneath with settingSources limited to user, so CoCheck's ~/.claude hooks do not reach it; today the observable channels are a per-session audit.jsonl (HMAC-signed, stream-json) and a per-session Claude Code transcript jsonl under Application Support, plus the file-system effects in the user-selected folders. No third-party hook channel is documented.",
+  "install": [
+    {
+      "claim": "Cowork ships inside the Claude desktop app (bundle id com.anthropic.claudefordesktop), an Electron app.",
+      "value": "com.anthropic.claudefordesktop",
+      "kind": "observed",
+      "source": "local:/Applications/Claude.app/Contents/Info.plist",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Desktop is available on macOS and Windows; Cowork is on paid plans; cloud sessions in beta for Team/Enterprise.",
+      "kind": "documented",
+      "source": "https://support.claude.com/en/articles/13345190-get-started-with-cowork",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "confirmed"
+    },
+    {
+      "claim": "The official help page says Cowork work \"runs on Anthropic's servers, in an isolated environment\" (cloud sessions) and gives no VM or Linux detail; the Linux VM comes from the local bundle layout.",
+      "kind": "documented",
+      "source": "https://support.claude.com/en/articles/13345190-get-started-with-cowork",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "unverified"
+    }
+  ],
+  "processes_and_paths": [
+    {
+      "claim": "Support dir ~/Library/Application Support/Claude holds local-agent-mode-sessions, vm_bundles (claudevm.bundle: rootfs.img, vmlinuz, initrd, sessiondata.img; ~9.9G), claude-code (bundled CLI by version), claude-code-vm, claude-code-sessions, claude_desktop_config.json, config.json.",
+      "kind": "observed",
+      "source": "local:~/Library/Application Support/Claude",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Cowork runs a Linux VM (Apple Virtualization, with gVisor) booted via coworkd; logs: coworkd.log, cowork_vm_node.log, cowork_vm_swift.log, vzgvisor.log, swift.log, ssh.log in ~/Library/Logs/Claude. Host files are shared in via virtiofs mounts at /sessions/<vm>/mnt/.",
+      "kind": "observed",
+      "source": "local:~/Library/Logs/Claude/coworkd.log",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "unverified",
+      "note": "mount path from shim.sh comment and log keywords virtiofs/Mounting; mount list not read in detail"
+    },
+    {
+      "claim": "Third-party sources describe an isolated Linux VM on Apple's Virtualization Framework with only user-authorized folders reachable.",
+      "kind": "documented",
+      "source": "https://medium.com/@jbpoley/anthropic-claude-cowork-c5597e376efd",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "unverified",
+      "note": "secondary source; the official help page says only 'isolated environment'"
+    },
+    {
+      "claim": "Session metadata file local_ditto_<id>.json includes processName, vmProcessName, hostLoopMode, cwd, userSelectedFolders, model, egressAllowedDomains, pluginsEnabled, skillsEnabled, memoryEnabled, sessionType, systemPrompt (shape only read).",
+      "kind": "observed",
+      "source": "local:local-agent-mode-sessions/<acct>/<org>/agent/local_ditto_<id>.json",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Plugin staging dir seen in session init: /var/folders/.../T/claude-hostloop-plugins/<hash> (source anthropic-skills@inline).",
+      "kind": "observed",
+      "source": "local:audit.jsonl system init",
+      "date": "2026-10-18",
+      "verified_on": "claude-code 2.1.121",
+      "status": "confirmed"
+    }
+  ],
+  "auth": [
+    {
+      "claim": "Account tokens are cached in config.json (oauth:tokenCache keys exist); not read.",
+      "kind": "observed",
+      "source": "local:~/Library/Application Support/Claude/config.json",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    }
+  ],
+  "hooks": {
+    "available": {
+      "claim": "No documented user-facing hook channel for Cowork. The app spawns Claude Code with settingSources [\"user\"] and in-app PreToolUse hooks (e.g. matcher Task) set in code; user settings are inferred to resolve against the per-session .claude dir (not shown in code read), not ~/.claude.",
+      "kind": "observed",
+      "source": "binary:app.asar strings (settingSources:[\"user\"], hooks:{PreToolUse:[{matcher:\"Task\"...)",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "unverified",
+      "note": "inferred from minified code; not probed"
+    },
+    "config": [
+      {
+        "claim": "Bug report: plugin hooks/hooks.json never fire in Cowork (Windows) because the VM spawns claude with --setting-sources user; skills and MCP load fine. Fix status unknown.",
+        "kind": "documented",
+        "source": "https://claudeissues.com/issue/27398-bug-cowork-plugin-hooks-from-hooks-hooks-json-never-fire-setting-sources-user-ex",
+        "date": "2026-10-18",
+        "verified_on": null,
+        "status": "unverified",
+        "note": "only via search snippet; page fetch timed out"
+      },
+      {
+        "claim": "Plugins in Cowork bundle skills, connectors, sub-agents (hooks not mentioned in the official help page); stored on the account.",
+        "kind": "documented",
+        "source": "https://support.claude.com/en/articles/13345190-get-started-with-cowork",
+        "date": "2026-10-18",
+        "verified_on": null,
+        "status": "confirmed"
+      },
+      {
+        "claim": "The app binary contains disableAllHooks and PreToolUse strings (Claude Code SDK code); the session .claude dir observed had no settings.json.",
+        "kind": "observed",
+        "source": "binary:app.asar strings; local:session .claude listing",
+        "date": "2026-10-18",
+        "verified_on": "2.31226.1",
+        "status": "unverified"
+      }
+    ],
+    "trust_or_approval": [],
+    "events": [],
+    "missing_events": [
+      {
+        "claim": "No CoCheck-installable Pre/PostToolUse, UserPromptSubmit or Stop hook is known to run in Cowork sessions.",
+        "kind": "observed",
+        "source": "local:session dir listing",
+        "date": "2026-10-18",
+        "verified_on": "2.31226.1",
+        "status": "unverified",
+        "note": "not probed live"
+      }
+    ],
+    "absent_events": [],
+    "config_paths": [],
+    "surfaces": [],
+    "skill_and_plugin_paths": [],
+    "sandbox_and_network": []
+  },
+  "other_observation_channels": [
+    {
+      "claim": "Per-session audit.jsonl (HMAC-signed lines with _audit_hmac/_audit_timestamp, .audit-key beside it) records stream-json events: system init (tools, mcp_servers, plugins, claude_code_version, permissionMode), user, assistant, rate_limit_event, result (cost, usage, permission_denials).",
+      "kind": "observed",
+      "source": "local:local-agent-mode-sessions/<acct>/<org>/agent/local_ditto_<id>/audit.jsonl",
+      "date": "2026-10-18",
+      "verified_on": "claude-code 2.1.121",
+      "status": "confirmed",
+      "note": "keys only read; verified against one April session"
+    },
+    {
+      "claim": "OpenTelemetry export (logs/events) for Cowork: prompts, tool/MCP calls, file access, skills/plugins, approval decisions, API requests; prompt.id links events of a prompt; content capture gated by otlpContentCapture device policy; Team/Enterprise admin-configured; needs Desktop >= 1.1.4173 (local).",
+      "kind": "documented",
+      "source": "https://support.claude.com/en/articles/14477985-monitor-claude-cowork-activity-with-opentelemetry",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "confirmed",
+      "note": "admin feature; unclear if a local OTLP endpoint is usable on a personal plan"
+    },
+    {
+      "claim": "Shim permission bridge dirs shim-perm/requests and shim-perm/responses per session (plugin CLI confirm protocol via shim.sh).",
+      "kind": "observed",
+      "source": "local:session dir + shim-lib/shim.sh",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    },
+    {
+      "claim": "File-system effects of the agent appear in user-selected folders (mounted into the VM) and in session outputs/ and uploads/ dirs.",
+      "kind": "observed",
+      "source": "local:session dir layout",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "unverified"
+    },
+    {
+      "claim": "MCP: claude_desktop_config.json mcpServers and extensions feed session tools; logs mcp.log and mcp-server-<name>.log in ~/Library/Logs/Claude.",
+      "kind": "observed",
+      "source": "local:~/Library/Logs/Claude",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    }
+  ],
+  "call_ids": [
+    {
+      "claim": "Tool calls in the transcript are Claude Code tool_use blocks (message.content[].type=tool_use with ids), same as Claude Code.",
+      "kind": "observed",
+      "source": "local:session .claude/projects/*/*.jsonl and audit.jsonl block types",
+      "date": "2026-10-18",
+      "verified_on": "claude-code 2.1.121",
+      "status": "confirmed",
+      "note": "All 13 tool_use blocks in audit.jsonl carry ids; transcript jsonl ids not checked."
+    }
+  ],
+  "narration_sources": [
+    {
+      "name": "assistant text and thinking blocks in transcript/audit",
+      "path": "session .claude/projects/<slug>/<cli-session>.jsonl and audit.jsonl type=assistant, content types text, thinking, tool_use",
+      "readable_at": "post",
+      "default_on": true,
+      "fact": {
+        "claim": "Assistant text, thinking and tool_use blocks are written per message; user-facing narration also goes via SendUserMessage tool_use.",
+        "kind": "observed",
+        "source": "local:audit.jsonl block-type counts",
+        "date": "2026-10-18",
+        "verified_on": "claude-code 2.1.121",
+        "status": "confirmed"
+      }
+    }
+  ],
+  "session_files": [
+    {
+      "claim": "Claude Code-format transcript per Cowork session at local_ditto_<id>/.claude/projects/<slug>/<uuid>.jsonl (types: user, assistant, attachment, queue-operation, last-prompt, ai-title).",
+      "kind": "observed",
+      "source": "local:local-agent-mode-sessions",
+      "date": "2026-10-18",
+      "verified_on": "claude-code 2.1.121",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Only one local_ditto session dir exists locally (April 2026); newer sessions' location not found; claude-code-sessions/ holds local_<uuid>.json metadata for desktop Claude Code sessions.",
+      "kind": "observed",
+      "source": "local:Application Support/Claude",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    },
+    {
+      "claim": "Docs: sessions and files are saved to the Claude account; cloud sessions run on Anthropic servers; local sessions need the app open.",
+      "kind": "documented",
+      "source": "https://support.claude.com/en/articles/13345190-get-started-with-cowork",
+      "date": "2026-10-18",
+      "verified_on": null,
+      "status": "confirmed"
+    }
+  ],
+  "helpers_or_subagents": [
+    {
+      "claim": "Subagents available in sessions: claude-code-guide, Explore, general-purpose, Plan, statusline-setup.",
+      "kind": "observed",
+      "source": "local:audit.jsonl init",
+      "date": "2026-10-18",
+      "verified_on": "claude-code 2.1.121",
+      "status": "confirmed"
+    }
+  ],
+  "limits_and_timeouts": [
+    {
+      "claim": "Egress is restricted to an allowed-domain list per session (23 domains in the observed session).",
+      "kind": "observed",
+      "source": "local:local_ditto_<id>.json egressAllowedDomains",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    }
+  ],
+  "update_channel": [
+    {
+      "claim": "App updates via Squirrel; bundled Claude Code versioned under Application Support/Claude/claude-code/<ver>.",
+      "kind": "observed",
+      "source": "local:Frameworks/Squirrel.framework, claude-code/",
+      "date": "2026-10-18",
+      "verified_on": "2.31226.1",
+      "status": "confirmed"
+    }
+  ],
+  "open_questions": [
+    "Does a live Cowork session honor hooks in the per-session CLAUDE_CONFIG_DIR settings.json, and could CoCheck legitimately place them there?",
+    "Where do current (post-April) local Cowork sessions write audit.jsonl and transcripts? Only one old session dir found.",
+    "Is audit.jsonl written live per step, and can a third party verify or read it (HMAC key sits beside it)?",
+    "Is hostLoopMode the Claude CLI running on the Mac with tools executed in the VM, or the CLI inside the VM?",
+    "Can the OTel export be pointed at a local endpoint on non-Team plans (otlpContentCapture is a device policy)?",
+    "Status of issue 27398 (plugin hooks) on macOS 2.31226.1.",
+    "Exact virtiofs mount list and write-back timing for user folders."
+  ]
+}

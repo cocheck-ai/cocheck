@@ -1,0 +1,50 @@
+{
+  "name": "cocheck",
+  "version": "0.3.5",
+  "license": "MIT",
+  "description": "CoCheck shows what AI agents changed in your files, step by step, with a before-and-after review page that says which agent action made each change.",
+  "homepage": "https://github.com/cocheck-ai/cocheck#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cocheck-ai/cocheck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cocheck-ai/cocheck/issues"
+  },
+  "type": "module",
+  "bin": {
+    "cocheck": "bin/cocheck.mjs"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "public-kit/",
+    "!public-kit/conformance/fixtures/",
+    "scripts/hook-launch.sh",
+    "scripts/hook-launch.mjs",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "test": "node scripts/run-tests.ts",
+    "test:fast": "node scripts/run-tests.ts --tier=fast",
+    "test:slow": "node scripts/run-tests.ts --tier=slow",
+    "test:check-leftovers": "node scripts/check-leftover-review.ts",
+    "typecheck": "tsc --noEmit",
+    "install:cocheck": "node scripts/install.ts",
+    "cocheck": "node scripts/cocheck.ts",
+    "build": "node scripts/build.mjs",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.11.1",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "pdfjs-dist": "6.5.438",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,136 @@
+# CI is Windows-only on push and pull_request (Actions minutes are nearly out; macOS bills at 10x and the Mac suite runs locally before
+# every push). The macos and ubuntu jobs and the Windows full fast tier run only on workflow_dispatch (run them by hand).
+# Run one job by hand: `gh workflow run ci.yml --ref <branch> -f jobs=macos` (jobs: all, ubuntu, windows, macos; default all).
+# CI: typecheck and the fast test tier. No secrets, no deploy, no release, no publish.
+name: ci
+
+on:
+  workflow_dispatch:
+    inputs:
+      jobs:
+        description: Which job to run by hand
+        type: choice
+        options: [all, ubuntu, windows, macos]
+        default: all
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# CI runs Node 26.x because `brew depends_on "node"` installs the latest Node today; the package floor stays at engines (22.18).
+jobs:
+  macos:
+    if: github.event_name == 'workflow_dispatch' && (inputs.jobs == 'all' || inputs.jobs == 'macos')
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tests `git archive` older commits
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26.x
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:fast
+
+  # Portability signal only: reports how far CoCheck is from running off macOS, never blocks.
+  ubuntu:
+    if: github.event_name == 'workflow_dispatch' && (inputs.jobs == 'all' || inputs.jobs == 'ubuntu')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tests `git archive` older commits
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26.x
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:fast
+
+  # Windows job. The installs, the typecheck, the required tests (test/windows-required.txt) and the installed-CLI smoke steps fail
+  # the run. Only the full fast tier at the end stays a non-blocking signal (step-level continue-on-error).
+  windows:
+    if: github.event_name != 'workflow_dispatch' || inputs.jobs == 'all' || inputs.jobs == 'windows'
+    runs-on: windows-latest
+    timeout-minutes: 40   # the full fast tier ran all 565 files in 26.9 min (run 44237959857); 30 left no room for setup and cleanup
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tests `git archive` older commits
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26.x
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - name: Windows required tests
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          set -eu
+          files="$(grep -v '^[[:space:]]*#' test/windows-required.txt | tr -d '\r' | grep -v '^[[:space:]]*$')"
+          test -n "$files"
+          # shellcheck disable=SC2086
+          node --import ./scripts/test-bootstrap.ts --test $files
+      # The npm package. Packs (prepack builds), installs the tarball into a scratch prefix, and runs the installed CLI against a
+      # scratch home. Nothing is published; the stand-in `security` is not needed on Windows (no Keychain).
+      - name: Pack and install the npm tarball
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          set -eu
+          # RUNNER_TEMP is `D:\a\_temp`: its colon splits PATH, so the shim ran via a drive-less path and resolved on the wrong drive.
+          scratch="$(cygpath -u "$RUNNER_TEMP")/cocheck-pack"
+          mkdir -p "$scratch/out" "$scratch/prefix" "$scratch/home" "$scratch/claude" "$scratch/data" "$scratch/proj"
+          npm pack --pack-destination "$scratch/out"
+          npm install -g --prefix "$scratch/prefix" "$scratch"/out/cocheck-*.tgz
+          export PATH="$scratch/prefix:$scratch/prefix/bin:$PATH"
+          export HOME="$scratch/home" USERPROFILE="$scratch/home" CLAUDE_CONFIG_DIR="$scratch/claude" COCHECK_HOME="$scratch/data"
+          cocheck --version
+          cd "$scratch/proj"
+          cocheck install --home "$scratch/data" --for claude
+      # The same installed package from cmd.exe and PowerShell (how it is run on Windows), each with its own scratch home.
+      - name: Run the installed package from cmd.exe
+        timeout-minutes: 5
+        shell: cmd
+        run: |
+          set "PATH=%RUNNER_TEMP%\cocheck-pack\prefix;%PATH%"
+          set "HOME=%RUNNER_TEMP%\cocheck-pack\home"
+          set "USERPROFILE=%RUNNER_TEMP%\cocheck-pack\home"
+          set "CLAUDE_CONFIG_DIR=%RUNNER_TEMP%\cocheck-pack\claude-cmd"
+          set "COCHECK_HOME=%RUNNER_TEMP%\cocheck-pack\data-cmd"
+          call cocheck --version || exit /b 1
+          mkdir "%RUNNER_TEMP%\cocheck-pack\proj-cmd" "%RUNNER_TEMP%\cocheck-pack\claude-cmd"
+          cd /d "%RUNNER_TEMP%\cocheck-pack\proj-cmd"
+          call cocheck install --home "%COCHECK_HOME%" --for claude || exit /b 1
+          call cocheck status || exit /b 1
+          call cocheck track status || exit /b 1
+      - name: Run the installed package from PowerShell
+        timeout-minutes: 5
+        shell: pwsh
+        run: |
+          $scratch = Join-Path $env:RUNNER_TEMP 'cocheck-pack'
+          $env:PATH = "$scratch\prefix;$env:PATH"
+          $env:HOME = "$scratch\home"; $env:USERPROFILE = "$scratch\home"
+          $env:CLAUDE_CONFIG_DIR = "$scratch\claude-ps"
+          $env:COCHECK_HOME = "$scratch\data-ps"
+          New-Item -ItemType Directory "$scratch\proj-ps", "$scratch\claude-ps" | Out-Null
+          cocheck --version; if ($LASTEXITCODE -ne 0) { exit 1 }
+          Set-Location "$scratch\proj-ps"
+          cocheck install --home $env:COCHECK_HOME --for claude; if ($LASTEXITCODE -ne 0) { exit 1 }
+      - name: Full fast tier (non-blocking signal)
+        run: npm run test:fast
+        continue-on-error: true
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' }}

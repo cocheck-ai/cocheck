@@ -1,0 +1,16 @@
+# Generator for chart-three-{before,after}.xlsx (openpyxl): three charts on one sheet; after, chart 2 is a column chart with the same title and chart 3 is retitled.
+from openpyxl import Workbook
+from openpyxl.chart import BarChart, LineChart, Reference
+
+def book(kind2, title3):
+    wb = Workbook(); ws = wb.active; ws.title = "Data"
+    ws.append(["m", "rev", "cost"])
+    for i in range(1, 5): ws.append([i, i * 10, i * 7])
+    for n, (cls, title, at) in enumerate([(LineChart, "First chart", "F2"), (kind2, "Second chart", "F20"), (LineChart, title3, "F38")]):
+        c = cls(); c.title = title
+        c.add_data(Reference(ws, min_col=2, max_col=3, min_row=1, max_row=5), titles_from_data=True)
+        ws.add_chart(c, at)
+    return wb
+
+book(LineChart, "Third chart").save("chart-three-before.xlsx")
+book(BarChart, "Third chart 2026").save("chart-three-after.xlsx")

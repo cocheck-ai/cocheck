@@ -1,0 +1,1172 @@
+{
+ "schema": 1,
+ "platform": "copilot-cli",
+ "name": "GitHub Copilot CLI",
+ "vendor": "GitHub (Microsoft)",
+ "surfaces": [
+  "cli",
+  "cloud-agent (hooks only, separate runtime)",
+  "acp-server (--acp)"
+ ],
+ "checked_on": "2026-10-24",
+ "versions_seen": [
+  {
+   "version": "1.0.98",
+   "where": "local: installed (copilot --version), used by the probe in a scratch COPILOT_HOME (probe:versions/1.0.98/)",
+   "date": "2026-10-24"
+  },
+  {
+   "version": "1.0.103",
+   "where": "https://github.com/github/copilot-cli/releases (latest stable, published 2026-10-22; releases 1.0.99 to 1.0.103 have no hook items)",
+   "date": "2026-10-24"
+  },
+  {
+   "version": "1.0.104-3",
+   "where": "https://github.com/github/copilot-cli/releases (newest prerelease, published 2026-10-24)",
+   "date": "2026-10-24"
+  },
+  {
+   "version": "1.0.93",
+   "where": "local:/opt/homebrew/Caskroom/copilot-cli/1.0.93/copilot (symlinked from /opt/homebrew/bin/copilot)",
+   "date": "2026-10-18"
+  },
+  {
+   "version": "1.0.98 and 1.0.100-1",
+   "where": "https://github.com/github/copilot-cli/releases (published, not installed)",
+   "date": "2026-10-18"
+  }
+ ],
+ "cocheck_relevance": "CoCheck has a profile and a user-level install (~/.copilot/hooks/cocheck.json, one entry per event incl. subagentStop). Calls inside a helper carry agentId and parentAgentId, so they are credited to the helper under the main session; a failing shell command is read from the exit code in the result text. The cloud coding agent is unsupported (discrepancies.json copilot-cloud-agent-unsupported); with the sandbox on the hook needs a userPolicy grant (copilot-sandbox-hooks-need-policy).",
+ "install": [
+  {
+   "claim": "Homebrew cask; /opt/homebrew/bin/copilot is a symlink to /opt/homebrew/Caskroom/copilot-cli/1.0.93/copilot, a Mach-O arm64 executable.",
+   "kind": "observed",
+   "source": "local:/opt/homebrew/bin/copilot",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Hooks ran with COPILOT_CLI_RESOLVED_DIST_DIR=~/Library/Caches/copilot/pkg/darwin-arm64/1.0.93 (downloaded package cache) and COPILOT_CLI_BINARY_VERSION=1.0.93.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/hook-payloads/env.txt",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  }
+ ],
+ "processes_and_paths": [
+  {
+   "claim": "COPILOT_HOME overrides the config/state dir (help: 'defaults to $HOME/.copilot'). Probe: with it set, all state (config.json, session-state, logs, session-store.db, installed-plugins) went to the scratch dir and the real ~/.copilot non-log files were byte-identical afterwards.",
+   "kind": "observed",
+   "source": "binary:copilot help environment",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  {
+   "claim": "~/.copilot layout: config.json (JSONC with // comments, auto-managed: firstLaunchAt, trustedFolders, flags), config.json.trusted-folders.lock, command-history-state.json, open-sessions-state.json, session-store.db(+shm,wal), installed-plugins/ + .lock, ide/<uuid>.lock, servers/, sidebar-sessions-state/<hash>.json, logs/process-<epochms>-<pid>.log, session-state/<uuid>/{events.jsonl,workspace.yaml,checkpoints/index.md,files/,research/,rewind-file-snapshots/}.",
+   "kind": "observed",
+   "source": "local:~/.copilot",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  {
+   "claim": "User-editable settings belong in ~/.copilot/settings.json (config.json header says so); it does not exist on this Mac. Hooks may be inlined there under 'hooks'.",
+   "kind": "observed",
+   "source": "local:~/.copilot/config.json",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed",
+   "note": "Inline hooks location from docs."
+  },
+  {
+   "claim": "Hooks see env COPILOT_CLI=1, COPILOT_HOME, COPILOT_PROJECT_DIR (= cwd), COPILOT_ALLOW_ALL if set; HOME stays the real home even with COPILOT_HOME set.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/hook-payloads/env.txt",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  }
+ ],
+ "auth": [
+  {
+   "claim": "In the scratch-COPILOT_HOME probe the CLI authenticated with no token env var and nothing in the scratch config, so the login is not kept in COPILOT_HOME/config.json (likely the OS keychain; not checked). Env tokens COPILOT_GITHUB_TOKEN, GH_TOKEN, GITHUB_TOKEN take precedence.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/README.md",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "unverified",
+   "note": "Keychain is inferred."
+  }
+ ],
+ "hooks": {
+  "available": {
+   "claim": "Yes. Command hooks fired for 6 events (sessionStart, userPromptSubmitted, preToolUse, postToolUse, agentStop, sessionEnd) in a real -p turn on 1.0.93.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/hook-payloads/preToolUse.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  "config": [
+   {
+    "claim": "JSON files {\"version\":1,\"hooks\":{event:[{type:'command',bash,powershell,command,exec+args,cwd,env,timeoutSec,matcher}]}}. Sources: policy /etc/github-copilot/policy.d/*.json; repo .github/hooks/*.json, .github/copilot/settings(.local).json, .claude/settings(.local).json; user ~/.copilot/hooks/*.json (or $COPILOT_HOME/hooks/) and ~/.copilot/settings.json; plugin hooks.json; custom-agent frontmatter. All matching entries run.",
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Repo .github/hooks/log.json with camelCase event keys and 'bash' commands was loaded and run (cwd trusted via COPILOT_ALLOW_ALL=true).",
+    "kind": "observed",
+    "source": "probe:versions/1.0.93/hook-config-log.json",
+    "date": "2026-10-18",
+    "verified_on": "1.0.93",
+    "status": "confirmed"
+   },
+   {
+    "claim": "Entry types: command (default), http (url, headers, allowedEnvVars; preToolUse needs https), prompt (sessionStart only). Event keys may be camelCase (camel payload) or PascalCase (VS Code format, snake_case payload with hook_event_name).",
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "disableAllHooks: true in a hooks file or repo settings.json disables hooks; policy hooks ignore it.",
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Both a camelCase .github/hooks file and a PascalCase .claude/settings.json hook fired once per call, so a call is recorded twice, in two payload formats; nothing de-duplicates.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.98/hook-calls-gh.jsonl",
+    "date": "2026-10-24",
+    "verified_on": "1.0.98",
+    "status": "confirmed",
+    "note": "The probe used two different tags, so this shows both sources run, not that identical commands would be collapsed. A CoCheck install in both places would double-record. Second source: hook-calls-cl.jsonl."
+   },
+   {
+    "claim": "PascalCase-registered events (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PostToolUseFailure, Stop, SessionEnd) switch to snake_case: hook_event_name, session_id, tool_name, tool_input, tool_result{result_type, text_result_for_llm}, stop_reason, transcript_path, ISO 8601 timestamp. PermissionRequest and userPromptTransformed do not switch.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.98/hook-calls-pascal.jsonl",
+    "date": "2026-10-24",
+    "verified_on": "1.0.98",
+    "status": "confirmed"
+   },
+   {
+    "claim": "Agent-scoped hooks (custom-agent frontmatter `hooks` map) arrived in CLI v1.0.97 (2026-10-13), CLI only.",
+    "kind": "documented",
+    "source": "https://github.com/github/copilot-cli/releases",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "unverified",
+    "note": "Release notes only (read through gh api), not on the doc pages."
+   },
+   {
+    "claim": "Trace context (traceparent, tracestate) is passed to hooks since v1.0.81 (2026-08-27).",
+    "kind": "documented",
+    "source": "https://github.com/github/copilot-cli/releases",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "unverified",
+    "note": "Release notes only."
+   },
+   {
+    "claim": "Hook behavior changes by release: v1.0.57 and v1.0.70 preToolUse errors and exit 2 deny; v1.0.63 postToolUse matchers honored; v1.0.67 timeouts fail open; v1.0.72 the 8-block guard and stop_hook_active; v1.0.88 hooks default their cwd to the project root; v1.0.78 and v1.0.92 sessionEnd fires once per prompt-mode turn.",
+    "kind": "documented",
+    "source": "https://github.com/github/copilot-cli/releases",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "unverified",
+    "note": "Release notes only."
+   },
+   {
+    "claim": "Hook output is one JSON object, plus progress lines of the form {\"type\":\"progress\",\"message\":\"...\",\"temporary\":true}.",
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-reference",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ],
+  "trust_or_approval": [
+   {
+    "claim": "Repo hooks run only for a trusted folder. COPILOT_ALLOW_ALL set to exactly 'true' trusts the cwd (loading its hooks, skills, plugins, MCP servers); other truthy spellings only auto-approve tools.",
+    "kind": "documented",
+    "source": "binary:copilot help environment",
+    "date": "2026-10-18",
+    "verified_on": "1.0.93",
+    "status": "confirmed"
+   },
+   {
+    "claim": "Real config.json has trustedFolders (one entry from an earlier probe); trust is stored there, with config.json.trusted-folders.lock beside it.",
+    "kind": "observed",
+    "source": "local:~/.copilot/config.json",
+    "date": "2026-10-18",
+    "verified_on": "1.0.93",
+    "status": "confirmed"
+   },
+   {
+    "claim": "Repo hooks from an untrusted folder are skipped silently: the first probe run produced no hook log until the scratch workspaces were added to trustedFolders in the scratch config.json.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.98/README.md",
+    "date": "2026-10-24",
+    "verified_on": "1.0.98",
+    "status": "confirmed",
+    "note": "Recorded in the probe README (an absence, so no payload file shows it). No warning appeared in the output."
+   }
+  ],
+  "events": [
+   {
+    "name": "sessionStart",
+    "when": "new/resumed session begins",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "source",
+     "initialPrompt"
+    ],
+    "fact": {
+     "claim": "Observed stdin: sessionId,timestamp(epoch ms),cwd,source='new',initialPrompt. Doc adds resume/startup sources; output additionalContext.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.93/hook-payloads/sessionStart.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "1.0.93",
+     "status": "confirmed",
+     "note": "Re-observed on 1.0.98 (2026-10-24, probe:versions/1.0.98/hook-calls-camel.jsonl); payload shape unchanged."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "SessionStart"
+    ]
+   },
+   {
+    "name": "userPromptSubmitted",
+    "when": "user prompt submitted",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "prompt"
+    ],
+    "fact": {
+     "claim": "Observed stdin: sessionId,timestamp,cwd,prompt. Output modifiedPrompt is honored only by SDK hooks, not file hooks (doc).",
+     "kind": "observed",
+     "source": "probe:versions/1.0.93/hook-payloads/userPromptSubmitted.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "1.0.93",
+     "status": "confirmed",
+     "note": "modifiedPrompt is honored only by SDK hooks, not by the CLI. Re-observed on 1.0.98 (2026-10-24, probe:versions/1.0.98/hook-calls-camel.jsonl); payload shape unchanged. Also fires inside subagents (with agentId), where it looks like an extra user prompt."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "UserPromptSubmit"
+    ]
+   },
+   {
+    "name": "preToolUse",
+    "when": "before each tool call",
+    "can_block": true,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "toolName",
+     "toolArgs"
+    ],
+    "fact": {
+     "claim": "Observed stdin: sessionId,cwd,toolName,toolArgs{command,description}. NO tool call id (it does carry timestamp, epoch ms). Doc: output permissionDecision allow/deny/ask, permissionDecisionReason, modifiedArgs; exit 2 = deny; other non-zero exit fails closed.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.93/hook-payloads/preToolUse.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "1.0.93",
+     "status": "confirmed",
+     "note": "Output permissionDecision allow|deny|ask and modifiedArgs (rewrites the args); 'ask' becomes deny on cloud and autopilot. Exit 2 denies; any other non-zero exit also denies (fails closed). Re-observed on 1.0.98 (2026-10-24, probe:versions/1.0.98/hook-calls-camel.jsonl); payload shape unchanged. In PascalCase (PreToolUse) the payload switches to snake_case with Claude tool names (apply_patch -> Edit, bash -> Bash, view -> Read); Edit's tool_input is the raw apply_patch text, not a {file_path} object."
+    },
+    "matcher": "toolName (regex, anchored)",
+    "timeout_sec": 30,
+    "can_rewrite": true,
+    "aliases": [
+     "PreToolUse"
+    ],
+    "absent_fields": [
+     "toolCallId",
+     "tool_use_id",
+     "toolUseId"
+    ]
+   },
+   {
+    "name": "postToolUse",
+    "when": "after each tool call",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "toolName",
+     "toolArgs",
+     "toolResult"
+    ],
+    "fact": {
+     "claim": "Observed stdin: sessionId,timestamp,cwd,toolName,toolArgs,toolResult{resultType,textResultForLlm}. No call id. The session-file copy also has toolResult.sessionLog and toolTelemetry. Doc output: modifiedResult, additionalContext.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.93/hook-payloads/postToolUse.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "1.0.93",
+     "status": "confirmed",
+     "note": "Output modifiedResult and additionalContext (10 KB cap); cannot undo the call. Re-observed on 1.0.98 (2026-10-24, probe:versions/1.0.98/hook-calls-camel.jsonl); payload shape unchanged."
+    },
+    "matcher": "toolName (regex, anchored)",
+    "timeout_sec": 30,
+    "can_rewrite": true,
+    "aliases": [
+     "PostToolUse"
+    ],
+    "absent_fields": [
+     "toolCallId",
+     "tool_use_id",
+     "toolUseId"
+    ]
+   },
+   {
+    "name": "postToolUseFailure",
+    "when": "after a failed tool call",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "toolName",
+     "toolArgs",
+     "error"
+    ],
+    "fact": {
+     "claim": "Observed on a tool-level failure (view of a nonexistent path): stdin has toolName, toolArgs and error as a string ('Path does not exist'); in PascalCase the tool name arrived as Read. It does NOT fire for a failing shell command.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.98/hook-calls-gh.jsonl",
+     "date": "2026-10-24",
+     "verified_on": "1.0.98",
+     "status": "confirmed",
+     "note": "A failing shell command (ls on a missing dir, exit 3) arrives as postToolUse resultType success with the exit code only in the text (<shellId: N completed with exit code 3>). Exit 2 treats stdout as additionalContext (docs)."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "PostToolUseFailure"
+    ],
+    "absent_fields": [
+     "toolCallId",
+     "tool_use_id",
+     "toolUseId"
+    ]
+   },
+   {
+    "name": "agentStop",
+    "when": "main agent finishes responding",
+    "can_block": true,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "transcriptPath",
+     "stopReason",
+     "stop_hook_active"
+    ],
+    "fact": {
+     "claim": "Observed stdin: sessionId,timestamp,cwd,transcriptPath (path to the session events.jsonl),stopReason='end_turn',stop_hook_active. Doc: output decision block/allow + reason; after 8 consecutive blocks the turn ends anyway.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.93/hook-payloads/agentStop.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "1.0.93",
+     "status": "confirmed",
+     "note": "No final-message field is documented: read the transcript. Output decision block|allow (max 8 consecutive blocks). Re-observed on 1.0.98 (2026-10-24, probe:versions/1.0.98/hook-calls-camel.jsonl); payload shape unchanged. stop_hook_active is snake_case even in the camelCase payload. Inside a subagent agentStop also fires, with the subagent's own sessionId and agentId, so subagent turns look like extra stops."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "Stop"
+    ]
+   },
+   {
+    "name": "subagentStart",
+    "when": "subagent starts",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "transcriptPath",
+     "agentId",
+     "agentType",
+     "agentName",
+     "parentAgentId",
+     "agentDisplayName",
+     "agentDescription"
+    ],
+    "fact": {
+     "claim": "Observed for both the custom agent `writer` and the built-in general-purpose agent: stdin has agentId, agentType, agentName, parentAgentId, transcriptPath, cwd, sessionId, timestamp (custom agent adds agentDescription and agentDisplayName).",
+     "kind": "observed",
+     "source": "probe:versions/1.0.98/hook-calls-camel.jsonl",
+     "date": "2026-10-24",
+     "verified_on": "1.0.98",
+     "status": "confirmed",
+     "note": "subagentStart does carry agentId (parentAgentId is the main sessionId). Output additionalContext; cannot block. Contradicts the docs: the built-in general-purpose agent fires start and stop (discrepancies.json copilot-builtin-subagent-fires-start-stop)."
+    },
+    "matcher": "agentName",
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": []
+   },
+   {
+    "name": "subagentStop",
+    "when": "subagent finishes",
+    "can_block": true,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "transcriptPath",
+     "agentId",
+     "agentType",
+     "agentName",
+     "agentDisplayName",
+     "parentAgentId",
+     "response",
+     "stopReason",
+     "stop_hook_active"
+    ],
+    "fact": {
+     "claim": "Observed for the custom and the built-in agent: stdin has agentId, agentType, agentName, agentDisplayName, parentAgentId, response, stopReason, stop_hook_active, transcriptPath, sessionId (the parent's), timestamp.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.98/hook-calls-camel.jsonl",
+     "date": "2026-10-24",
+     "verified_on": "1.0.98",
+     "status": "confirmed",
+     "note": "Output decision block|allow (max 8 consecutive blocks) and modifiedResponse (docs). The built-in general-purpose agent does fire subagentStop in 1.0.98."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": true,
+    "aliases": [
+     "SubagentStop"
+    ]
+   },
+   {
+    "name": "sessionEnd",
+    "when": "session ends",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "reason"
+    ],
+    "fact": {
+     "claim": "Observed stdin: sessionId,timestamp,cwd,reason='complete'. Doc reasons: complete,error,abort,timeout,user_exit.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.93/hook-payloads/sessionEnd.jsonl",
+     "date": "2026-10-18",
+     "verified_on": "1.0.93",
+     "status": "confirmed",
+     "note": "Re-observed on 1.0.98 (2026-10-24, probe:versions/1.0.98/hook-calls-camel.jsonl); payload shape unchanged."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "SessionEnd"
+    ]
+   },
+   {
+    "name": "errorOccurred",
+    "when": "an error occurs",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "error",
+     "errorContext",
+     "recoverable"
+    ],
+    "fact": {
+     "claim": "Documented only.",
+     "kind": "documented",
+     "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "errorContext values model_call|tool_execution|system|user_input; error is {message, name, stack}. Did not fire in the 1.0.98 probe."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "ErrorOccurred"
+    ]
+   },
+   {
+    "name": "preCompact",
+    "when": "before context compaction",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "transcriptPath",
+     "trigger",
+     "customInstructions"
+    ],
+    "fact": {
+     "claim": "Documented only; matcher on trigger manual/auto.",
+     "kind": "documented",
+     "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Did not fire in the 1.0.98 probe."
+    },
+    "matcher": "trigger",
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "PreCompact"
+    ]
+   },
+   {
+    "name": "userPromptTransformed",
+    "when": "after the prompt is transformed for the model",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "prompt",
+     "transformedPrompt"
+    ],
+    "fact": {
+     "claim": "Observed stdin: sessionId, timestamp, cwd, prompt, transformedPrompt; fired right after userPromptSubmitted, also inside subagents. No PascalCase alias: registered as PascalCase it stays camelCase.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.98/hook-calls-camel.jsonl",
+     "date": "2026-10-24",
+     "verified_on": "1.0.98",
+     "status": "confirmed",
+     "note": "Output modifiedTransformedPrompt (docs 2026-10-24)."
+    },
+    "matcher": null,
+    "timeout_sec": 30,
+    "can_rewrite": true,
+    "aliases": []
+   },
+   {
+    "name": "notification",
+    "when": "CLI notification (CLI only)",
+    "can_block": false,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "message",
+     "title",
+     "notification_type"
+    ],
+    "fact": {
+     "claim": "Documented only; fire-and-forget; output additionalContext.",
+     "kind": "documented",
+     "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "notification_type values shell_completed|shell_detached_completed|agent_completed|agent_idle|permission_prompt|elicitation_dialog (docs). Did not fire in the CLI -p probe (it did fire in VS Code 1.140.0)."
+    },
+    "matcher": "notification_type",
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "Notification"
+    ]
+   },
+   {
+    "name": "permissionRequest",
+    "when": "tool permission prompt (CLI only)",
+    "can_block": true,
+    "payload_fields": [
+     "sessionId",
+     "timestamp",
+     "cwd",
+     "hookName",
+     "toolName",
+     "toolInput",
+     "permissionSuggestions"
+    ],
+    "fact": {
+     "claim": "Observed stdin: sessionId, timestamp, cwd, hookName, toolName (edit, bash), toolInput, permissionSuggestions; uses toolInput, not toolArgs. Fires once per prompted tool call, between preToolUse and postToolUse; inside a subagent it keeps the parent sessionId.",
+     "kind": "observed",
+     "source": "probe:versions/1.0.98/hook-calls-camel.jsonl",
+     "date": "2026-10-24",
+     "verified_on": "1.0.98",
+     "status": "confirmed",
+     "note": "Output behavior allow|deny (only deny propagates for sandbox-bypass requests; docs). PascalCase registration does not switch the payload to snake_case (discrepancies.json copilot-permissionrequest-no-snake-case)."
+    },
+    "matcher": "toolName (regex, anchored)",
+    "timeout_sec": 30,
+    "can_rewrite": false,
+    "aliases": [
+     "PermissionRequest"
+    ],
+    "absent_fields": [
+     "toolCallId",
+     "tool_use_id",
+     "toolUseId"
+    ]
+   }
+  ],
+  "missing_events": [
+   {
+    "claim": "No per-tool-call id in any hook stdin payload; no turn or message id.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.93/hook-payloads/preToolUse.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "1.0.93",
+    "status": "confirmed",
+    "note": " Re-confirmed on 1.0.98 (2026-10-24): no payload carries a tool call id; the only id-like fields are sessionId, agentId and parentAgentId."
+   },
+   {
+    "claim": "Cloud agent does not fire permissionRequest or notification, treats preToolUse 'ask' as deny, runs only bash/command entries, has no GITHUB_TOKEN; its preCompact fires for the auto trigger only.",
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "There is no hook for the model's own words; narration must come from the session file.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.93/session-events.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "1.0.93",
+    "status": "confirmed",
+    "note": "Absence in the documented event list and in the observed hook.start types."
+   },
+   {
+    "claim": "A failing shell command is not reported as a failure: `ls` of a missing dir and `exit 3` arrived as postToolUse resultType success, exit code only in the text (<shellId: N completed with exit code 3>); postToolUseFailure did not fire for them.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.98/hook-calls-gh.jsonl",
+    "date": "2026-10-24",
+    "verified_on": "1.0.98",
+    "status": "confirmed",
+    "note": "Seen again in VS Code 1.140.0. See discrepancies.json copilot-shell-failure-reads-as-success."
+   },
+   {
+    "claim": "preMcpToolCall (v1.0.51, 2026-05-19, 'for hook providers') is not in the public docs and is probably an SDK or extension API, not a config event.",
+    "value": {
+     "events": [
+      "preMcpToolCall"
+     ]
+    },
+    "kind": "documented",
+    "source": "https://github.com/github/copilot-cli/releases",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "unverified",
+    "note": "Release notes only; do not add to the event list."
+   }
+  ],
+  "absent_events": [],
+  "config_paths": [
+   {
+    "claim": "User scope: ~/.copilot/hooks/*.json ($COPILOT_HOME/hooks/) and the inline hooks field of ~/.copilot/settings.json (config.json is no longer read for hooks). Not ~/.claude/settings.json.",
+    "value": {
+     "scope": "user",
+     "path": "~/.copilot/hooks/*.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "User scope inline: ~/.copilot/settings.json.",
+    "value": {
+     "scope": "user",
+     "path": "~/.copilot/settings.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Repo scope: .github/hooks/*.json.",
+    "value": {
+     "scope": "repo",
+     "path": ".github/hooks/*.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Repo scope inline: .github/copilot/settings.json and .github/copilot/settings.local.json.",
+    "value": {
+     "scope": "repo",
+     "path": ".github/copilot/settings.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Repo scope, Claude Code's files: the CLI reads the hooks field of the repo's .claude/settings.json and .claude/settings.local.json.",
+    "value": {
+     "scope": "repo",
+     "path": ".claude/settings.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed",
+    "note": "A hook CoCheck writes for Claude Code in a repo's .claude/settings.json also runs under Copilot; see discrepancies.json (copilot-reads-claude-repo-settings)."
+   },
+   {
+    "claim": "Repo scope, Claude Code local file: the CLI reads the hooks field of the repo's .claude/settings.local.json.",
+    "value": {
+     "scope": "repo",
+     "path": ".claude/settings.local.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Repo scope inline, local file: the CLI reads the hooks field of .github/copilot/settings.local.json.",
+    "value": {
+     "scope": "repo",
+     "path": ".github/copilot/settings.local.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Plugin scope: hooks.json or hooks/hooks.json in the plugin install dir; custom-agent frontmatter `hooks` (CLI only).",
+    "value": {
+     "scope": "plugin",
+     "path": "hooks/hooks.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Managed scope: /etc/github-copilot/policy.d/*.json on macOS and Linux (root-owned, not group or world writable); policy hooks are CLI-only and ignore disableAllHooks.",
+    "value": {
+     "scope": "managed",
+     "path": "/etc/github-copilot/policy.d/*.json"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ],
+  "surfaces": [
+   {
+    "claim": "Copilot CLI runs hooks (all matching entries from all layers run, none override).",
+    "value": {
+     "surface": "CLI",
+     "runs_hooks": true
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "The cloud coding agent runs only .github/hooks/*.json on the repo default branch, bash entries only; it has no notification or permissionRequest, treats preToolUse 'ask' as deny, runs in an ephemeral Linux sandbox with a firewall allowlist.",
+    "value": {
+     "surface": "cloud coding agent",
+     "runs_hooks": true
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/use-hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed",
+    "note": "Runs on GitHub's runner, not the Mac: a hook cannot write ~/CoCheckData; only an http hook to an allowlisted host or a committed repo file carries data out."
+   },
+   {
+    "claim": "Policy hooks and agent-scoped hooks are CLI-only; agent-scoped hooks do not run for remote or org-hosted agents.",
+    "value": {
+     "surface": "remote/org-hosted agents",
+     "runs_hooks": false
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Other IDEs (JetBrains, Xcode and the like): nothing found.",
+    "value": {
+     "surface": "other IDEs",
+     "runs_hooks": "unknown"
+    },
+    "kind": "documented",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "unverified"
+   }
+  ],
+  "skill_and_plugin_paths": [
+   {
+    "claim": "Skills (SKILL.md): project .github/skills/, .claude/skills/, .agents/skills/; personal ~/.copilot/skills/ and ~/.agents/skills/ in the CLI (the VS Code page also lists ~/.claude/skills/; the CLI page does not).",
+    "value": {
+     "kind": "skill",
+     "paths": [
+      ".github/skills",
+      ".claude/skills",
+      ".agents/skills",
+      "~/.copilot/skills",
+      "~/.agents/skills"
+     ]
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "A skill is instructions, with no native run-this-command field; it can tell the agent to run a bundled script through the shell tool (subject to permission prompts and allowed-tools) or to call an MCP tool.",
+    "value": {
+     "kind": "skill",
+     "shell": "via agent shell tool"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Plugins ship hooks.json (marketplace via enabledPlugins and extraKnownMarketplaces); custom agents at ~/.copilot/agents/*.agent.md (personal).",
+    "value": {
+     "kind": "plugin",
+     "paths": [
+      "hooks.json",
+      "hooks/hooks.json"
+     ]
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Custom agents at the project path .github/agents and the plugin install directory were not confirmed on an official page.",
+    "value": {
+     "kind": "agents",
+     "paths": [
+      ".github/agents"
+     ]
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "unverified"
+   }
+  ],
+  "sandbox_and_network": [
+   {
+    "claim": "Local sandbox on macOS (Seatbelt): the home directory is read-only by default, other disk blocked, local and private network and internet outbound allowed; 1.0.101 lets sandboxed commands reach localhost TCP when local access is enabled. Settings are user-level or enterprise, not repo-overridable.",
+    "value": {
+     "kind": "sandbox"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/how-tos/cloud-and-local-sandboxes/using-local-sandboxing",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "contradicted",
+    "note": "2026-10-24 probe on 1.0.98: the sandbox is OFF by default ('copilot help sandbox', debug log shows \"sandbox\":false); it applies only with --sandbox or /sandbox enable. The Seatbelt limits described here apply only when it is on."
+   },
+   {
+    "claim": "Hooks run inside the session sandbox when it is on: with --sandbox and no policy every hook failed (/bin/bash: <script>: Operation not permitted, exit 126), fail-open, with each failure printed into the -p output; the turn still completed.",
+    "value": {
+     "kind": "sandbox",
+     "hooks_sandboxed": true
+    },
+    "kind": "observed",
+    "source": "probe:versions/1.0.98/out-sandbox-no-policy.txt",
+    "date": "2026-10-24",
+    "verified_on": "1.0.98",
+    "status": "confirmed",
+    "note": "Docs agree (repo, user and plugin command hooks run inside the sandbox; policy hooks on the host; hook cwd and env do not widen access) https://docs.github.com/en/copilot/reference/hooks-configuration."
+   },
+   {
+    "claim": "http hooks need https; http://localhost, 127.* and [::1] are allowed only with COPILOT_HOOK_ALLOW_LOCALHOST=1, and preToolUse and permissionRequest http hooks must be https. In the cloud agent the host must be on the firewall allowlist.",
+    "value": {
+     "kind": "network"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "Timeout (default 30 s, timeoutSec or timeout) kills the hook and is always fail-open; a non-zero exit other than 2 fails open except preToolUse, which fails closed; output cap 10 MiB.",
+    "value": {
+     "kind": "timeout"
+    },
+    "kind": "documented",
+    "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+    "date": "2026-10-24",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "sandbox.userPolicy in settings.json grants the hook access: with {\"sandbox\":{\"userPolicy\":{\"filesystem\":{\"readwritePaths\":[<scratch>]}}}} the hook script ran and logged, a write under HOME still failed, and 127.0.0.1 returned 200.",
+    "value": {
+     "kind": "sandbox",
+     "userPolicy": "filesystem.readwritePaths"
+    },
+    "kind": "observed",
+    "source": "probe:versions/1.0.98/hook-calls-camel.jsonl",
+    "date": "2026-10-24",
+    "verified_on": "1.0.98",
+    "status": "confirmed",
+    "note": "Sandboxed run is line 32 onward of hook-calls-camel.jsonl (outside_write fail, curl 200). For CoCheck, both the hook script and ~/CoCheckData would need readwritePaths, and the grant must live in the user's settings.json."
+   },
+   {
+    "claim": "With the sandbox off (default) a hook wrote a file under HOME outside the workspace and reached 127.0.0.1 (HTTP 200) on every event of the main run.",
+    "value": {
+     "kind": "sandbox",
+     "hooks_sandboxed": false
+    },
+    "kind": "observed",
+    "source": "probe:versions/1.0.98/hook-calls-camel.jsonl",
+    "date": "2026-10-24",
+    "verified_on": "1.0.98",
+    "status": "confirmed",
+    "note": "Sandbox-off state from the debug logs (see README.md)."
+   }
+  ]
+ },
+ "other_observation_channels": [
+  {
+   "claim": "Per-session events.jsonl: append-only JSONL, one object per line {type,id,parentId,timestamp,data}. Types seen: session.start, session.model_change, session.info, session.auto_mode_resolved, user.message, system.message, hook.start, hook.end, assistant.turn_start/turn_end, assistant.message, tool.execution_start, tool.execution_complete, permission.requested/completed, model.* (turn_started, model_call_*, message, response, messages_snapshot), session.usage_checkpoint, session.permissions_changed, session.shutdown.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/session-events.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  {
+   "claim": "hook.start/hook.end events in events.jsonl record every hook input (with hookInvocationId) and a success flag; the preToolUse input there includes toolCalls[{id,name,args}].",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/session-events.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  {
+   "claim": "--output-format json emits JSONL on stdout in -p mode; --share writes a markdown transcript; --usage-output-file writes final usage JSON; OpenTelemetry via COPILOT_OTEL_ENABLED or OTEL_EXPORTER_OTLP_ENDPOINT; --acp runs an Agent Client Protocol server.",
+   "kind": "documented",
+   "source": "binary:copilot --help; copilot help environment",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "unverified",
+   "note": "Read from help; not exercised."
+  },
+  {
+   "claim": "~/.copilot/session-store.db (SQLite) exists and indexes sessions; contents not inspected.",
+   "kind": "observed",
+   "source": "local:~/.copilot/session-store.db",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "unverified"
+  }
+ ],
+ "call_ids": [
+  {
+   "claim": "Session file: assistant.message.toolRequests[].toolCallId (form call_<24 alnum>) equals tool.execution_start.toolCallId, tool.execution_complete.toolCallId and permission.requested.permissionRequest.toolCallId.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/session-events.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Hook stdin payloads from command hooks contain NO tool call id. Join to the session file by sessionId, then match toolName+toolArgs in order (n-th preToolUse equals n-th tool.execution_start), or read the hook.start copy in events.jsonl, which carries toolCalls[].id.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/hook-payloads/preToolUse.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  {
+   "claim": "sessionId in every hook payload equals the session-state folder name and session.start sessionId; agentStop gives transcriptPath to the events file.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/hook-payloads/agentStop.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  }
+ ],
+ "narration_sources": [
+  {
+   "name": "assistant.message content (phase=commentary)",
+   "path": "session-state/<sessionId>/events.jsonl: type=assistant.message with data.phase='commentary' and data.toolRequests non-empty; text in data.content",
+   "readable_at": "pre",
+   "default_on": true,
+   "fact": {
+    "claim": "Asked to narrate, the model wrote one sentence in assistant.message.content before each tool; the event (with toolRequests) was stamped 1-5 ms before (call 1: 4-5 ms, call 2: 1-2 ms) tool.execution_start and the preToolUse hook.start. Final reply has phase=final_answer. Whether it is flushed to disk before the preToolUse command runs was not tested.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.93/session-events.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "1.0.93",
+    "status": "confirmed",
+    "note": "An earlier session on this Mac had an empty content string on a tool-calling message, so narration is not guaranteed without being asked."
+   }
+  },
+  {
+   "name": "toolRequests[].intentionSummary",
+   "path": "assistant.message.data.toolRequests[].intentionSummary and toolTitle",
+   "readable_at": "pre",
+   "default_on": true,
+   "fact": {
+    "claim": "Each tool request carries a short model-written intent summary ('Count data.csv lines') even when content is empty; for bash it matches arguments.description.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.93/session-events.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "1.0.93",
+    "status": "confirmed"
+   }
+  },
+  {
+   "name": "reasoningText",
+   "path": "assistant.message.data.reasoningText (with encryptedContent, reasoningOpaque, reasoningBlocks)",
+   "readable_at": "pre",
+   "default_on": false,
+   "fact": {
+    "claim": "A reasoning summary appeared on one of the two tool-calling messages and not the other; model-dependent. Encrypted blobs alongside are opaque.",
+    "kind": "observed",
+    "source": "probe:versions/1.0.93/session-events.jsonl",
+    "date": "2026-10-18",
+    "verified_on": "1.0.93",
+    "status": "unverified"
+   }
+  }
+ ],
+ "session_files": [
+  {
+   "claim": "~/.copilot/session-state/<uuid>/events.jsonl is the transcript; workspace.yaml holds id,cwd,git_root,branch,client_name,name,user_named,summary_count,fork_count,created_at,updated_at,remote_steerable,mc_* ids. One folder per session; uuid equals sessionId.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/session-workspace.yaml",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  },
+  {
+   "claim": "-p run prints 'copilot --resume=<sessionId>' at the end; --session-id sets the UUID for a new session, so a wrapper can choose the id.",
+   "kind": "documented",
+   "source": "binary:copilot --help",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  }
+ ],
+ "helpers_or_subagents": [
+  {
+   "claim": "Subagents fire subagentStart and subagentStop (custom `writer` and the built-in general-purpose agent, both via the task tool). Every hook fired inside a subagent carries agentId, agentType and parentAgentId (the main sessionId): preToolUse, postToolUse, userPromptSubmitted, userPromptTransformed, agentStop. The subagent's own sessionId equals its agentId, except permissionRequest, which keeps the parent sessionId.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.98/hook-calls-camel.jsonl",
+   "date": "2026-10-24",
+   "verified_on": "1.0.98",
+   "status": "confirmed",
+   "note": "Attribution rule for CoCheck: join on agentId/parentAgentId; the inner sessionId is a new id. subagentStart carries agentId and parentAgentId directly."
+  },
+  {
+   "claim": "--fleet runs parallel subagent orchestration (help text). Not exercised.",
+   "kind": "documented",
+   "source": "binary:copilot --help",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "unverified"
+  }
+ ],
+ "limits_and_timeouts": [
+  {
+   "claim": "timeoutSec default 30 (alias timeout). Timeout is fail-open for every event. Non-zero exit other than 2 fails open except preToolUse, which fails closed. Output capped at 10 MiB; postToolUse extra context capped 10 KB; matcher is regex wrapped ^(?:...)$ and an invalid regex skips the entry.",
+   "kind": "documented",
+   "source": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  },
+  {
+   "claim": "Each hook command took about 3-7 ms (hook.start to hook.end) in the probe.",
+   "kind": "observed",
+   "source": "probe:versions/1.0.93/session-events.jsonl",
+   "date": "2026-10-18",
+   "verified_on": "1.0.93",
+   "status": "confirmed"
+  }
+ ],
+ "update_channel": [
+  {
+   "claim": "Auto-update downloads newer packages into ~/Library/Caches/copilot/pkg/darwin-arm64/<ver>; disable with --no-auto-update or COPILOT_AUTO_UPDATE=false. Latest published releases seen: 1.0.98 and 1.0.100-1; the only hook-related note on that page: 'Command hooks complete reliably even when child-exit signals are lost under Node'.",
+   "kind": "documented",
+   "source": "https://github.com/github/copilot-cli/releases",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  }
+ ],
+ "open_questions": [
+  "Is assistant.message flushed to events.jsonl before the preToolUse command runs? This decides whether narration is readable pre or only post. Needs a preToolUse hook that reads the transcript.",
+  "Is userPromptSubmitted before sessionStart stable in interactive mode and on resume?",
+  "Release notes for 1.0.0 to 1.0.97 hook changes were not read (only the first releases page).",
+  "Why does the session-file preToolUse input have toolCalls[].id while the stdin has toolName/toolArgs only? Could a later version add the id?",
+  "Copilot CLI: naming of MCP tools in toolName, and the events.jsonl schema beyond what the 1.0.93 recording shows.",
+  "errorOccurred, preCompact and notification did not fire in the 1.0.98 -p probe; agentStop blocking, --fleet and http hooks were not exercised.",
+  "Releases 1.0.99 to 1.0.103 have no hook items on the release page; Aug-Sep 2026 notes were skimmed through the release list only.",
+  "Scratch COPILOT_HOME kept keychain auth in the probe; does login always survive a scratch home?"
+ ]
+}

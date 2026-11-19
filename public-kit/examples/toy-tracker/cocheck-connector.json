@@ -1,0 +1,14 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "toy-tracker",
+  "version": "0.0.1",
+  "entry": "diff",
+  "matches": {
+    "mcpServers": ["toytracker"],
+    "subjects": { "mcp__toytracker__update_issue": "toy-tracker://issue/{issue_id}" }
+  },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "permissions": { "env": ["TOY_TRACKER_HISTORY"] },
+  "platforms": ["darwin", "win32"]
+}

@@ -1,0 +1,43 @@
+{
+ "step": "PM",
+ "fmt": "pptx",
+ "before": "/private/tmp/claude-501/-Users-user-proj/51ebba20-1351-4b1e-867b-f7b9c868fada/workdir/run/bbox-change-first/deck/pm/PM-before.pptx",
+ "after": "/private/tmp/claude-501/-Users-user-proj/51ebba20-1351-4b1e-867b-f7b9c868fada/workdir/run/bbox-change-first/deck/pm/PM-after.pptx",
+ "provenance": "computed",
+ "note": "computed by deck/pptx_changes.py from the slide XML plus deck/gap/trim.py: boxes of text shapes with no visible fill or line (placeholders resolved through layout/master) are the union of the rendered PDF text lines inside the frame padded 4 px, other shapes keep the xfrm frame (placeholders via layout/master, groups via chOff/chExt); a group change whose own frame and fill are unchanged is dropped (its child carries the change); all boxes clipped to the page; text highlights x estimated by character proportion",
+ "changes": [
+  {
+   "id": "c1",
+   "card": "Slide 2, Text 14: moved",
+   "kind": "moved",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 2,
+     "rect": {
+      "x": 989.5,
+      "y": 365.2,
+      "w": 218.3,
+      "h": 111.1
+     },
+     "highlights": [],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 2,
+     "rect": {
+      "x": 1129.5,
+      "y": 365.2,
+      "w": 218.3,
+      "h": 111.1
+     },
+     "highlights": [],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  }
+ ]
+}

@@ -1,0 +1,120 @@
+{
+ "changes": [
+  {
+   "cards": [],
+   "file": "model.xlsx",
+   "kind": "modified",
+   "moreCards": 0,
+   "note": "Helper 1 changed Sheet1!D5 from =SUM(D2:D4) to =AVERAGE(D2:D4)",
+   "rowNotes": [],
+   "viewUrl": "/timeline/1/view/c2"
+  },
+  {
+   "cards": [],
+   "file": "book.xlsx",
+   "kind": "created",
+   "moreCards": 0,
+   "note": "Sheet Sheet1 created: 5 rows by 4 columns, 18 cells (4 formulas)",
+   "rowNotes": [],
+   "viewUrl": "/timeline/1/view/c3"
+  },
+  {
+   "cards": [],
+   "file": "book.xlsx",
+   "kind": "modified",
+   "moreCards": 0,
+   "note": "Something outside the agents made several changes inside book.xlsx",
+   "rowNotes": [],
+   "viewUrl": "/timeline/1/view/c4"
+  },
+  {
+   "cards": [],
+   "file": "plan.xlsx",
+   "kind": "created",
+   "moreCards": 0,
+   "note": "Sheet Sheet1 created: 5 rows by 4 columns, 18 cells (4 formulas)",
+   "rowNotes": [],
+   "viewUrl": "/timeline/1/view/c5"
+  },
+  {
+   "cards": [],
+   "file": "plan.xlsx",
+   "kind": "modified",
+   "moreCards": 0,
+   "note": "Claude or Helper 1 made several changes inside plan.xlsx",
+   "rowNotes": [],
+   "viewUrl": "/timeline/1/view/c6"
+  }
+ ],
+ "page": [
+  {
+   "bodyCards": [
+    "Sheet1!D5=SUM(D2:D4)=AVERAGE(D2:D4)"
+   ],
+   "buttons": [],
+   "cards": [],
+   "heading": "Changed model.xlsx",
+   "index": 1,
+   "panes": {
+    "after": 0,
+    "before": 0
+   }
+  },
+  {
+   "bodyCards": [
+    "Sheet Sheet1 (added)Sheet Sheet1 created: 5 rows by 4 columns, 18 cells (4 formulas)"
+   ],
+   "buttons": [],
+   "cards": [],
+   "heading": "Created book.xlsx",
+   "index": 2,
+   "panes": {
+    "after": 0,
+    "before": 0
+   }
+  },
+  {
+   "bodyCards": [
+    "Sheet1!3:3 (added)1 row inserted after row 2 (now row 3)Column D: =B3*C3 filled down",
+    "Sheet1!D61 cell recalculated: formula unchanged, value changedNot in the pictures: values Excel recalculated from a changed input; the input is what is pictured."
+   ],
+   "buttons": [],
+   "cards": [],
+   "heading": "Changed book.xlsx",
+   "index": 3,
+   "panes": {
+    "after": 0,
+    "before": 0
+   }
+  },
+  {
+   "bodyCards": [
+    "Sheet Sheet1 (added)Sheet Sheet1 created: 5 rows by 4 columns, 18 cells (4 formulas)"
+   ],
+   "buttons": [],
+   "cards": [],
+   "heading": "Created plan.xlsx",
+   "index": 4,
+   "panes": {
+    "after": 0,
+    "before": 0
+   }
+  },
+  {
+   "bodyCards": [
+    "Sheet1!B357",
+    "Sheet1!D31 cell recalculated: formula unchanged, value changed because of Sheet1!B3Not in the pictures: values Excel recalculated from a changed input; the input is what is pictured.",
+    "Sheet1!D51 cell recalculated: formula unchanged, value changedNot in the pictures: values Excel recalculated from a changed input; the input is what is pictured."
+   ],
+   "buttons": [],
+   "cards": [],
+   "heading": "Changed plan.xlsx",
+   "index": 5,
+   "panes": {
+    "after": 0,
+    "before": 0
+   }
+  }
+ ],
+ "snapshot": "xlsx-credited"
+}

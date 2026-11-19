@@ -1,0 +1,58 @@
+{
+  "id": "C6",
+  "title": "create and delete sides",
+  "fixture": "toy",
+  "inputs": [
+    {
+      "name": "edit",
+      "before": "public-kit/toy-product/states/edit.before.json",
+      "after": "public-kit/toy-product/states/edit.after.json",
+      "expectChanges": [
+        {
+          "kind": "edit",
+          "entity": "n1"
+        }
+      ]
+    },
+    {
+      "name": "create",
+      "before": "public-kit/toy-product/states/create.before.json",
+      "after": "public-kit/toy-product/states/create.after.json",
+      "expectChanges": [
+        {
+          "kind": "create",
+          "entity": "n3"
+        }
+      ]
+    },
+    {
+      "name": "delete",
+      "before": "public-kit/toy-product/states/delete.before.json",
+      "after": "public-kit/toy-product/states/delete.after.json",
+      "expectChanges": [
+        {
+          "kind": "delete",
+          "entity": "n2"
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "sides": {
+      "create": {
+        "before": "absent",
+        "after": "present"
+      },
+      "delete": {
+        "before": "present",
+        "after": "absent"
+      }
+    },
+    "everyChangeValidAtItsLevel": true,
+    "changesExactly": "each input pair's expectChanges, kind and entity (as the marks added, changed, removed), order-free"
+  },
+  "failingFixtures": [
+    "bad-silent-miss"
+  ],
+  "dangerous": "a connector that silently omits a real edit gives a false clean and must fail C6"
+}

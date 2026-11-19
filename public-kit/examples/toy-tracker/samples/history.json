@@ -1,0 +1,10 @@
+{
+  "issues": {
+    "ABC-12": [
+      { "time": "2026-11-07T14:00:04.120Z", "field": "state", "label": "Status", "before": "Todo", "after": "In Progress" },
+      { "time": "2026-11-07T14:00:04.120Z", "field": "assignee", "label": "Assignee", "before": "nobody", "after": "Sam" },
+      { "time": "2026-11-07T16:30:00.000Z", "field": "state", "label": "Status", "before": "In Progress", "after": "Done" }
+    ]
+  },
+  "denied": ["ABC-99"]
+}

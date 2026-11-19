@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+*.log
+.cocheck/
+
+# Excel lock files
+~$*
+.DS_Store
+__pycache__/
+
+# Local Claude Code settings
+.claude/settings.local.json

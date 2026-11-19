@@ -1,0 +1,1 @@
+Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence.

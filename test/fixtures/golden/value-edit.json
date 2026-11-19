@@ -1,0 +1,35 @@
+[
+  {
+    "sheet": "Sheet1",
+    "cell": "B3",
+    "kind": "value",
+    "valueBefore": 5,
+    "valueAfter": 7,
+    "formulaBefore": null,
+    "formulaAfter": null,
+    "numFmtBefore": "General",
+    "numFmtAfter": "General"
+  },
+  {
+    "sheet": "Sheet1",
+    "cell": "D3",
+    "kind": "value",
+    "valueBefore": 20,
+    "valueAfter": 28,
+    "formulaBefore": "B3*C3",
+    "formulaAfter": "B3*C3",
+    "numFmtBefore": "\"$\"#,##0.00",
+    "numFmtAfter": "\"$\"#,##0.00"
+  },
+  {
+    "sheet": "Sheet1",
+    "cell": "D5",
+    "kind": "value",
+    "valueBefore": 47.5,
+    "valueAfter": 55.5,
+    "formulaBefore": "SUM(D2:D4)",
+    "formulaAfter": "SUM(D2:D4)",
+    "numFmtBefore": "\"$\"#,##0.00",
+    "numFmtAfter": "\"$\"#,##0.00"
+  }
+]

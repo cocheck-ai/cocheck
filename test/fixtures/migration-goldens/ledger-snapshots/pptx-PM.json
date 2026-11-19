@@ -1,0 +1,30 @@
+{
+ "snapshot": "pptx-PM",
+ "client": "claude:/work",
+ "folder": "/work",
+ "blobs": {
+  "94262c4b245295ed4d1ea0bdb0dd20cb8c58dafa18373056e59319cd01bfd214": "change-first-deck/PM-before.pptx",
+  "e00eab099c05c4a018bf3c97b3450cf67edba045ed3bc986ac709dbcde00067f": "change-first-deck/PM-after.pptx"
+ },
+ "steps": [
+  {
+   "seq": 1,
+   "phase": "Post",
+   "file": "deck.pptx",
+   "sha256": "94262c4b245295ed4d1ea0bdb0dd20cb8c58dafa18373056e59319cd01bfd214",
+   "prevSha256": null,
+   "size": 63822,
+   "kept": "whole"
+  },
+  {
+   "seq": 2,
+   "phase": "Post",
+   "file": "deck.pptx",
+   "sha256": "e00eab099c05c4a018bf3c97b3450cf67edba045ed3bc986ac709dbcde00067f",
+   "prevSha256": "94262c4b245295ed4d1ea0bdb0dd20cb8c58dafa18373056e59319cd01bfd214",
+   "size": 63825,
+   "kept": "whole"
+  }
+ ],
+ "pane": "pptx-PM"
+}

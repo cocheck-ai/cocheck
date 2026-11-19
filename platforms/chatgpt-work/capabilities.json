@@ -1,0 +1,606 @@
+{
+ "schema": 1,
+ "platform": "chatgpt-work",
+ "name": "ChatGPT Work (agent mode of the unified ChatGPT desktop app, with bundled Codex)",
+ "vendor": "OpenAI",
+ "surfaces": [
+  "chatgpt-web (cloud)",
+  "mobile (cloud)",
+  "desktop-app (local or cloud-orchestrated)"
+ ],
+ "checked_on": "2026-10-18",
+ "versions_seen": [
+  {
+   "version": "26.1002.52244 (build 13536)",
+   "where": "local:/Applications/ChatGPT.app/Contents/Info.plist",
+   "date": "2026-10-18"
+  },
+  {
+   "version": "codex-cli 0.162.0-alpha.2",
+   "where": "local:/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex --version",
+   "date": "2026-10-18"
+  }
+ ],
+ "cocheck_relevance": "Codex threads in the same app are the confirmed hook path (hooks.json/config.toml hooks plus ~/.codex rollout files, as on the codex platform); local-only Work threads are documented as keeping 'supported hooks' but are untested. Cloud-orchestrated Work (including Work Cloud with local computer access) does not run command hooks, so CoCheck sees only filesystem effects there.",
+ "install": [
+  {
+   "claim": "The ChatGPT Mac app is /Applications/ChatGPT.app with CFBundleIdentifier com.openai.codex, executable ChatGPT, BundleSigningBaseName Codex: the former Codex app, renamed.",
+   "kind": "observed",
+   "source": "local:/Applications/ChatGPT.app/Contents/Info.plist",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  },
+  {
+   "claim": "OpenAI merged the standalone Codex app into the ChatGPT desktop app on 2026-07-09 (Mac and Windows) and reportedly began sunsetting Atlas.",
+   "kind": "documented",
+   "source": "https://en.wikipedia.org/wiki/OpenAI_Codex_(AI_agent)",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "unverified",
+   "note": "Secondary source via web search snippet; official OpenAI launch post not fetchable (403). Neowin's title and AI2Work say Chat, Work and Codex are switchable modes in one desktop app; AI2Work dates it 2026-07-09."
+  },
+  {
+   "claim": "Local computer access with Work Cloud requires ChatGPT desktop app 26.929 or higher.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/enterprise/cloud-local-access",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  }
+ ],
+ "processes_and_paths": [
+  {
+   "claim": "Bundled Codex CLI at Contents/Resources/codex-cli/bin/codex reports codex-cli 0.162.0-alpha.2; also bin/codex-code-mode-host and codex-resources/{voice,zsh}.",
+   "kind": "observed",
+   "source": "local:/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Electron app: Contents/Frameworks/Codex Framework.framework with helper apps (GPU, Renderer, Service, Alerts, Aperitif*); Sparkle updater; native modules incl. sky.node, browser-use-peer-authorization.node, remote-control-device-key.node.",
+   "kind": "observed",
+   "source": "local:/Applications/ChatGPT.app/Contents",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Bundled plugins at Contents/Resources/plugins/openai-bundled; ~/.codex/config.toml enables plugins browser, code-review, codex-app-tools, computer-use, unified-computer-use, visualize (openai-bundled) and documents, pdf, presentations, spreadsheets, template-creator (openai-primary-runtime).",
+   "kind": "observed",
+   "source": "local:~/.codex/config.toml",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Computer-use helper: ~/.codex/computer-use/Codex Computer Use.app and separate com.openai.sky.CUAService (Group Container 2DC432GLL2.com.openai.sky.CUAService).",
+   "kind": "observed",
+   "source": "local:~/.codex/computer-use",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  },
+  {
+   "claim": "App runs an app-server: sockets ~/.codex/app-server-control/app-server-control.sock and ~/.codex/ipc/ipc.sock; daemon files in ~/.codex/app-server-daemon.",
+   "kind": "observed",
+   "source": "local:~/.codex",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  },
+  {
+   "claim": "Other app dirs: ~/Library/Application Support/com.openai.codex (appcast bootstrap json only), ~/Library/Application Support/OpenAI/Codex, ~/Library/Logs/com.openai.codex/YYYY/MM/DD/, ~/Library/Preferences/com.openai.codex.plist.",
+   "kind": "observed",
+   "source": "local:~/Library",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  }
+ ],
+ "auth": [
+  {
+   "claim": "Credentials live in ~/.codex/auth.json (existence confirmed only; not opened).",
+   "kind": "observed",
+   "source": "local:~/.codex/auth.json",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  }
+ ],
+ "hooks": {
+  "available": {
+   "claim": "Documented: when orchestration and execution are both local, supported hooks still work; the docs do not say command hooks are included for local-only Work threads. Not supported in cloud-orchestrated Work.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/hooks",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "unverified"
+  },
+  "config": [
+   {
+    "claim": "Hooks load from ~/.codex/hooks.json, ~/.codex/config.toml [hooks], <repo>/.codex/hooks.json and config.toml (trusted projects only), plugin hooks/hooks.json, and managed requirements.toml.",
+    "kind": "documented",
+    "source": "https://learn.chatgpt.com/docs/hooks",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "No ~/.codex/hooks.json currently exists on this Mac; config.toml has no hooks table.",
+    "kind": "observed",
+    "source": "local:~/.codex/config.toml",
+    "date": "2026-10-18",
+    "verified_on": "26.1002.52244",
+    "status": "confirmed"
+   }
+  ],
+  "trust_or_approval": [
+   {
+    "claim": "Non-managed and plugin hooks must be reviewed and trusted (hash-bound) before running; /hooks reviews them; --dangerously-bypass-hook-trust bypasses for one invocation.",
+    "kind": "documented",
+    "source": "https://learn.chatgpt.com/docs/hooks",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ],
+  "events": [
+   {
+    "name": "SessionStart",
+    "when": "session start/resume/clear/compact/fork",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "source",
+     "permission_mode"
+    ],
+    "fact": {
+     "claim": "SessionStart is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "UserPromptSubmit",
+    "when": "user submits prompt",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "prompt",
+     "permission_mode"
+    ],
+    "fact": {
+     "claim": "UserPromptSubmit is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "PreToolUse",
+    "when": "before each tool call",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "tool_name",
+     "tool_use_id",
+     "tool_input",
+     "permission_mode"
+    ],
+    "fact": {
+     "claim": "PreToolUse is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "PermissionRequest",
+    "when": "approval prompt about to show",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "tool_name",
+     "tool_input"
+    ],
+    "fact": {
+     "claim": "PermissionRequest is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "PostToolUse",
+    "when": "after each tool call",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "tool_name",
+     "tool_use_id",
+     "tool_input",
+     "tool_response"
+    ],
+    "fact": {
+     "claim": "PostToolUse is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "Stop",
+    "when": "agent turn ends",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "stop_hook_active",
+     "last_assistant_message"
+    ],
+    "fact": {
+     "claim": "Stop is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "SubagentStart",
+    "when": "subagent starts",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "agent_id",
+     "agent_type"
+    ],
+    "fact": {
+     "claim": "SubagentStart is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "SubagentStop",
+    "when": "subagent ends",
+    "can_block": true,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "agent_id",
+     "agent_type",
+     "agent_transcript_path",
+     "last_assistant_message"
+    ],
+    "fact": {
+     "claim": "SubagentStop is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "PreCompact",
+    "when": "before compaction",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "trigger"
+    ],
+    "fact": {
+     "claim": "PreCompact is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "PostCompact",
+    "when": "after compaction",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id",
+     "trigger"
+    ],
+    "fact": {
+     "claim": "PostCompact is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "Interrupt",
+    "when": "user interrupts",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "turn_id"
+    ],
+    "fact": {
+     "claim": "Interrupt is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   },
+   {
+    "name": "SessionEnd",
+    "when": "session end (advisory)",
+    "can_block": false,
+    "payload_fields": [
+     "session_id",
+     "transcript_path",
+     "cwd",
+     "hook_event_name",
+     "model",
+     "reason"
+    ],
+    "fact": {
+     "claim": "SessionEnd is a documented hook event (Codex runtime, shared with ChatGPT Work local-only threads)",
+     "kind": "documented",
+     "source": "https://learn.chatgpt.com/docs/hooks",
+     "date": "2026-10-18",
+     "verified_on": null,
+     "status": "confirmed",
+     "note": "Applies only to local-orchestration threads; not to cloud-orchestrated Work."
+    }
+   }
+  ],
+  "missing_events": [
+   {
+    "claim": "Work Cloud with local access and dots supports only admin-managed remote mcp_tool hooks set in Global requirements.toml; SessionEnd MCP hooks unsupported.",
+    "kind": "documented",
+    "source": "https://learn.chatgpt.com/docs/enterprise/cloud-local-access",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   },
+   {
+    "claim": "MCP hooks do not give a complete Compliance API audit trail; a PreToolUse callback error or timeout can fail without blocking the tool.",
+    "kind": "documented",
+    "source": "https://learn.chatgpt.com/docs/hooks",
+    "date": "2026-10-18",
+    "verified_on": null,
+    "status": "confirmed"
+   }
+  ],
+  "absent_events": [],
+  "config_paths": [],
+  "surfaces": [],
+  "skill_and_plugin_paths": [],
+  "sandbox_and_network": []
+ },
+ "other_observation_channels": [
+  {
+   "claim": "Local executor in Work Cloud local access can export supported execution events to an OpenTelemetry collector (admin-configured); cloud orchestration events do not reach it.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/enterprise/cloud-local-access",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  },
+  {
+   "claim": "Compliance API gives supported cloud audit records for local computer access with Work Cloud (enterprise admin only).",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/enterprise/cloud-local-access",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  },
+  {
+   "claim": "Plugins (skills + MCP servers + hooks) are shared between ChatGPT and Codex; local MCP apps run on the user's computer in ChatGPT Desktop. A plugin could be a CoCheck channel for MCP-exposed tools.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/plugins",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  },
+  {
+   "claim": "MCP config is in ~/.codex/config.toml, shared by desktop app, CLI and IDE extension.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/extend/mcp",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  },
+  {
+   "claim": "Local thread index: ~/.codex/state_5.sqlite table threads (columns include rollout_path, cwd, title, sandbox_policy, approval_mode, model, originator, thread_source) plus session_index.jsonl.",
+   "kind": "observed",
+   "source": "local:~/.codex/state_5.sqlite",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed",
+   "note": "Schema only read."
+  },
+  {
+   "claim": "Filesystem effects in the user's folders are observable regardless of orchestration.",
+   "kind": "observed",
+   "source": "local:~/.codex",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "unverified",
+   "note": "Inferred; CoCheck's own file watching."
+  }
+ ],
+ "call_ids": [
+  {
+   "claim": "PreToolUse and PostToolUse carry tool_use_id plus turn_id.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/hooks",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  }
+ ],
+ "narration_sources": [
+  {
+   "claim": "Stop hook gives last_assistant_message (nullable); SubagentStop gives it too and agent_transcript_path.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/hooks",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  },
+  {
+   "claim": "Every hook carries transcript_path (nullable); format documented as not a stable interface.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/hooks",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  },
+  {
+   "claim": "Local rollout files under ~/.codex/sessions/YYYY/MM/DD/ (existence and layout only) back threads via rollout_path.",
+   "kind": "observed",
+   "source": "local:~/.codex/sessions",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed",
+   "note": "Contents are documented by the codex researcher."
+  }
+ ],
+ "session_files": [
+  {
+   "claim": "~/.codex/sessions/YYYY/MM/DD, archived_sessions, shell_snapshots, logs_2.sqlite, memories_1.sqlite, queue_1.sqlite, goals_1.sqlite exist.",
+   "kind": "observed",
+   "source": "local:~/.codex",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  }
+ ],
+ "helpers_or_subagents": [
+  {
+   "claim": "SubagentStart/SubagentStop events exist with agent_id and agent_type; subagents use the parent session_id.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/hooks",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  },
+  {
+   "claim": "state_5.sqlite has thread_spawn_edges and agent_nickname/agent_role columns.",
+   "kind": "observed",
+   "source": "local:~/.codex/state_5.sqlite",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  }
+ ],
+ "limits_and_timeouts": [
+  {
+   "claim": "Hook timeout default 600 s; SessionEnd and Interrupt default 1 s (max 3); async hooks up to 8 concurrent per session.",
+   "kind": "documented",
+   "source": "https://learn.chatgpt.com/docs/hooks",
+   "date": "2026-10-18",
+   "verified_on": null,
+   "status": "confirmed"
+  }
+ ],
+ "update_channel": [
+  {
+   "claim": "Sparkle framework bundled; production-appcast-bootstrap.json in Application Support/com.openai.codex.",
+   "kind": "observed",
+   "source": "local:~/Library/Application Support/com.openai.codex",
+   "date": "2026-10-18",
+   "verified_on": "26.1002.52244",
+   "status": "confirmed"
+  }
+ ],
+ "open_questions": [
+  "Does a Work thread started in the desktop app default to local or cloud orchestration for a personal (non-Enterprise) account, and does that choice change which hooks fire? Docs mention an in-app Local/Cloud toggle, not its default.",
+  "Is 'ChatGPT Work' on personal Plus/Pro plans the same agent as on Business/Enterprise? Overview page says availability varies by plan and rollout.",
+  "Do local-only Work threads write rollout files in ~/.codex/sessions with the same shape as Codex threads? (Docs say history is not merged; not tested.) Check state_5.sqlite thread_source/originator values.",
+  "Official OpenAI launch post and help article 20001275 returned 403; launch date of Work (Neowin says July 2026) is secondary-sourced.",
+  "Does cloud-orchestrated local execution leave any local record CoCheck can read (e.g. in logs_2.sqlite)? Not examined."
+ ]
+}

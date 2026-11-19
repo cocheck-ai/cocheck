@@ -1,0 +1,126 @@
+{
+  "spec": "cocheck.changes/1",
+  "changes": [
+    {
+      "id": "k1",
+      "mark": "removed",
+      "label": "paragraph 3",
+      "before": "Confirm baseline dates with the project team",
+      "kind": "paragraph",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page1",
+          "rect": {
+            "h": 25.8,
+            "w": 420.8,
+            "x": 216.2,
+            "y": 280.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "k2",
+      "mark": "changed",
+      "label": "paragraph 8",
+      "before": "+ 4%",
+      "after": "− 12%",
+      "kind": "table-cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page1",
+          "rect": {
+            "h": 25.8,
+            "w": 48.7,
+            "x": 623,
+            "y": 439.2
+          },
+          "highlights": [
+            {
+              "h": 25.8,
+              "w": 48.7,
+              "x": 623,
+              "y": 439.2
+            }
+          ]
+        },
+        {
+          "picture": "after:page1",
+          "rect": {
+            "h": 25.8,
+            "w": 60.8,
+            "x": 623,
+            "y": 409.6
+          },
+          "highlights": [
+            {
+              "h": 25.8,
+              "w": 60.8,
+              "x": 623,
+              "y": 409.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k3",
+      "mark": "changed",
+      "label": "paragraph 10",
+      "before": "3%",
+      "after": "12%",
+      "kind": "table-cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page1",
+          "rect": {
+            "h": 25.8,
+            "w": 31.7,
+            "x": 623,
+            "y": 488.7
+          },
+          "highlights": [
+            {
+              "h": 25.8,
+              "w": 31.7,
+              "x": 623,
+              "y": 488.7
+            }
+          ]
+        },
+        {
+          "picture": "after:page1",
+          "rect": {
+            "h": 25.8,
+            "w": 43.8,
+            "x": 623,
+            "y": 459.1
+          },
+          "highlights": [
+            {
+              "h": 25.8,
+              "w": 43.8,
+              "x": 623,
+              "y": 459.1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pictures": [
+    {
+      "id": "after:page1",
+      "side": "after",
+      "type": "image"
+    },
+    {
+      "id": "before:page1",
+      "side": "before",
+      "type": "image"
+    }
+  ]
+}

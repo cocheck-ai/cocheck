@@ -1,0 +1,1 @@
+Both file creations were blocked by the read-only filesystem; the ls command failed as expected, and the helper finished.

@@ -1,0 +1,18 @@
+{
+  "id": "C12",
+  "title": "a malformed product response gives a structured error and non-zero exit, never an empty diff",
+  "fixture": "toy",
+  "inputs": {
+    "before": "public-kit/toy-product/states/malformed.before.json",
+    "after": "public-kit/toy-product/states/malformed.after.json"
+  },
+  "expect": {
+    "structuredError": true,
+    "exitNonZero": true,
+    "emptyDiff": false
+  },
+  "failingFixtures": [
+    "bad-c12-empty"
+  ],
+  "dangerous": "a false clean: a connector that swallows a malformed product response and answers an empty diff must fail C12"
+}

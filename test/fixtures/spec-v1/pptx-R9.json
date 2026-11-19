@@ -1,0 +1,62 @@
+{
+  "spec": "cocheck.changes/1",
+  "changes": [
+    {
+      "id": "k1",
+      "mark": "removed",
+      "label": "Slide 2 / Shape 12",
+      "kind": "shape",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page2",
+          "rect": {
+            "h": 417.6,
+            "w": 417.6,
+            "x": 964.8,
+            "y": 288
+          }
+        }
+      ]
+    },
+    {
+      "id": "k2",
+      "mark": "described",
+      "label": "Slide 2 / Text 13",
+      "before": "LABOR MARKET",
+      "kind": "shape",
+      "parent": "k1"
+    },
+    {
+      "id": "k3",
+      "mark": "described",
+      "label": "Slide 2 / Text 14",
+      "before": "4.2%",
+      "kind": "shape",
+      "parent": "k1"
+    },
+    {
+      "id": "k4",
+      "mark": "described",
+      "label": "Slide 2 / Text 15",
+      "before": "Unemployment rate, Sep 2026",
+      "kind": "shape",
+      "parent": "k1"
+    },
+    {
+      "id": "k5",
+      "mark": "described",
+      "label": "Slide 2 / Text 16",
+      "before": "Below the 5.6% average since 2000; 4.4% a year ago",
+      "kind": "shape",
+      "parent": "k1"
+    }
+  ],
+  "pictures": [
+    {
+      "id": "before:page2",
+      "side": "before",
+      "type": "image"
+    }
+  ]
+}

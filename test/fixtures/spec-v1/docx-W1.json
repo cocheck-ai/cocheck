@@ -1,0 +1,152 @@
+{
+  "spec": "cocheck.changes/1",
+  "changes": [
+    {
+      "id": "k1",
+      "mark": "changed",
+      "label": "paragraph 2",
+      "before": "This report outlines the planned delivery approach, the work sequence, and the review points needed to keep the project on schedule.",
+      "after": "This report sets out the delivery approach, the review points, and the decisions needed to keep the project moving on a predictable schedule.",
+      "kind": "paragraph",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page1",
+          "rect": {
+            "h": 57.7,
+            "w": 951.6,
+            "x": 129.8,
+            "y": 211.1
+          },
+          "highlights": [
+            {
+              "h": 26.8,
+              "w": 76.8,
+              "x": 235.1,
+              "y": 211.1
+            },
+            {
+              "h": 26.8,
+              "w": 77.9,
+              "x": 351.6,
+              "y": 211.1
+            },
+            {
+              "h": 26.8,
+              "w": 150.4,
+              "x": 649.2,
+              "y": 211.1
+            },
+            {
+              "h": 26.8,
+              "w": 125.6,
+              "x": 879.8,
+              "y": 211.1
+            }
+          ]
+        },
+        {
+          "picture": "after:page1",
+          "rect": {
+            "h": 57.7,
+            "w": 925.3,
+            "x": 129.8,
+            "y": 211.1
+          },
+          "highlights": [
+            {
+              "h": 26.8,
+              "w": 76,
+              "x": 235.1,
+              "y": 211.1
+            },
+            {
+              "h": 26.8,
+              "w": 131.9,
+              "x": 565.9,
+              "y": 211.1
+            },
+            {
+              "h": 26.8,
+              "w": 91.6,
+              "x": 778.1,
+              "y": 211.1
+            },
+            {
+              "h": 26.8,
+              "w": 68.8,
+              "x": 201.5,
+              "y": 242
+            },
+            {
+              "h": 26.8,
+              "w": 124.9,
+              "x": 303.5,
+              "y": 242
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k2",
+      "mark": "removed",
+      "label": "paragraph 28",
+      "before": "Confirm baseline dates with the project team",
+      "kind": "paragraph",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page3",
+          "rect": {
+            "h": 26.8,
+            "w": 425.9,
+            "x": 165.8,
+            "y": 425.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "k3",
+      "mark": "added",
+      "label": "paragraphs 37-41",
+      "after": "Next Steps\nThe project lead will confirm the next review date and share the current decision record with the delivery team.\nEach owner will update assigned actions before the review so that unresolved work and timing changes are visible.\nThe team will use the review outcome to confirm the work planned for the next delivery period.",
+      "kind": "paragraph",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "after:page5",
+          "rect": {
+            "h": 248.50000000000003,
+            "w": 899.6000000000001,
+            "x": 129.8,
+            "y": 122.4
+          }
+        }
+      ]
+    }
+  ],
+  "pictures": [
+    {
+      "id": "after:page1",
+      "side": "after",
+      "type": "image"
+    },
+    {
+      "id": "after:page5",
+      "side": "after",
+      "type": "image"
+    },
+    {
+      "id": "before:page1",
+      "side": "before",
+      "type": "image"
+    },
+    {
+      "id": "before:page3",
+      "side": "before",
+      "type": "image"
+    }
+  ]
+}

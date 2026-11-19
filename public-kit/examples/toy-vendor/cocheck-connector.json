@@ -1,0 +1,15 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "toy-vendor",
+  "version": "0.0.1",
+  "entry": "state",
+  "matches": {
+    "mcpServers": ["toyvendor"],
+    "subjects": { "mcp__toyvendor__update_note": "toy-vendor://note/{note_id}" }
+  },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "permissions": { "env": ["TOY_VENDOR_STORE"] },
+  "beforeReadMs": 1500,
+  "platforms": ["darwin", "win32"]
+}

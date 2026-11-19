@@ -1,0 +1,50 @@
+[
+ {
+  "round": 1,
+  "file": "{FOLDER}/casebook.xlsx",
+  "status": "explained",
+  "n": 29
+ },
+ {
+  "round": 1,
+  "file": "{SCRATCH}/casebook.backup.xlsx",
+  "status": "explained",
+  "n": 10383
+ },
+ {
+  "round": 2,
+  "file": "{FOLDER}/casebook.xlsx",
+  "status": "derived",
+  "n": 92
+ },
+ {
+  "round": 2,
+  "file": "{FOLDER}/casebook.xlsx",
+  "status": "explained",
+  "n": 33
+ },
+ {
+  "round": 2,
+  "file": "{FOLDER}/casebook.xlsx",
+  "status": "unlogged",
+  "n": 1
+ },
+ {
+  "round": 2,
+  "file": "{FOLDER}/notes.xlsx",
+  "status": "explained",
+  "n": 1
+ },
+ {
+  "round": 3,
+  "file": "{FOLDER}/casebook.xlsx",
+  "status": "explained",
+  "n": 4
+ },
+ {
+  "round": 3,
+  "file": "{OUTSIDE}/casebook-backup.xlsx",
+  "status": "explained",
+  "n": 10457
+ }
+]

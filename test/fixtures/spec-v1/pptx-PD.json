@@ -1,0 +1,89 @@
+{
+  "spec": "cocheck.changes/1",
+  "changes": [
+    {
+      "id": "k1",
+      "mark": "changed",
+      "label": "Slide 2 / Text 9 / number 1",
+      "before": "3.7%",
+      "after": "3.9%",
+      "kind": "shape",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page2",
+          "rect": {
+            "h": 111.1,
+            "w": 218.3,
+            "x": 543.1,
+            "y": 365.2
+          },
+          "highlights": [
+            {
+              "h": 103.1,
+              "w": 210.3,
+              "x": 547.1,
+              "y": 369.2
+            }
+          ]
+        },
+        {
+          "picture": "after:page2",
+          "rect": {
+            "h": 111.1,
+            "w": 218.3,
+            "x": 543.1,
+            "y": 365.2
+          },
+          "highlights": [
+            {
+              "h": 103.1,
+              "w": 210.3,
+              "x": 547.1,
+              "y": 369.2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "k2",
+      "mark": "changed",
+      "label": "Slide 2: a picture was replaced",
+      "kind": "picture",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:page2",
+          "rect": {
+            "h": 70,
+            "w": 110,
+            "x": 1250,
+            "y": 620
+          }
+        },
+        {
+          "picture": "after:page2",
+          "rect": {
+            "h": 70,
+            "w": 110,
+            "x": 1250,
+            "y": 620
+          }
+        }
+      ]
+    }
+  ],
+  "pictures": [
+    {
+      "id": "after:page2",
+      "side": "after",
+      "type": "image"
+    },
+    {
+      "id": "before:page2",
+      "side": "before",
+      "type": "image"
+    }
+  ]
+}

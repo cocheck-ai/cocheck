@@ -1,0 +1,14 @@
+
+sessionStart hook from ".github/hooks/probe.json" failed in the session sandbox: Hook command failed with code 126 (/bin/bash: <scratch>/probe.sh: Operation not permitted). If it needs more access, allow it in the sandbox policy.
+
+userPromptSubmitted hook from ".github/hooks/probe.json" failed in the session sandbox: Hook command failed with code 126 (/bin/bash: <scratch>/probe.sh: Operation not permitted). If it needs more access, allow it in the sandbox policy.
+
+userPromptTransformed hook from ".github/hooks/probe.json" failed in the session sandbox: Hook command failed with code 126 (/bin/bash: <scratch>/probe.sh: Operation not permitted). If it needs more access, allow it in the sandbox policy.
+
+preToolUse hook from ".github/hooks/probe.json" failed in the session sandbox: Hook command failed with code 126 (/bin/bash: <scratch>/probe.sh: Operation not permitted). If it needs more access, allow it in the sandbox policy.
+done
+
+
+agentStop hook from ".github/hooks/probe.json" failed in the session sandbox: Hook command failed with code 126 (/bin/bash: <scratch>/probe.sh: Operation not permitted). If it needs more access, allow it in the sandbox policy.
+
+sessionEnd hook from ".github/hooks/probe.json" failed in the session sandbox: Hook command failed with code 126 (/bin/bash: <scratch>/probe.sh: Operation not permitted). If it needs more access, allow it in the sandbox policy.

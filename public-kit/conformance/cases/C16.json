@@ -1,0 +1,15 @@
+{
+  "id": "C16",
+  "title": "canonical output hash equals one shared golden per fixture, not per OS",
+  "fixture": "toy",
+  "inputs": {
+    "before": "public-kit/toy-product/states/edit.before.json",
+    "after": "public-kit/toy-product/states/edit.after.json"
+  },
+  "expect": {
+    "canonicalHashEqualsGolden": "public-kit/conformance/fixtures/toy/golden.json",
+    "goldenPerOs": false,
+    "goldenKey": "edit"
+  },
+  "note": "the golden belongs to the toy fixture; a connector without one is checked by the expectChanges cases C3, C6, C7"
+}

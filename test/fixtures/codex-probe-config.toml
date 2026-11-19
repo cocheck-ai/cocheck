@@ -1,0 +1,48 @@
+model_reasoning_summary = "detailed"
+[features]
+hooks = true
+codex_hooks = true
+[[hooks.PreToolUse]]
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh PreToolUse"
+[[hooks.PermissionRequest]]
+[[hooks.PermissionRequest.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh PermissionRequest"
+[[hooks.PostToolUse]]
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh PostToolUse"
+[[hooks.PreCompact]]
+[[hooks.PreCompact.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh PreCompact"
+[[hooks.PostCompact]]
+[[hooks.PostCompact.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh PostCompact"
+[[hooks.SessionStart]]
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh SessionStart"
+[[hooks.SessionEnd]]
+[[hooks.SessionEnd.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh SessionEnd"
+[[hooks.UserPromptSubmit]]
+[[hooks.UserPromptSubmit.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh UserPromptSubmit"
+[[hooks.SubagentStart]]
+[[hooks.SubagentStart.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh SubagentStart"
+[[hooks.SubagentStop]]
+[[hooks.SubagentStop.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh SubagentStop"
+[[hooks.Stop]]
+[[hooks.Stop.hooks]]
+type = "command"
+command = "/usr/local/bin/mine-hook.sh Stop"

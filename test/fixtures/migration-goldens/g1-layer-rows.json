@@ -1,0 +1,465 @@
+{
+ "xlsx-formula-edit": {
+  "layer": "xlsx",
+  "rows": [
+   {
+    "after": {
+     "formula": "AVERAGE(D2:D4)",
+     "value": 15.833333333333334
+    },
+    "before": {
+     "formula": "SUM(D2:D4)",
+     "value": 47.5
+    },
+    "derivable": false,
+    "described": "Sheet1!D5: was formula =SUM(D2:D4) (47.5), now formula =AVERAGE(D2:D4) (15.8333333333333)",
+    "detail": {
+     "cell": "D5",
+     "formulaAfter": "AVERAGE(D2:D4)",
+     "formulaBefore": "SUM(D2:D4)",
+     "kind": "formula",
+     "numFmtAfter": "\"$\"#,##0.00",
+     "numFmtBefore": "\"$\"#,##0.00",
+     "sheet": "Sheet1",
+     "valueAfter": 15.833333333333334,
+     "valueBefore": 47.5
+    },
+    "kind": "formula",
+    "location": "Sheet1!D5"
+   }
+  ]
+ },
+ "xlsx-inserted-row": {
+  "layer": "xlsx",
+  "rows": [
+   {
+    "derivable": false,
+    "described": "Sheet1 3:3: row inserted",
+    "detail": {
+     "cell": "3:3",
+     "kind": "structure",
+     "note": "row inserted",
+     "sheet": "Sheet1"
+    },
+    "kind": "structure",
+    "location": "Sheet1!3:3"
+   },
+   {
+    "after": "Doohickey",
+    "before": null,
+    "derivable": false,
+    "described": "Sheet1!A3: null -> \"Doohickey\"",
+    "detail": {
+     "cell": "A3",
+     "formulaAfter": null,
+     "formulaBefore": null,
+     "kind": "value",
+     "numFmtAfter": "General",
+     "sheet": "Sheet1",
+     "valueAfter": "Doohickey",
+     "valueBefore": null
+    },
+    "kind": "value",
+    "location": "Sheet1!A3"
+   },
+   {
+    "after": 4,
+    "before": null,
+    "derivable": false,
+    "described": "Sheet1!B3: null -> 4",
+    "detail": {
+     "cell": "B3",
+     "formulaAfter": null,
+     "formulaBefore": null,
+     "kind": "value",
+     "numFmtAfter": "General",
+     "sheet": "Sheet1",
+     "valueAfter": 4,
+     "valueBefore": null
+    },
+    "kind": "value",
+    "location": "Sheet1!B3"
+   },
+   {
+    "after": 1.25,
+    "before": null,
+    "derivable": false,
+    "described": "Sheet1!C3: null -> 1.25",
+    "detail": {
+     "cell": "C3",
+     "formulaAfter": null,
+     "formulaBefore": null,
+     "kind": "value",
+     "numFmtAfter": "\"$\"#,##0.00",
+     "sheet": "Sheet1",
+     "valueAfter": 1.25,
+     "valueBefore": null
+    },
+    "kind": "value",
+    "location": "Sheet1!C3"
+   },
+   {
+    "after": {
+     "formula": "B3*C3",
+     "value": 5
+    },
+    "before": {
+     "formula": null,
+     "value": null
+    },
+    "derivable": false,
+    "described": "Sheet1!D3: was empty, now formula =B3*C3 (5)",
+    "detail": {
+     "cell": "D3",
+     "formulaAfter": "B3*C3",
+     "formulaBefore": null,
+     "kind": "formula",
+     "numFmtAfter": "\"$\"#,##0.00",
+     "sheet": "Sheet1",
+     "valueAfter": 5,
+     "valueBefore": null
+    },
+    "kind": "formula",
+    "location": "Sheet1!D3"
+   },
+   {
+    "after": {
+     "formula": "SUM(D2:D5)",
+     "value": 52.5
+    },
+    "before": {
+     "formula": "SUM(D2:D4)",
+     "value": 47.5
+    },
+    "derivable": false,
+    "described": "Sheet1!D6: was formula =SUM(D2:D4) (47.5), now formula =SUM(D2:D5) (52.5)",
+    "detail": {
+     "cell": "D5->D6",
+     "formulaAfter": "SUM(D2:D5)",
+     "formulaBefore": "SUM(D2:D4)",
+     "kind": "formula",
+     "numFmtAfter": "\"$\"#,##0.00",
+     "numFmtBefore": "\"$\"#,##0.00",
+     "sheet": "Sheet1",
+     "valueAfter": 52.5,
+     "valueBefore": 47.5
+    },
+    "kind": "formula",
+    "location": "Sheet1!D6"
+   }
+  ]
+ },
+ "xlsx-value-edit": {
+  "layer": "xlsx",
+  "rows": [
+   {
+    "after": 7,
+    "before": 5,
+    "derivable": false,
+    "described": "Sheet1!B3: 5 -> 7",
+    "detail": {
+     "cell": "B3",
+     "formulaAfter": null,
+     "formulaBefore": null,
+     "kind": "value",
+     "numFmtAfter": "General",
+     "numFmtBefore": "General",
+     "sheet": "Sheet1",
+     "valueAfter": 7,
+     "valueBefore": 5
+    },
+    "kind": "value",
+    "location": "Sheet1!B3"
+   },
+   {
+    "after": 28,
+    "before": 20,
+    "derivable": true,
+    "described": "Sheet1!D3: 20 -> 28",
+    "detail": {
+     "cell": "D3",
+     "formulaAfter": "B3*C3",
+     "formulaBefore": "B3*C3",
+     "kind": "value",
+     "numFmtAfter": "\"$\"#,##0.00",
+     "numFmtBefore": "\"$\"#,##0.00",
+     "sheet": "Sheet1",
+     "valueAfter": 28,
+     "valueBefore": 20
+    },
+    "kind": "value",
+    "location": "Sheet1!D3"
+   },
+   {
+    "after": 55.5,
+    "before": 47.5,
+    "derivable": true,
+    "described": "Sheet1!D5: 47.5 -> 55.5",
+    "detail": {
+     "cell": "D5",
+     "formulaAfter": "SUM(D2:D4)",
+     "formulaBefore": "SUM(D2:D4)",
+     "kind": "value",
+     "numFmtAfter": "\"$\"#,##0.00",
+     "numFmtBefore": "\"$\"#,##0.00",
+     "sheet": "Sheet1",
+     "valueAfter": 55.5,
+     "valueBefore": 47.5
+    },
+    "kind": "value",
+    "location": "Sheet1!D5"
+   }
+  ]
+ },
+ "docx-W1": {
+  "layer": "files",
+  "rows": [
+   {
+    "after": "This report sets out the delivery approach, the review points, and the decisions needed to keep the project moving on a predictable schedule.",
+    "before": "This report outlines the planned delivery approach, the work sequence, and the review points needed to keep the project on schedule.",
+    "derivable": false,
+    "described": "paragraph 2: 'This report outlines the planned delivery approach, the work sequence, and th...' -> 'This report sets out the delivery approach, the review points, and the decisi...'",
+    "detail": {
+     "afterIndex": 2,
+     "beforeIndex": 2,
+     "kind": "paragraph changed"
+    },
+    "kind": "paragraph changed",
+    "location": "paragraph 2"
+   },
+   {
+    "after": null,
+    "before": "Confirm baseline dates with the project team",
+    "derivable": false,
+    "described": "paragraph 28 removed: 'Confirm baseline dates with the project team'",
+    "detail": {
+     "beforeIndex": 28,
+     "kind": "paragraph removed"
+    },
+    "kind": "paragraph removed",
+    "location": "paragraph 28"
+   },
+   {
+    "after": "\n\nNext Steps\nThe project lead will confirm the next review date and share the current decision record with the delivery team.\nEach owner will update assigned actions before the review so that unresolved work and timing changes are visible.\nThe team will use the review outcome to confirm the work planned for the next delivery period.",
+    "before": null,
+    "derivable": false,
+    "described": "paragraphs 37-41 added: ' / Next Steps / The project lead will confirm the next review date and share ...'",
+    "detail": {
+     "afterIndex": 37,
+     "afterLast": 41,
+     "count": 5,
+     "kind": "paragraphs added"
+    },
+    "kind": "paragraphs added",
+    "location": "paragraphs 37-41"
+   }
+  ]
+ },
+ "docx-W6": {
+  "layer": "files",
+  "rows": [
+   {
+    "after": null,
+    "before": "Confirm baseline dates with the project team",
+    "derivable": false,
+    "described": "paragraph 3 removed: 'Confirm baseline dates with the project team'",
+    "detail": {
+     "beforeIndex": 3,
+     "kind": "paragraph removed"
+    },
+    "kind": "paragraph removed",
+    "location": "paragraph 3"
+   },
+   {
+    "after": "− 12%",
+    "before": "+ 4%",
+    "derivable": false,
+    "described": "paragraph 8: '+ 4%' -> '− 12%'",
+    "detail": {
+     "afterIndex": 8,
+     "beforeIndex": 9,
+     "kind": "paragraph changed"
+    },
+    "kind": "paragraph changed",
+    "location": "paragraph 8"
+   },
+   {
+    "after": "12%",
+    "before": "3%",
+    "derivable": false,
+    "described": "paragraph 10: '3%' -> '12%'",
+    "detail": {
+     "afterIndex": 10,
+     "beforeIndex": 11,
+     "kind": "paragraph changed"
+    },
+    "kind": "paragraph changed",
+    "location": "paragraph 10"
+   }
+  ]
+ },
+ "docx-W16": {
+  "layer": "files",
+  "rows": [
+   {
+    "after": "The plan uses a practical 6-week cadence so the team can make decisions with current information and resolve issues before they affect delivery.",
+    "before": "The plan uses a practical monthly cadence so the team can make decisions with current information and resolve issues before they affect delivery.",
+    "derivable": false,
+    "described": "paragraph 3: 'The plan uses a practical monthly cadence so the team can make decisions with...' -> 'The plan uses a practical 6-week cadence so the team can make decisions with ...'",
+    "detail": {
+     "afterIndex": 3,
+     "beforeIndex": 3,
+     "kind": "paragraph changed"
+    },
+    "kind": "paragraph changed",
+    "location": "paragraph 3"
+   },
+   {
+    "after": null,
+    "before": null,
+    "derivable": false,
+    "described": "picture moved: within the paragraph",
+    "detail": {
+     "afterIndex": 4,
+     "beforeIndex": 4,
+     "kind": "picture moved"
+    },
+    "kind": "picture moved",
+    "location": "paragraph 4"
+   }
+  ]
+ },
+ "pptx-PM": {
+  "layer": "pptx",
+  "rows": [
+   {
+    "after": "at 7.87, 2.5 in",
+    "before": "at 6.9, 2.5 in",
+    "derivable": false,
+    "described": "Shape moved",
+    "detail": {
+     "kind": "shape moved",
+     "shapeKind": "text",
+     "sheet": "Slide 2",
+     "unit": "Slide 2 / Text 14 / geometry"
+    },
+    "kind": "shape moved",
+    "location": "Slide 2 / Text 14"
+   }
+  ]
+ },
+ "pptx-PD": {
+  "layer": "pptx",
+  "rows": [
+   {
+    "after": "3.9%",
+    "before": "3.7%",
+    "derivable": false,
+    "described": "Slide 2 / Text 9 / number 1: number changed '3.7%' -> '3.9%'",
+    "detail": {
+     "kind": "number changed",
+     "numberIndex": 1,
+     "paragraph": 1,
+     "paragraphAfter": "3.9%",
+     "paragraphBefore": "3.7%",
+     "paragraphNumberIndex": 1,
+     "paragraphParts": {
+      "1": {
+       "after": [
+        {
+         "kind": "r",
+         "text": "3.9%"
+        }
+       ],
+       "before": [
+        {
+         "kind": "r",
+         "text": "3.7%"
+        }
+       ]
+      }
+     },
+     "sheet": "Slide 2",
+     "unit": "Slide 2 / Text 9"
+    },
+    "kind": "number changed",
+    "location": "Slide 2 / Text 9 / number 1"
+   }
+  ]
+ },
+ "pptx-R9": {
+  "layer": "pptx",
+  "rows": [
+   {
+    "after": null,
+    "before": "",
+    "derivable": false,
+    "described": "Slide 2 / Shape 12 removed: ''",
+    "detail": {
+     "kind": "shape removed",
+     "shapeKind": "other",
+     "sheet": "Slide 2",
+     "unit": "Slide 2 / Shape 12"
+    },
+    "kind": "shape removed",
+    "location": "Slide 2 / Shape 12"
+   },
+   {
+    "after": null,
+    "before": "LABOR MARKET",
+    "derivable": false,
+    "described": "Slide 2 / Text 13 removed: 'LABOR MARKET'",
+    "detail": {
+     "kind": "shape removed",
+     "shapeKind": "text",
+     "sheet": "Slide 2",
+     "unit": "Slide 2 / Text 13"
+    },
+    "kind": "shape removed",
+    "location": "Slide 2 / Text 13"
+   },
+   {
+    "after": null,
+    "before": "4.2%",
+    "derivable": false,
+    "described": "Slide 2 / Text 14 removed: '4.2%'",
+    "detail": {
+     "kind": "shape removed",
+     "shapeKind": "text",
+     "sheet": "Slide 2",
+     "unit": "Slide 2 / Text 14"
+    },
+    "kind": "shape removed",
+    "location": "Slide 2 / Text 14"
+   },
+   {
+    "after": null,
+    "before": "Unemployment rate, Sep 2026",
+    "derivable": false,
+    "described": "Slide 2 / Text 15 removed: 'Unemployment rate, Sep 2026'",
+    "detail": {
+     "kind": "shape removed",
+     "shapeKind": "text",
+     "sheet": "Slide 2",
+     "unit": "Slide 2 / Text 15"
+    },
+    "kind": "shape removed",
+    "location": "Slide 2 / Text 15"
+   },
+   {
+    "after": null,
+    "before": "Below the 5.6% average since 2000; 4.4% a year ago",
+    "derivable": false,
+    "described": "Slide 2 / Text 16 removed: 'Below the 5.6% average since 2000; 4.4% a year ago'",
+    "detail": {
+     "kind": "shape removed",
+     "shapeKind": "text",
+     "sheet": "Slide 2",
+     "unit": "Slide 2 / Text 16"
+    },
+    "kind": "shape removed",
+    "location": "Slide 2 / Text 16"
+   }
+  ]
+ }
+}

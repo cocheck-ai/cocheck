@@ -1,0 +1,49 @@
+{
+ "note": "Trimmed app-server hooks/list result (command, paths, keys and hashes dropped). Four hooks from a scratch copy of the real CoCheck config.toml.",
+ "hooks": [
+  {
+   "eventName": "preToolUse",
+   "handlerType": "command",
+   "async": false,
+   "matcher": null,
+   "timeoutSec": 600,
+   "source": "user",
+   "isManaged": false,
+   "enabled": true,
+   "trustStatus": "trusted"
+  },
+  {
+   "eventName": "postToolUse",
+   "handlerType": "command",
+   "async": false,
+   "matcher": null,
+   "timeoutSec": 600,
+   "source": "user",
+   "isManaged": false,
+   "enabled": true,
+   "trustStatus": "trusted"
+  },
+  {
+   "eventName": "userPromptSubmit",
+   "handlerType": "command",
+   "async": false,
+   "matcher": null,
+   "timeoutSec": 600,
+   "source": "user",
+   "isManaged": false,
+   "enabled": true,
+   "trustStatus": "trusted"
+  },
+  {
+   "eventName": "stop",
+   "handlerType": "command",
+   "async": false,
+   "matcher": null,
+   "timeoutSec": 600,
+   "source": "user",
+   "isManaged": false,
+   "enabled": true,
+   "trustStatus": "trusted"
+  }
+ ]
+}

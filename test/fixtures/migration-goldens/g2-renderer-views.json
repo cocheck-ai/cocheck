@@ -1,0 +1,1269 @@
+{
+ "xlsx-formula-edit": {
+  "boxes": [
+   {
+    "cell": "D5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "D5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   }
+  ],
+  "caveats": [],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "cell": "D5",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "D5",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k1",
+    "kind": "cell",
+    "loc": "Sheet1!D5",
+    "parent": null
+   }
+  ],
+  "engine": "drawn by CoCheck from the cells, not by Excel",
+  "format": "xlsx",
+  "paneText": {
+   "after": [
+    "Sheet1, after: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Gadget | B=5 | C=$4.00 | D=$20.00 ; 4: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 5: D=$15.83"
+   ],
+   "before": [
+    "Sheet1, before: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Gadget | B=5 | C=$4.00 | D=$20.00 ; 4: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 5: D=$47.50"
+   ]
+  },
+  "panes": {
+   "after": 1,
+   "before": 1
+  }
+ },
+ "xlsx-inserted-row": {
+  "boxes": [
+   {
+    "cell": "A3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "A3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "B3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "B3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "C3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "C3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "D3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "D3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "A4",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "A4",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "B4",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "B4",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "C4",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "C4",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "A5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "B5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "C5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "D5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "D5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "D6",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   }
+  ],
+  "caveats": [
+   "Style changes on the sheet 'Sheet1' were not compared because rows or columns were inserted or deleted there."
+  ],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "cell": "A3",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "A3",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k1",
+    "kind": "cell",
+    "loc": "Sheet1!A3",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "B3",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "B3",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k2",
+    "kind": "cell",
+    "loc": "Sheet1!B3",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "C3",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "C3",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k3",
+    "kind": "cell",
+    "loc": "Sheet1!C3",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "D3",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "D3",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k4",
+    "kind": "cell",
+    "label": "Recalculated: the formula is unchanged, a cell it reads changed",
+    "loc": "Sheet1!D3",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "A4",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "A4",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k5",
+    "kind": "cell",
+    "loc": "Sheet1!A4",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "B4",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "B4",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k6",
+    "kind": "cell",
+    "loc": "Sheet1!B4",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "C4",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "C4",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k7",
+    "kind": "cell",
+    "loc": "Sheet1!C4",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "A5",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k8",
+    "kind": "cell",
+    "loc": "Sheet1!A5",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "B5",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k9",
+    "kind": "cell",
+    "loc": "Sheet1!B5",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "C5",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k10",
+    "kind": "cell",
+    "loc": "Sheet1!C5",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "D5",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "D5",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k11",
+    "kind": "cell",
+    "loc": "Sheet1!D5",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "D6",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k12",
+    "kind": "cell",
+    "loc": "Sheet1!D6",
+    "parent": null
+   }
+  ],
+  "engine": "drawn by CoCheck from the cells, not by Excel",
+  "format": "xlsx",
+  "paneText": {
+   "after": [
+    "Sheet1, after: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Doohickey | B=4 | C=$1.25 | D=$5.00 ; 4: A=Gadget | B=5 | C=$4.00 | D=$20.00 ; 5: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 6: D=$52.50"
+   ],
+   "before": [
+    "Sheet1, before: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Gadget | B=5 | C=$4.00 | D=$20.00 ; 4: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 5: D=$47.50"
+   ]
+  },
+  "panes": {
+   "after": 1,
+   "before": 1
+  }
+ },
+ "xlsx-value-edit": {
+  "boxes": [
+   {
+    "cell": "B3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "B3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "D3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "D3",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   },
+   {
+    "cell": "D5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "before:Sheet1",
+    "side": "before"
+   },
+   {
+    "cell": "D5",
+    "change": "c1",
+    "confidence": "exact",
+    "pane": "after:Sheet1",
+    "side": "after"
+   }
+  ],
+  "caveats": [],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "cell": "B3",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "B3",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k1",
+    "kind": "cell",
+    "loc": "Sheet1!B3",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "D3",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "D3",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k2",
+    "kind": "cell",
+    "label": "Recalculated: the formula is unchanged, a cell it reads changed",
+    "loc": "Sheet1!D3",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "cell": "D5",
+      "pane": "before:Sheet1",
+      "side": "before"
+     },
+     {
+      "cell": "D5",
+      "pane": "after:Sheet1",
+      "side": "after"
+     }
+    ],
+    "id": "k3",
+    "kind": "cell",
+    "label": "Recalculated: the formula is unchanged, a cell it reads changed",
+    "loc": "Sheet1!D5",
+    "parent": null
+   }
+  ],
+  "engine": "drawn by CoCheck from the cells, not by Excel",
+  "format": "xlsx",
+  "paneText": {
+   "after": [
+    "Sheet1, after: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Gadget | B=7 | C=$4.00 | D=$28.00 ; 4: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 5: D=$55.50"
+   ],
+   "before": [
+    "Sheet1, before: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Gadget | B=5 | C=$4.00 | D=$20.00 ; 4: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 5: D=$47.50"
+   ]
+  },
+  "panes": {
+   "after": 1,
+   "before": 1
+  }
+ },
+ "docx-W1": {
+  "boxes": [],
+  "caveats": [],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "highlights": [
+       {
+        "h": 26.8,
+        "w": 76.8,
+        "x": 235.1,
+        "y": 211.1
+       },
+       {
+        "h": 26.8,
+        "w": 77.9,
+        "x": 351.6,
+        "y": 211.1
+       },
+       {
+        "h": 26.8,
+        "w": 150.4,
+        "x": 649.2,
+        "y": 211.1
+       },
+       {
+        "h": 26.8,
+        "w": 125.6,
+        "x": 879.8,
+        "y": 211.1
+       }
+      ],
+      "pane": "before:page1",
+      "rect": {
+       "h": 57.7,
+       "w": 951.6,
+       "x": 129.8,
+       "y": 211.1
+      },
+      "side": "before"
+     },
+     {
+      "highlights": [
+       {
+        "h": 26.8,
+        "w": 76,
+        "x": 235.1,
+        "y": 211.1
+       },
+       {
+        "h": 26.8,
+        "w": 131.9,
+        "x": 565.9,
+        "y": 211.1
+       },
+       {
+        "h": 26.8,
+        "w": 91.6,
+        "x": 778.1,
+        "y": 211.1
+       },
+       {
+        "h": 26.8,
+        "w": 68.8,
+        "x": 201.5,
+        "y": 242
+       },
+       {
+        "h": 26.8,
+        "w": 124.9,
+        "x": 303.5,
+        "y": 242
+       }
+      ],
+      "pane": "after:page1",
+      "rect": {
+       "h": 57.7,
+       "w": 925.3,
+       "x": 129.8,
+       "y": 211.1
+      },
+      "side": "after"
+     }
+    ],
+    "id": "k1",
+    "kind": "paragraph",
+    "loc": "paragraph 2",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "pane": "before:page3",
+      "rect": {
+       "h": 26.8,
+       "w": 425.9,
+       "x": 165.8,
+       "y": 425.3
+      },
+      "side": "before"
+     }
+    ],
+    "id": "k2",
+    "kind": "paragraph",
+    "loc": "paragraph 28",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "pane": "after:page5",
+      "rect": {
+       "h": 248.50000000000003,
+       "w": 899.6000000000001,
+       "x": 129.8,
+       "y": 122.4
+      },
+      "side": "after"
+     }
+    ],
+    "id": "k3",
+    "kind": "paragraph",
+    "loc": "paragraphs 37-41",
+    "parent": null
+   }
+  ],
+  "engine": null,
+  "format": "docx",
+  "paneText": {
+   "after": [
+    "Project Delivery Report",
+    "This report sets out the delivery approach, the review points, and the decisions needed to keep the project moving on a predictable schedule.",
+    "The plan uses a practical monthly cadence so the team can make decisions with current information and resolve issues before they affect delivery.",
+    "The sections that follow describe the working plan, the delivery measures, and the governance routine for the project.",
+    "Project Scope",
+    "The project will deliver a defined first release with documented requirements, tested workflows, and a concise handoff package. The work focuses on the activities required to move from an agreed scope to a usable release.",
+    "The delivery team will maintain a single record of decisions and open questions. This record will help the team distinguish approved work from items that need further review.",
+    "The first release will be judged against clear acceptance criteria. Changes that affect timing, cost, or the intended outcome will be reviewed before work begins.",
+    "Delivery checkpoints",
+    "Checkpoint",
+    "Purpose",
+    "Expected result",
+    "Scope review",
+    "Confirm required work",
+    "Approved requirements",
+    "Build review",
+    "Assess completed work",
+    "Testable release candidate",
+    "Launch review",
+    "Confirm readiness",
+    "Handoff decision",
+    "Delivery Measures",
+    "The team will review progress against the agreed milestones each week. The review will focus on completed work, unresolved dependencies, and the next set of decisions needed from project sponsors.",
+    "A short status update will record schedule changes, material risks, and actions that require an owner. This keeps the plan usable without creating a separate reporting process.",
+    "The following actions support a consistent delivery rhythm.",
+    "Review open dependencies before each milestone",
+    "Record decisions and assigned actions",
+    "Share test results with the release group",
+    "The delivery measures should be reviewed at the same time as the working plan. If a milestone changes, the team should update the related actions and record the reason for the change.",
+    "Governance and Review",
+    "Project governance will use brief decision meetings at the points where scope, timing, or release readiness may change. The meetings will focus on the information required for the next decision.",
+    "The project lead will maintain the decision record and will bring unresolved issues to the appropriate sponsor. Sponsors will review material changes promptly so the team can continue work with a clear direction.",
+    "At the end of the release, the team will compare completed work with the acceptance criteria and identify any follow-up items for the next planning cycle.",
+    "Next Steps",
+    "The project lead will confirm the next review date and share the current decision record with the delivery team.",
+    "Each owner will update assigned actions before the review so that unresolved work and timing changes are visible.",
+    "The team will use the review outcome to confirm the work planned for the next delivery period."
+   ],
+   "before": [
+    "Project Delivery Report",
+    "This report outlines the planned delivery approach, the work sequence, and the review points needed to keep the project on schedule.",
+    "The plan uses a practical monthly cadence so the team can make decisions with current information and resolve issues before they affect delivery.",
+    "The sections that follow describe the working plan, the delivery measures, and the governance routine for the project.",
+    "Project Scope",
+    "The project will deliver a defined first release with documented requirements, tested workflows, and a concise handoff package. The work focuses on the activities required to move from an agreed scope to a usable release.",
+    "The delivery team will maintain a single record of decisions and open questions. This record will help the team distinguish approved work from items that need further review.",
+    "The first release will be judged against clear acceptance criteria. Changes that affect timing, cost, or the intended outcome will be reviewed before work begins.",
+    "Delivery checkpoints",
+    "Checkpoint",
+    "Purpose",
+    "Expected result",
+    "Scope review",
+    "Confirm required work",
+    "Approved requirements",
+    "Build review",
+    "Assess completed work",
+    "Testable release candidate",
+    "Launch review",
+    "Confirm readiness",
+    "Handoff decision",
+    "Delivery Measures",
+    "The team will review progress against the agreed milestones each week. The review will focus on completed work, unresolved dependencies, and the next set of decisions needed from project sponsors.",
+    "A short status update will record schedule changes, material risks, and actions that require an owner. This keeps the plan usable without creating a separate reporting process.",
+    "The following actions support a consistent delivery rhythm.",
+    "Confirm baseline dates with the project team",
+    "Review open dependencies before each milestone",
+    "Record decisions and assigned actions",
+    "Share test results with the release group",
+    "The delivery measures should be reviewed at the same time as the working plan. If a milestone changes, the team should update the related actions and record the reason for the change.",
+    "Governance and Review",
+    "Project governance will use brief decision meetings at the points where scope, timing, or release readiness may change. The meetings will focus on the information required for the next decision.",
+    "The project lead will maintain the decision record and will bring unresolved issues to the appropriate sponsor. Sponsors will review material changes promptly so the team can continue work with a clear direction.",
+    "At the end of the release, the team will compare completed work with the acceptance criteria and identify any follow-up items for the next planning cycle."
+   ]
+  },
+  "panes": {
+   "after": 5,
+   "before": 4
+  }
+ },
+ "docx-W6": {
+  "boxes": [],
+  "caveats": [],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "pane": "before:page1",
+      "rect": {
+       "h": 25.8,
+       "w": 420.8,
+       "x": 216.2,
+       "y": 280.9
+      },
+      "side": "before"
+     }
+    ],
+    "id": "k1",
+    "kind": "paragraph",
+    "loc": "paragraph 3",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "highlights": [
+       {
+        "h": 25.8,
+        "w": 48.7,
+        "x": 623,
+        "y": 439.2
+       }
+      ],
+      "pane": "before:page1",
+      "rect": {
+       "h": 25.8,
+       "w": 48.7,
+       "x": 623,
+       "y": 439.2
+      },
+      "side": "before"
+     },
+     {
+      "highlights": [
+       {
+        "h": 25.8,
+        "w": 60.8,
+        "x": 623,
+        "y": 409.6
+       }
+      ],
+      "pane": "after:page1",
+      "rect": {
+       "h": 25.8,
+       "w": 60.8,
+       "x": 623,
+       "y": 409.6
+      },
+      "side": "after"
+     }
+    ],
+    "id": "k2",
+    "kind": "table-cell",
+    "loc": "paragraph 8",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "highlights": [
+       {
+        "h": 25.8,
+        "w": 31.7,
+        "x": 623,
+        "y": 488.7
+       }
+      ],
+      "pane": "before:page1",
+      "rect": {
+       "h": 25.8,
+       "w": 31.7,
+       "x": 623,
+       "y": 488.7
+      },
+      "side": "before"
+     },
+     {
+      "highlights": [
+       {
+        "h": 25.8,
+        "w": 43.8,
+        "x": 623,
+        "y": 459.1
+       }
+      ],
+      "pane": "after:page1",
+      "rect": {
+       "h": 25.8,
+       "w": 43.8,
+       "x": 623,
+       "y": 459.1
+      },
+      "side": "after"
+     }
+    ],
+    "id": "k3",
+    "kind": "table-cell",
+    "loc": "paragraph 10",
+    "parent": null
+   }
+  ],
+  "engine": null,
+  "format": "docx",
+  "paneText": {
+   "after": [
+    "Actions",
+    "The following actions are numbered.",
+    "Review open dependencies before each milestone",
+    "Record decisions and assigned actions",
+    "Measure",
+    "Change",
+    "Revenue",
+    "− 12%",
+    "Cost",
+    "12%"
+   ],
+   "before": [
+    "Actions",
+    "The following actions are numbered.",
+    "Confirm baseline dates with the project team",
+    "Review open dependencies before each milestone",
+    "Record decisions and assigned actions",
+    "Measure",
+    "Change",
+    "Revenue",
+    "+ 4%",
+    "Cost",
+    "3%"
+   ]
+  },
+  "panes": {
+   "after": 1,
+   "before": 1
+  }
+ },
+ "docx-W16": {
+  "boxes": [],
+  "caveats": [],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "highlights": [
+       {
+        "h": 26.8,
+        "w": 77.9,
+        "x": 369.1,
+        "y": 290.9
+       }
+      ],
+      "pane": "before:page1",
+      "rect": {
+       "h": 57.7,
+       "w": 946.5,
+       "x": 129.8,
+       "y": 290.9
+      },
+      "side": "before"
+     },
+     {
+      "highlights": [
+       {
+        "h": 26.8,
+        "w": 68.9,
+        "x": 369.1,
+        "y": 290.9
+       }
+      ],
+      "pane": "after:page1",
+      "rect": {
+       "h": 57.7,
+       "w": 937.6,
+       "x": 129.8,
+       "y": 290.9
+      },
+      "side": "after"
+     }
+    ],
+    "id": "k1",
+    "kind": "paragraph",
+    "loc": "paragraph 3",
+    "parent": null
+   },
+   {
+    "boxes": [],
+    "id": "k2",
+    "kind": "picture",
+    "loc": "paragraph 4",
+    "parent": null,
+    "unplaced": {
+     "after": "not marked",
+     "before": "not marked"
+    }
+   }
+  ],
+  "engine": null,
+  "format": "docx",
+  "paneText": {
+   "after": [
+    "Project Delivery Report",
+    "This report outlines the planned delivery approach, the work sequence, and the review points needed to keep the project on schedule.",
+    "The plan uses a practical 6-week cadence so the team can make decisions with current information and resolve issues before they affect delivery.",
+    "The sections that follow describe the working plan, the delivery measures, and the governance routine for the project.",
+    "Project Scope",
+    "The project will deliver a defined first release with documented requirements, tested workflows, and a concise handoff package. The work focuses on the activities required to move from an agreed scope to a usable release.",
+    "The delivery team will maintain a single record of decisions and open questions. This record will help the team distinguish approved work from items that need further review.",
+    "The first release will be judged against clear acceptance criteria. Changes that affect timing, cost, or the intended outcome will be reviewed before work begins.",
+    "Delivery checkpoints",
+    "Checkpoint",
+    "Purpose",
+    "Expected result",
+    "Scope review",
+    "Confirm required work",
+    "Approved requirements",
+    "Build review",
+    "Assess completed work",
+    "Testable release candidate",
+    "Launch review",
+    "Confirm readiness",
+    "Handoff decision",
+    "Delivery Measures",
+    "The team will review progress against the agreed milestones each week. The review will focus on completed work, unresolved dependencies, and the next set of decisions needed from project sponsors.",
+    "A short status update will record schedule changes, material risks, and actions that require an owner. This keeps the plan usable without creating a separate reporting process.",
+    "The following actions support a consistent delivery rhythm.",
+    "Confirm baseline dates with the project team",
+    "Review open dependencies before each milestone",
+    "Record decisions and assigned actions",
+    "Share test results with the release group",
+    "The delivery measures should be reviewed at the same time as the working plan. If a milestone changes, the team should update the related actions and record the reason for the change.",
+    "Governance and Review",
+    "Project governance will use brief decision meetings at the points where scope, timing, or release readiness may change. The meetings will focus on the information required for the next decision.",
+    "The project lead will maintain the decision record and will bring unresolved issues to the appropriate sponsor. Sponsors will review material changes promptly so the team can continue work with a clear direction.",
+    "At the end of the release, the team will compare completed work with the acceptance criteria and identify any follow-up items for the next planning cycle."
+   ],
+   "before": [
+    "Project Delivery Report",
+    "This report outlines the planned delivery approach, the work sequence, and the review points needed to keep the project on schedule.",
+    "The plan uses a practical monthly cadence so the team can make decisions with current information and resolve issues before they affect delivery.",
+    "The sections that follow describe the working plan, the delivery measures, and the governance routine for the project.",
+    "Project Scope",
+    "The project will deliver a defined first release with documented requirements, tested workflows, and a concise handoff package. The work focuses on the activities required to move from an agreed scope to a usable release.",
+    "The delivery team will maintain a single record of decisions and open questions. This record will help the team distinguish approved work from items that need further review.",
+    "The first release will be judged against clear acceptance criteria. Changes that affect timing, cost, or the intended outcome will be reviewed before work begins.",
+    "Delivery checkpoints",
+    "Checkpoint",
+    "Purpose",
+    "Expected result",
+    "Scope review",
+    "Confirm required work",
+    "Approved requirements",
+    "Build review",
+    "Assess completed work",
+    "Testable release candidate",
+    "Launch review",
+    "Confirm readiness",
+    "Handoff decision",
+    "Delivery Measures",
+    "The team will review progress against the agreed milestones each week. The review will focus on completed work, unresolved dependencies, and the next set of decisions needed from project sponsors.",
+    "A short status update will record schedule changes, material risks, and actions that require an owner. This keeps the plan usable without creating a separate reporting process.",
+    "The following actions support a consistent delivery rhythm.",
+    "Confirm baseline dates with the project team",
+    "Review open dependencies before each milestone",
+    "Record decisions and assigned actions",
+    "Share test results with the release group",
+    "The delivery measures should be reviewed at the same time as the working plan. If a milestone changes, the team should update the related actions and record the reason for the change.",
+    "Governance and Review",
+    "Project governance will use brief decision meetings at the points where scope, timing, or release readiness may change. The meetings will focus on the information required for the next decision.",
+    "The project lead will maintain the decision record and will bring unresolved issues to the appropriate sponsor. Sponsors will review material changes promptly so the team can continue work with a clear direction.",
+    "At the end of the release, the team will compare completed work with the acceptance criteria and identify any follow-up items for the next planning cycle."
+   ]
+  },
+  "panes": {
+   "after": 4,
+   "before": 4
+  }
+ },
+ "pptx-PM": {
+  "boxes": [],
+  "caveats": [],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "pane": "before:page2",
+      "rect": {
+       "h": 111.1,
+       "w": 218.3,
+       "x": 989.5,
+       "y": 365.2
+      },
+      "side": "before"
+     },
+     {
+      "pane": "after:page2",
+      "rect": {
+       "h": 111.1,
+       "w": 218.3,
+       "x": 1129.5,
+       "y": 365.2
+      },
+      "side": "after"
+     }
+    ],
+    "id": "k1",
+    "kind": "moved",
+    "label": "Slide 2: an object moved",
+    "loc": null,
+    "parent": null
+   }
+  ],
+  "engine": null,
+  "format": "pptx",
+  "paneText": {
+   "after": [
+    "The US economy: pretty decent, with one soft spot Growth, inflation and jobs, through September 2026 All figures computed from NWDATA series NWGDP, NWCPI and NWUNEMP",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Bottom line: growth and jobs are solid, but inflation is not back to normal Real GDP is growing about 2.1% a year and unemployment is 4.2%. CPI inflation, at 3.7%, is the one reading cutting against the story. ￼ GROWTH 2.1% Real GDP growth, y/y, 2026 Q3 3.4% annualized q/q in the latest quarter; four straight quarters at 2.0% or better y/y ￼ INFLATION 3.7% CPI inflation, y/y, Sep 2026 1.7 points above the 2% benchmark and up from 3.3% in July; 2015-19 averaged 1.6% ￼ LABOR MARKET 4.2% Unemployment rate, Sep 2026 Below the 5.6% average since 2000; 4.4% a year ago 2",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Growth is steady: real GDP is up 2.1% on the year The latest quarter ran at 3.4% annualized. Growth has held near 2-2.6% y/y for a year, slightly under the 2.5% average since late 2016. ￼ 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 -10% -6% -2% 2% 6% 10% 14% ￼ 2.1% Real GDP, y/y, 2026 Q3 ￼ 3.4% Annualized q/q, 2026 Q3 ￼ -1.0% Only negative quarter since 2022 (2022 Q1, annualized) 3",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Inflation is the soft spot: 3.7%, well above the 2% benchmark CPI y/y has risen from 3.3% in July and is well above its 1.6% average for 2015-19, though far below the 9.0% peak of Jun 2022. ￼ 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 -2% 0% 2% 4% 6% 8% 10% CPI-U, y/y % 2% reference ￼ 3.7% CPI y/y, Sep 2026 ￼ 3.0% CPI y/y, Sep 2025 ￼ 1.6% Average y/y, 2015-19 4",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series The labor market is healthy: unemployment is 4.2%, below its 2000-26 average Down from 4.4% a year ago and far from the 14.8% pandemic peak. It is above the 3.4% low of Apr 2023. ￼ 2000 2015 0% 4% 8% 12% 16% ￼ 4.2% Unemployment, Sep 2026 ￼ 5.6% Average, Jan 2000 to Sep 2026 ￼ 14.8% Peak, Apr 2020 5",
+    "Verdict: decent, as long as inflation cools Growth: 2.1% real y/y, 3.4% annualized last quarter Jobs: 4.2% unemployment vs 5.6% average since 2000 Watch: CPI at 3.7% y/y, up from 3.3% in July and above the 2% benchmark NWDATA has no October 2025 observation for unemployment or CPI; those months are absent, and CPI y/y is matched to the same month a year earlier."
+   ],
+   "before": [
+    "The US economy: pretty decent, with one soft spot Growth, inflation and jobs, through September 2026 All figures computed from NWDATA series NWGDP, NWCPI and NWUNEMP",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Bottom line: growth and jobs are solid, but inflation is not back to normal Real GDP is growing about 2.1% a year and unemployment is 4.2%. CPI inflation, at 3.7%, is the one reading cutting against the story. ￼ GROWTH 2.1% Real GDP growth, y/y, 2026 Q3 3.4% annualized q/q in the latest quarter; four straight quarters at 2.0% or better y/y ￼ INFLATION 3.7% CPI inflation, y/y, Sep 2026 1.7 points above the 2% benchmark and up from 3.3% in July; 2015-19 averaged 1.6% ￼ LABOR MARKET 4.2% Unemployment rate, Sep 2026 Below the 5.6% average since 2000; 4.4% a year ago 2",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Growth is steady: real GDP is up 2.1% on the year The latest quarter ran at 3.4% annualized. Growth has held near 2-2.6% y/y for a year, slightly under the 2.5% average since late 2016. ￼ 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 -10% -6% -2% 2% 6% 10% 14% ￼ 2.1% Real GDP, y/y, 2026 Q3 ￼ 3.4% Annualized q/q, 2026 Q3 ￼ -1.0% Only negative quarter since 2022 (2022 Q1, annualized) 3",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Inflation is the soft spot: 3.7%, well above the 2% benchmark CPI y/y has risen from 3.3% in July and is well above its 1.6% average for 2015-19, though far below the 9.0% peak of Jun 2022. ￼ 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 -2% 0% 2% 4% 6% 8% 10% CPI-U, y/y % 2% reference ￼ 3.7% CPI y/y, Sep 2026 ￼ 3.0% CPI y/y, Sep 2025 ￼ 1.6% Average y/y, 2015-19 4",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series The labor market is healthy: unemployment is 4.2%, below its 2000-26 average Down from 4.4% a year ago and far from the 14.8% pandemic peak. It is above the 3.4% low of Apr 2023. ￼ 2000 2015 0% 4% 8% 12% 16% ￼ 4.2% Unemployment, Sep 2026 ￼ 5.6% Average, Jan 2000 to Sep 2026 ￼ 14.8% Peak, Apr 2020 5",
+    "Verdict: decent, as long as inflation cools Growth: 2.1% real y/y, 3.4% annualized last quarter Jobs: 4.2% unemployment vs 5.6% average since 2000 Watch: CPI at 3.7% y/y, up from 3.3% in July and above the 2% benchmark NWDATA has no October 2025 observation for unemployment or CPI; those months are absent, and CPI y/y is matched to the same month a year earlier."
+   ]
+  },
+  "panes": {
+   "after": 6,
+   "before": 6
+  }
+ },
+ "pptx-PD": {
+  "boxes": [],
+  "caveats": [],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "highlights": [
+       {
+        "h": 103.1,
+        "w": 210.3,
+        "x": 547.1,
+        "y": 369.2
+       }
+      ],
+      "pane": "before:page2",
+      "rect": {
+       "h": 111.1,
+       "w": 218.3,
+       "x": 543.1,
+       "y": 365.2
+      },
+      "side": "before"
+     },
+     {
+      "highlights": [
+       {
+        "h": 103.1,
+        "w": 210.3,
+        "x": 547.1,
+        "y": 369.2
+       }
+      ],
+      "pane": "after:page2",
+      "rect": {
+       "h": 111.1,
+       "w": 218.3,
+       "x": 543.1,
+       "y": 365.2
+      },
+      "side": "after"
+     }
+    ],
+    "id": "k1",
+    "kind": "shape",
+    "loc": "Slide 2 / Text 9 / number 1",
+    "parent": null
+   },
+   {
+    "boxes": [
+     {
+      "pane": "before:page2",
+      "rect": {
+       "h": 70,
+       "w": 110,
+       "x": 1250,
+       "y": 620
+      },
+      "side": "before"
+     },
+     {
+      "pane": "after:page2",
+      "rect": {
+       "h": 70,
+       "w": 110,
+       "x": 1250,
+       "y": 620
+      },
+      "side": "after"
+     }
+    ],
+    "id": "k2",
+    "kind": "picture",
+    "label": "Slide 2: a picture was replaced",
+    "loc": null,
+    "parent": null
+   }
+  ],
+  "engine": null,
+  "format": "pptx",
+  "paneText": {
+   "after": [
+    "The US economy: pretty decent, with one soft spot Growth, inflation and jobs, through September 2026 All figures computed from NWDATA series NWGDP, NWCPI and NWUNEMP",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Bottom line: growth and jobs are solid, but inflation is not back to normal Real GDP is growing about 2.1% a year and unemployment is 4.2%. CPI inflation, at 3.7%, is the one reading cutting against the story. ￼ GROWTH 2.1% Real GDP growth, y/y, 2026 Q3 3.4% annualized q/q in the latest quarter; four straight quarters at 2.0% or better y/y ￼ INFLATION 3.9% CPI inflation, y/y, Sep 2026 1.7 points above the 2% benchmark and up from 3.3% in July; 2015-19 averaged 1.6% ￼ LABOR MARKET 4.2% Unemployment rate, Sep 2026 Below the 5.6% average since 2000; 4.4% a year ago 2 ￼",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Growth is steady: real GDP is up 2.1% on the year The latest quarter ran at 3.4% annualized. Growth has held near 2-2.6% y/y for a year, slightly under the 2.5% average since late 2016. ￼ 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 -10% -6% -2% 2% 6% 10% 14% ￼ 2.1% Real GDP, y/y, 2026 Q3 ￼ 3.4% Annualized q/q, 2026 Q3 ￼ -1.0% Only negative quarter since 2022 (2022 Q1, annualized) 3",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Inflation is the soft spot: 3.7%, well above the 2% benchmark CPI y/y has risen from 3.3% in July and is well above its 1.6% average for 2015-19, though far below the 9.0% peak of Jun 2022. ￼ 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 -2% 0% 2% 4% 6% 8% 10% CPI-U, y/y % 2% reference ￼ 3.7% CPI y/y, Sep 2026 ￼ 3.0% CPI y/y, Sep 2025 ￼ 1.6% Average y/y, 2015-19 4",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series The labor market is healthy: unemployment is 4.2%, below its 2000-26 average Down from 4.4% a year ago and far from the 14.8% pandemic peak. It is above the 3.4% low of Apr 2023. ￼ 2000 2015 0% 4% 8% 12% 16% ￼ 4.2% Unemployment, Sep 2026 ￼ 5.6% Average, Jan 2000 to Sep 2026 ￼ 14.8% Peak, Apr 2020 5",
+    "Verdict: decent, as long as inflation cools Growth: 2.1% real y/y, 3.4% annualized last quarter Jobs: 4.2% unemployment vs 5.6% average since 2000 Watch: CPI at 3.7% y/y, up from 3.3% in July and above the 2% benchmark NWDATA has no October 2025 observation for unemployment or CPI; those months are absent, and CPI y/y is matched to the same month a year earlier."
+   ],
+   "before": [
+    "The US economy: pretty decent, with one soft spot Growth, inflation and jobs, through September 2026 All figures computed from NWDATA series NWGDP, NWCPI and NWUNEMP",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Bottom line: growth and jobs are solid, but inflation is not back to normal Real GDP is growing about 2.1% a year and unemployment is 4.2%. CPI inflation, at 3.7%, is the one reading cutting against the story. ￼ GROWTH 2.1% Real GDP growth, y/y, 2026 Q3 3.4% annualized q/q in the latest quarter; four straight quarters at 2.0% or better y/y ￼ INFLATION 3.7% CPI inflation, y/y, Sep 2026 1.7 points above the 2% benchmark and up from 3.3% in July; 2015-19 averaged 1.6% ￼ LABOR MARKET 4.2% Unemployment rate, Sep 2026 Below the 5.6% average since 2000; 4.4% a year ago 2 ￼",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Growth is steady: real GDP is up 2.1% on the year The latest quarter ran at 3.4% annualized. Growth has held near 2-2.6% y/y for a year, slightly under the 2.5% average since late 2016. ￼ 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 -10% -6% -2% 2% 6% 10% 14% ￼ 2.1% Real GDP, y/y, 2026 Q3 ￼ 3.4% Annualized q/q, 2026 Q3 ￼ -1.0% Only negative quarter since 2022 (2022 Q1, annualized) 3",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Inflation is the soft spot: 3.7%, well above the 2% benchmark CPI y/y has risen from 3.3% in July and is well above its 1.6% average for 2015-19, though far below the 9.0% peak of Jun 2022. ￼ 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 -2% 0% 2% 4% 6% 8% 10% CPI-U, y/y % 2% reference ￼ 3.7% CPI y/y, Sep 2026 ￼ 3.0% CPI y/y, Sep 2025 ￼ 1.6% Average y/y, 2015-19 4",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series The labor market is healthy: unemployment is 4.2%, below its 2000-26 average Down from 4.4% a year ago and far from the 14.8% pandemic peak. It is above the 3.4% low of Apr 2023. ￼ 2000 2015 0% 4% 8% 12% 16% ￼ 4.2% Unemployment, Sep 2026 ￼ 5.6% Average, Jan 2000 to Sep 2026 ￼ 14.8% Peak, Apr 2020 5",
+    "Verdict: decent, as long as inflation cools Growth: 2.1% real y/y, 3.4% annualized last quarter Jobs: 4.2% unemployment vs 5.6% average since 2000 Watch: CPI at 3.7% y/y, up from 3.3% in July and above the 2% benchmark NWDATA has no October 2025 observation for unemployment or CPI; those months are absent, and CPI y/y is matched to the same month a year earlier."
+   ]
+  },
+  "panes": {
+   "after": 6,
+   "before": 6
+  }
+ },
+ "pptx-R9": {
+  "boxes": [],
+  "caveats": [],
+  "changes": [
+   {
+    "boxes": [
+     {
+      "pane": "before:page2",
+      "rect": {
+       "h": 417.6,
+       "w": 417.6,
+       "x": 964.8,
+       "y": 288
+      },
+      "side": "before"
+     }
+    ],
+    "id": "k1",
+    "kind": "shape",
+    "loc": "Slide 2 / Shape 12",
+    "parent": null
+   },
+   {
+    "boxes": [],
+    "id": "k2",
+    "kind": "shape",
+    "loc": "Slide 2 / Text 13",
+    "parent": "k1"
+   },
+   {
+    "boxes": [],
+    "id": "k3",
+    "kind": "shape",
+    "loc": "Slide 2 / Text 14",
+    "parent": "k1"
+   },
+   {
+    "boxes": [],
+    "id": "k4",
+    "kind": "shape",
+    "loc": "Slide 2 / Text 15",
+    "parent": "k1"
+   },
+   {
+    "boxes": [],
+    "id": "k5",
+    "kind": "shape",
+    "loc": "Slide 2 / Text 16",
+    "parent": "k1"
+   }
+  ],
+  "engine": null,
+  "format": "pptx",
+  "paneText": {
+   "after": [
+    "The US economy: pretty decent, with one soft spot Growth, inflation and jobs, through September 2026 All figures computed from NWDATA series NWGDP, NWCPI and NWUNEMP",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Bottom line: growth and jobs are solid, but inflation is not back to normal Real GDP is growing about 2.1% a year and unemployment is 4.2%. CPI inflation, at 3.7%, is the one reading cutting against the story. ￼ GROWTH 2.1% Real GDP growth, y/y, 2026 Q3 3.4% annualized q/q in the latest quarter; four straight quarters at 2.0% or better y/y ￼ INFLATION 3.7% CPI inflation, y/y, Sep 2026 1.7 points above the 2% benchmark and up from 3.3% in July; 2015-19 averaged 1.6% 2",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Growth is steady: real GDP is up 2.1% on the year The latest quarter ran at 3.4% annualized. Growth has held near 2-2.6% y/y for a year, slightly under the 2.5% average since late 2016. ￼ 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 -10% -6% -2% 2% 6% 10% 14% ￼ 2.1% Real GDP, y/y, 2026 Q3 ￼ 3.4% Annualized q/q, 2026 Q3 ￼ -1.0% Only negative quarter since 2022 (2022 Q1, annualized) 3",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Inflation is the soft spot: 3.7%, well above the 2% benchmark CPI y/y has risen from 3.3% in July and is well above its 1.6% average for 2015-19, though far below the 9.0% peak of Jun 2022. ￼ 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 -2% 0% 2% 4% 6% 8% 10% CPI-U, y/y % 2% reference ￼ 3.7% CPI y/y, Sep 2026 ￼ 3.0% CPI y/y, Sep 2025 ￼ 1.6% Average y/y, 2015-19 4",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series The labor market is healthy: unemployment is 4.2%, below its 2000-26 average Down from 4.4% a year ago and far from the 14.8% pandemic peak. It is above the 3.4% low of Apr 2023. ￼ 2000 2015 0% 4% 8% 12% 16% ￼ 4.2% Unemployment, Sep 2026 ￼ 5.6% Average, Jan 2000 to Sep 2026 ￼ 14.8% Peak, Apr 2020 5",
+    "Verdict: decent, as long as inflation cools Growth: 2.1% real y/y, 3.4% annualized last quarter Jobs: 4.2% unemployment vs 5.6% average since 2000 Watch: CPI at 3.7% y/y, up from 3.3% in July and above the 2% benchmark NWDATA has no October 2025 observation for unemployment or CPI; those months are absent, and CPI y/y is matched to the same month a year earlier."
+   ],
+   "before": [
+    "The US economy: pretty decent, with one soft spot Growth, inflation and jobs, through September 2026 All figures computed from NWDATA series NWGDP, NWCPI and NWUNEMP",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Bottom line: growth and jobs are solid, but inflation is not back to normal Real GDP is growing about 2.1% a year and unemployment is 4.2%. CPI inflation, at 3.7%, is the one reading cutting against the story. ￼ GROWTH 2.1% Real GDP growth, y/y, 2026 Q3 3.4% annualized q/q in the latest quarter; four straight quarters at 2.0% or better y/y ￼ INFLATION 3.7% CPI inflation, y/y, Sep 2026 1.7 points above the 2% benchmark and up from 3.3% in July; 2015-19 averaged 1.6% ￼ LABOR MARKET 4.2% Unemployment rate, Sep 2026 Below the 5.6% average since 2000; 4.4% a year ago 2",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Growth is steady: real GDP is up 2.1% on the year The latest quarter ran at 3.4% annualized. Growth has held near 2-2.6% y/y for a year, slightly under the 2.5% average since late 2016. ￼ 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 -10% -6% -2% 2% 6% 10% 14% ￼ 2.1% Real GDP, y/y, 2026 Q3 ￼ 3.4% Annualized q/q, 2026 Q3 ￼ -1.0% Only negative quarter since 2022 (2022 Q1, annualized) 3",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series Inflation is the soft spot: 3.7%, well above the 2% benchmark CPI y/y has risen from 3.3% in July and is well above its 1.6% average for 2015-19, though far below the 9.0% peak of Jun 2022. ￼ 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 -2% 0% 2% 4% 6% 8% 10% CPI-U, y/y % 2% reference ￼ 3.7% CPI y/y, Sep 2026 ￼ 3.0% CPI y/y, Sep 2025 ￼ 1.6% Average y/y, 2015-19 4",
+    "Source: NWDATA (NWGDP, NWCPI, NWUNEMP); calculations from the underlying series The labor market is healthy: unemployment is 4.2%, below its 2000-26 average Down from 4.4% a year ago and far from the 14.8% pandemic peak. It is above the 3.4% low of Apr 2023. ￼ 2000 2015 0% 4% 8% 12% 16% ￼ 4.2% Unemployment, Sep 2026 ￼ 5.6% Average, Jan 2000 to Sep 2026 ￼ 14.8% Peak, Apr 2020 5",
+    "Verdict: decent, as long as inflation cools Growth: 2.1% real y/y, 3.4% annualized last quarter Jobs: 4.2% unemployment vs 5.6% average since 2000 Watch: CPI at 3.7% y/y, up from 3.3% in July and above the 2% benchmark NWDATA has no October 2025 observation for unemployment or CPI; those months are absent, and CPI y/y is matched to the same month a year earlier."
+   ]
+  },
+  "panes": {
+   "after": 6,
+   "before": 6
+  }
+ }
+}

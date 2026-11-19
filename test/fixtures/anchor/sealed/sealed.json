@@ -1,0 +1,8 @@
+{
+  "steps": [
+    {"call": "call-1", "input": "edit", "before": "edit.before.json", "after": "edit.after.json", "expectChanges": [{"kind": "edit", "entity": "n1"}], "golden": {"before": "buy milk", "after": "buy oat milk"}},
+    {"call": "call-2", "input": "create", "before": "create.before.json", "after": "create.after.json", "expectChanges": [{"kind": "create", "entity": "n3"}], "golden": {"after": "book flights"}},
+    {"call": "call-3", "input": "delete", "before": "delete.before.json", "after": "delete.after.json", "expectChanges": [{"kind": "delete", "entity": "n2"}], "golden": {"before": "call the plumber"}}
+  ],
+  "untouched": ["n4"]
+}

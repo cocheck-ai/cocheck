@@ -1,0 +1,10 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "fx-warm",
+  "version": "0.0.1",
+  "entry": "state",
+  "matches": { "extensions": [".warm.txt"] },
+  "run": ["node", "connector.mjs"],
+  "credentials": [],
+  "platforms": ["darwin", "win32", "linux"]
+}

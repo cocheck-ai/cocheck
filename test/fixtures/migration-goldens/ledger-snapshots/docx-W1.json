@@ -1,0 +1,30 @@
+{
+ "snapshot": "docx-W1",
+ "client": "claude:/work",
+ "folder": "/work",
+ "blobs": {
+  "436727a83cd238cf5d969f831f7a37ca57ea60baf6124982db3019c82668c534": "word-change-first/W1-before.docx",
+  "4c0160a73d6d0cd59d4593dd5cd270dff6a10a846895238a41bc2073de93054f": "word-change-first/W1-after.docx"
+ },
+ "steps": [
+  {
+   "seq": 1,
+   "phase": "Post",
+   "file": "memo.docx",
+   "sha256": "436727a83cd238cf5d969f831f7a37ca57ea60baf6124982db3019c82668c534",
+   "prevSha256": null,
+   "size": 38290,
+   "kept": "whole"
+  },
+  {
+   "seq": 2,
+   "phase": "Post",
+   "file": "memo.docx",
+   "sha256": "4c0160a73d6d0cd59d4593dd5cd270dff6a10a846895238a41bc2073de93054f",
+   "prevSha256": "436727a83cd238cf5d969f831f7a37ca57ea60baf6124982db3019c82668c534",
+   "size": 38391,
+   "kept": "whole"
+  }
+ ],
+ "pane": "docx-W1"
+}

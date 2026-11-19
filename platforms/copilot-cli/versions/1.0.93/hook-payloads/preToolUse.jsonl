@@ -1,0 +1,2 @@
+{"sessionId":"a192d0a1-4f6c-4619-a1fa-51d2fff6e1b0","timestamp":1792338948769,"cwd":"<scratch>/platforms/copilot-cli/work/proj","toolName":"bash","toolArgs":{"command":"wc -l data.csv","description":"Count data.csv lines"}}
+{"sessionId":"a192d0a1-4f6c-4619-a1fa-51d2fff6e1b0","timestamp":1792338951642,"cwd":"<scratch>/platforms/copilot-cli/work/proj","toolName":"bash","toolArgs":{"command":"head -n 2 data.csv","description":"Show first two CSV lines"}}

@@ -1,0 +1,223 @@
+{
+  "spec": "cocheck.changes/1",
+  "changes": [
+    {
+      "id": "k1",
+      "mark": "changed",
+      "label": "Sheet1!A3",
+      "after": "Doohickey",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "A3"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "A3"
+        }
+      ]
+    },
+    {
+      "id": "k2",
+      "mark": "changed",
+      "label": "Sheet1!B3",
+      "after": "4",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "B3"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "B3"
+        }
+      ]
+    },
+    {
+      "id": "k3",
+      "mark": "changed",
+      "label": "Sheet1!C3",
+      "after": "1.25",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "C3"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "C3"
+        }
+      ]
+    },
+    {
+      "id": "k4",
+      "mark": "changed",
+      "label": "Sheet1!D3",
+      "lines": [
+        "Recalculated: the formula is unchanged, a cell it reads changed"
+      ],
+      "after": "formula =B3*C3, value 5",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "D3"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "D3"
+        }
+      ]
+    },
+    {
+      "id": "k5",
+      "mark": "changed",
+      "label": "Sheet1!A4",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "A4"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "A4"
+        }
+      ]
+    },
+    {
+      "id": "k6",
+      "mark": "changed",
+      "label": "Sheet1!B4",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "B4"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "B4"
+        }
+      ]
+    },
+    {
+      "id": "k7",
+      "mark": "changed",
+      "label": "Sheet1!C4",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "C4"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "C4"
+        }
+      ]
+    },
+    {
+      "id": "k8",
+      "mark": "added",
+      "label": "Sheet1!A5",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "after:Sheet1",
+          "cell": "A5"
+        }
+      ]
+    },
+    {
+      "id": "k9",
+      "mark": "added",
+      "label": "Sheet1!B5",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "after:Sheet1",
+          "cell": "B5"
+        }
+      ]
+    },
+    {
+      "id": "k10",
+      "mark": "added",
+      "label": "Sheet1!C5",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "after:Sheet1",
+          "cell": "C5"
+        }
+      ]
+    },
+    {
+      "id": "k11",
+      "mark": "changed",
+      "label": "Sheet1!D5",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "before:Sheet1",
+          "cell": "D5"
+        },
+        {
+          "picture": "after:Sheet1",
+          "cell": "D5"
+        }
+      ]
+    },
+    {
+      "id": "k12",
+      "mark": "added",
+      "label": "Sheet1!D6",
+      "before": "formula =SUM(D2:D4), value 47.5",
+      "after": "formula =SUM(D2:D5), value 52.5",
+      "kind": "cell",
+      "parent": null,
+      "boxes": [
+        {
+          "picture": "after:Sheet1",
+          "cell": "D6"
+        }
+      ]
+    }
+  ],
+  "pictures": [
+    {
+      "id": "after:Sheet1",
+      "side": "after",
+      "type": "grid",
+      "private": {
+        "paneText": "Sheet1, after: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Doohickey | B=4 | C=$1.25 | D=$5.00 ; 4: A=Gadget | B=5 | C=$4.00 | D=$20.00 ; 5: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 6: D=$52.50"
+      }
+    },
+    {
+      "id": "before:Sheet1",
+      "side": "before",
+      "type": "grid",
+      "private": {
+        "paneText": "Sheet1, before: 1: A=Item | B=Qty | C=Price | D=Total ; 2: A=Widget | B=3 | C=$2.50 | D=$7.50 ; 3: A=Gadget | B=5 | C=$4.00 | D=$20.00 ; 4: A=Gizmo | B=2 | C=$10.00 | D=$20.00 ; 5: D=$47.50"
+      }
+    }
+  ],
+  "caveats": [
+    "Style changes on the sheet 'Sheet1' were not compared because rows or columns were inserted or deleted there."
+  ]
+}

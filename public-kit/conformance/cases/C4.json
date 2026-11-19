@@ -1,0 +1,13 @@
+{
+  "id": "C4",
+  "title": "two runs identical",
+  "fixture": "toy",
+  "inputs": {
+    "before": "public-kit/toy-product/states/edit.before.json",
+    "after": "public-kit/toy-product/states/edit.after.json"
+  },
+  "expect": {
+    "runs": 2,
+    "canonicalOutputsEqual": true
+  }
+}

@@ -1,0 +1,104 @@
+{
+ "step": "PD",
+ "fmt": "pptx",
+ "before": "/private/tmp/claude-501/-Users-user-proj/51ebba20-1351-4b1e-867b-f7b9c868fada/workdir/run/bbox-change-first/deck/gap/pairs/PD-before.pptx",
+ "after": "/private/tmp/claude-501/-Users-user-proj/51ebba20-1351-4b1e-867b-f7b9c868fada/workdir/run/bbox-change-first/deck/gap/pairs/PD-after.pptx",
+ "provenance": "computed",
+ "note": "computed by deck/pptx_changes.py from the slide XML plus deck/gap/trim.py: boxes of text shapes with no visible fill or line (placeholders resolved through layout/master) are the union of the rendered PDF text lines inside the frame padded 4 px, other shapes keep the xfrm frame (placeholders via layout/master, groups via chOff/chExt); a group change whose own frame and fill are unchanged is dropped (its child carries the change); all boxes clipped to the page; text highlights x estimated by character proportion",
+ "changes": [
+  {
+   "id": "c1",
+   "card": "Slide 2, Text 9: text edited (\"3.7%\" -> \"3.9%\")",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 2,
+     "rect": {
+      "x": 543.1,
+      "y": 365.2,
+      "w": 218.3,
+      "h": 111.1
+     },
+     "highlights": [
+      {
+       "x": 547.1,
+       "y": 369.2,
+       "w": 210.3,
+       "h": 103.1
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 2,
+     "rect": {
+      "x": 543.1,
+      "y": 365.2,
+      "w": 218.3,
+      "h": 111.1
+     },
+     "highlights": [
+      {
+       "x": 547.1,
+       "y": 369.2,
+       "w": 210.3,
+       "h": 103.1
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c2",
+   "card": "Slide 2, Picture 90: picture replaced",
+   "kind": "picture",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 2,
+     "rect": {
+      "x": 1250.0,
+      "y": 620.0,
+      "w": 110.0,
+      "h": 70.0
+     },
+     "highlights": [
+      {
+       "x": 1250.0,
+       "y": 620.0,
+       "w": 110.0,
+       "h": 70.0
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 2,
+     "rect": {
+      "x": 1250.0,
+      "y": 620.0,
+      "w": 110.0,
+      "h": 70.0
+     },
+     "highlights": [
+      {
+       "x": 1250.0,
+       "y": 620.0,
+       "w": 110.0,
+       "h": 70.0
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  }
+ ]
+}

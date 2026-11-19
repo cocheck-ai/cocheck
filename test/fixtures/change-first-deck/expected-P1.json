@@ -1,0 +1,429 @@
+{
+ "step": "P1",
+ "fmt": "pptx",
+ "before": "/private/tmp/claude-501/-Users-user-proj/51ebba20-1351-4b1e-867b-f7b9c868fada/workdir/run/bbox-change-first/deck/../census-src/realsrc/t12/initial.pptx",
+ "after": "/private/tmp/claude-501/-Users-user-proj/51ebba20-1351-4b1e-867b-f7b9c868fada/workdir/run/bbox-change-first/deck/../census-src/realsrc/t12/candidate.pptx",
+ "provenance": "computed",
+ "note": "computed by deck/pptx_changes.py from the slide XML plus deck/gap/trim.py: boxes of text shapes with no visible fill or line (placeholders resolved through layout/master) are the union of the rendered PDF text lines inside the frame padded 4 px, other shapes keep the xfrm frame (placeholders via layout/master, groups via chOff/chExt); a group change whose own frame and fill are unchanged is dropped (its child carries the change); all boxes clipped to the page; text highlights x estimated by character proportion",
+ "changes": [
+  {
+   "id": "c0",
+   "card": "5 formatting changes are in the file but draw identically (listed, not boxed)",
+   "kind": "recolour",
+   "parent": null,
+   "boxes": [],
+   "unplaced": "changed in the file, but nothing on the slide looks different"
+  },
+  {
+   "id": "c1",
+   "card": "Slide 1: the slide background changed colour",
+   "kind": "recolour",
+   "parent": null,
+   "boxes": [],
+   "unplaced": "the whole slide changed colour, so there is no one place to box"
+  },
+  {
+   "id": "c2",
+   "card": "Slide 1, title: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c1",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c3",
+   "card": "Slide 1, subtitle: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c1",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c4",
+   "card": "Slide 1, date: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c1",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c5",
+   "card": "Slide 2, slide-title: text edited; text formatting changed (\"Agenda\" -> \"Review Agenda\")",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 2,
+     "rect": {
+      "x": 136.2,
+      "y": 89.0,
+      "w": 195.3,
+      "h": 64.9
+     },
+     "highlights": [
+      {
+       "x": 140.2,
+       "y": 93.0,
+       "w": 187.3,
+       "h": 56.9
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 2,
+     "rect": {
+      "x": 136.2,
+      "y": 89.0,
+      "w": 383.5,
+      "h": 64.9
+     },
+     "highlights": [
+      {
+       "x": 140.2,
+       "y": 93.0,
+       "w": 375.5,
+       "h": 56.9
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c6",
+   "card": "Slide 2, slide-subtitle: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c0",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c7",
+   "card": "Slide 2, agenda-list: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c0",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c8",
+   "card": "Slide 3, slide-title: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 3,
+     "rect": {
+      "x": 136.2,
+      "y": 89.0,
+      "w": 461.9,
+      "h": 64.9
+     },
+     "highlights": [
+      {
+       "x": 142,
+       "y": 101,
+       "w": 224,
+       "h": 49
+      },
+      {
+       "x": 384,
+       "y": 101,
+       "w": 208,
+       "h": 39
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 3,
+     "rect": {
+      "x": 136.2,
+      "y": 89.0,
+      "w": 461.9,
+      "h": 64.9
+     },
+     "highlights": [
+      {
+       "x": 142,
+       "y": 101,
+       "w": 224,
+       "h": 49
+      },
+      {
+       "x": 384,
+       "y": 101,
+       "w": 208,
+       "h": 39
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c9",
+   "card": "Slide 3, slide-subtitle: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c0",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c10",
+   "card": "Slide 4: speaker notes changed",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [],
+   "unplaced": "speaker notes do not draw on the slide; see the notes panel"
+  },
+  {
+   "id": "c11",
+   "card": "Slide 4, slide-title: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 4,
+     "rect": {
+      "x": 136.2,
+      "y": 89.0,
+      "w": 649.1,
+      "h": 64.9
+     },
+     "highlights": [
+      {
+       "x": 143,
+       "y": 101,
+       "w": 192,
+       "h": 49
+      },
+      {
+       "x": 352,
+       "y": 101,
+       "w": 237,
+       "h": 39
+      },
+      {
+       "x": 604,
+       "y": 101,
+       "w": 174,
+       "h": 39
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 4,
+     "rect": {
+      "x": 136.2,
+      "y": 89.0,
+      "w": 649.1,
+      "h": 64.9
+     },
+     "highlights": [
+      {
+       "x": 143,
+       "y": 101,
+       "w": 192,
+       "h": 49
+      },
+      {
+       "x": 352,
+       "y": 101,
+       "w": 237,
+       "h": 39
+      },
+      {
+       "x": 604,
+       "y": 101,
+       "w": 174,
+       "h": 39
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c12",
+   "card": "Slide 4, slide-subtitle: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c0",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c13",
+   "card": "Slide 5, slide-title: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 5,
+     "rect": {
+      "x": 136.2,
+      "y": 89.0,
+      "w": 399.5,
+      "h": 64.9
+     },
+     "highlights": [
+      {
+       "x": 143,
+       "y": 101,
+       "w": 195,
+       "h": 49
+      },
+      {
+       "x": 355,
+       "y": 101,
+       "w": 175,
+       "h": 39
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 5,
+     "rect": {
+      "x": 136.2,
+      "y": 89.0,
+      "w": 399.5,
+      "h": 64.9
+     },
+     "highlights": [
+      {
+       "x": 143,
+       "y": 101,
+       "w": 195,
+       "h": 49
+      },
+      {
+       "x": 355,
+       "y": 101,
+       "w": 175,
+       "h": 39
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c14",
+   "card": "Slide 5, slide-subtitle: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c0",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c15",
+   "card": "Slide 5, table 3: table: 3 cell(s) changed",
+   "kind": "shape",
+   "parent": null,
+   "boxes": [
+    {
+     "side": "before",
+     "page": 5,
+     "rect": {
+      "x": 156.0,
+      "y": 264.0,
+      "w": 1365.0,
+      "h": 420.0
+     },
+     "highlights": [
+      {
+       "x": 156,
+       "y": 264.0,
+       "w": 1365,
+       "h": 83.0
+      }
+     ],
+     "provenance": "computed"
+    },
+    {
+     "side": "after",
+     "page": 5,
+     "rect": {
+      "x": 156.0,
+      "y": 264.0,
+      "w": 1365.0,
+      "h": 420.0
+     },
+     "highlights": [
+      {
+       "x": 156,
+       "y": 264.0,
+       "w": 1365,
+       "h": 83.0
+      }
+     ],
+     "provenance": "computed"
+    }
+   ],
+   "unplaced": null
+  },
+  {
+   "id": "c16",
+   "card": "Slide 5, table 3, row 1, column 1: \"Measure\": cell formatting changed",
+   "kind": "cell",
+   "parent": "c15",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c17",
+   "card": "Slide 5, table 3, row 1, column 2: \"Current\": cell formatting changed",
+   "kind": "cell",
+   "parent": "c15",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c18",
+   "card": "Slide 5, table 3, row 1, column 3: \"Target\": cell formatting changed",
+   "kind": "cell",
+   "parent": "c15",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c19",
+   "card": "Slide 6: the slide background changed colour",
+   "kind": "recolour",
+   "parent": null,
+   "boxes": [],
+   "unplaced": "the whole slide changed colour, so there is no one place to box"
+  },
+  {
+   "id": "c20",
+   "card": "Slide 6, closing-title: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c19",
+   "boxes": [],
+   "unplaced": null
+  },
+  {
+   "id": "c21",
+   "card": "Slide 6, closing-text: text formatting (colour, size or font) changed",
+   "kind": "recolour",
+   "parent": "c19",
+   "boxes": [],
+   "unplaced": null
+  }
+ ]
+}

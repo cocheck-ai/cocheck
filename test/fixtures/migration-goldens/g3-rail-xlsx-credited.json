@@ -1,0 +1,288 @@
+{
+ "actors": [
+  {
+   "chip": "Y",
+   "color": "#1c2740",
+   "fromStart": true,
+   "id": "you",
+   "name": "You"
+  },
+  {
+   "chip": "C",
+   "color": "#6fb0e3",
+   "fromStart": true,
+   "id": "claude",
+   "main": true,
+   "name": "Claude"
+  },
+  {
+   "chip": "U",
+   "color": "#7a7f88",
+   "id": "unsure",
+   "name": "Unknown"
+  },
+  {
+   "chip": "U",
+   "color": "#7a7f88",
+   "id": "other",
+   "name": "Unknown"
+  },
+  {
+   "chip": "1",
+   "color": "#e0a458",
+   "id": "agent:1",
+   "mergeId": null,
+   "name": "Helper 1",
+   "parent": "claude",
+   "startId": null,
+   "type": "general-purpose"
+  }
+ ],
+ "files": [
+  {
+   "connector": {
+    "id": "microsoft-excel",
+    "subject": "plan.xlsx"
+   },
+   "file": "plan.xlsx",
+   "name": "plan.xlsx",
+   "versions": [
+    {
+     "change": "c5",
+     "chip": "U",
+     "kept": true,
+     "kind": "created",
+     "label": "Created",
+     "lane": "unsure",
+     "sha": "0f52e6dab891b70bf1a24d96660f63f31cc54b810a750268e058591dbc28dd7c",
+     "stop": "chg-c5"
+    },
+    {
+     "change": "c6",
+     "chip": "U",
+     "inferred": true,
+     "kept": true,
+     "kind": "modified",
+     "label": "Changed",
+     "lane": "unsure",
+     "sha": "170a9014a44c13d1e7cbe95b21bac4673b415acb9b2724fd855f90b066da1c72",
+     "stop": "chg-c6",
+     "unknownReads": true
+    }
+   ]
+  },
+  {
+   "connector": {
+    "id": "microsoft-excel",
+    "subject": "book.xlsx"
+   },
+   "file": "book.xlsx",
+   "name": "book.xlsx",
+   "versions": [
+    {
+     "change": "c3",
+     "chip": "U",
+     "kept": true,
+     "kind": "created",
+     "label": "Created",
+     "lane": "unsure",
+     "sha": "d7e9c7edd0b25c7eb7427d3a529325c23dd819860bb91dff32eb819481796015",
+     "stop": "chg-c3"
+    },
+    {
+     "change": "c4",
+     "chip": "U",
+     "kept": true,
+     "kind": "modified",
+     "label": "Changed",
+     "lane": "other",
+     "sha": "ed3224f43fa34af534f40a24fb33141d199c5320e71314af0bceb0bb8a624a2f",
+     "stop": "chg-c4"
+    }
+   ]
+  },
+  {
+   "connector": {
+    "id": "microsoft-excel",
+    "subject": "model.xlsx"
+   },
+   "file": "model.xlsx",
+   "name": "model.xlsx",
+   "versions": [
+    {
+     "change": "c2",
+     "chip": "1",
+     "inferred": true,
+     "kept": true,
+     "kind": "modified",
+     "label": "Changed",
+     "lane": "agent:1",
+     "sha": "f0030866bbae25c2537b43e85d61be537e7a1d963152fcada886d78442f0caff",
+     "stop": "chg-c2",
+     "unknownReads": true
+    }
+   ]
+  }
+ ],
+ "folder": "work",
+ "stops": [
+  {
+   "head": "You made request 1",
+   "id": "req-r001",
+   "label": "Your request",
+   "lane": "you",
+   "request": {
+    "missing": true,
+    "text": "The words of this request were not recorded."
+   },
+   "title": "Made request 1"
+  },
+  {
+   "call": {
+    "id": "042d7ed8-fd91-417a-a062-d2be3645f3f6\u0000toolu_01iL75MA3vESAf6kY01xGxsP",
+    "text": "Ran a Python script (edit_formula.py) on model.xlsx and plan.xlsx"
+   },
+   "calls": [
+    {
+     "id": "toolu_01iL75MA3vESAf6kY01xGxsP",
+     "text": "Ran a Python script (edit_formula.py) on model.xlsx and plan.xlsx"
+    }
+   ],
+   "change": {
+    "ask": null,
+    "failed": null,
+    "file": "model.xlsx",
+    "inferred": true,
+    "key": "c2",
+    "kind": "modified",
+    "moreNote": null,
+    "newFile": null,
+    "note": "Helper 1 changed Sheet1!D5 from =SUM(D2:D4) to =AVERAGE(D2:D4)",
+    "rowNotes": [],
+    "secret": false,
+    "secretLine": null,
+    "treeAfter": null,
+    "treeBefore": null,
+    "viewUrl": "/timeline/1/view/c2"
+   },
+   "head": "Helper 1 changed model.xlsx",
+   "id": "chg-c2",
+   "label": "Changed model.xlsx",
+   "lane": "agent:1",
+   "path": "model.xlsx",
+   "title": "Changed model.xlsx"
+  },
+  {
+   "change": {
+    "ask": null,
+    "failed": null,
+    "file": "book.xlsx",
+    "key": "c3",
+    "kind": "created",
+    "moreNote": null,
+    "newFile": null,
+    "note": "Sheet Sheet1 created: 5 rows by 4 columns, 18 cells (4 formulas)",
+    "rowNotes": [],
+    "secret": false,
+    "secretLine": null,
+    "treeAfter": null,
+    "treeBefore": null,
+    "viewUrl": "/timeline/1/view/c3"
+   },
+   "head": "Something, during agent calls, created book.xlsx",
+   "id": "chg-c3",
+   "label": "Created book.xlsx",
+   "lane": "unsure",
+   "path": "book.xlsx",
+   "sub": "Found as an agent call ended that CoCheck had not seen start, so it is not credited with it. That call may have written it, or something else did (you, an app, or another process).",
+   "title": "Created book.xlsx"
+  },
+  {
+   "change": {
+    "ask": null,
+    "failed": null,
+    "file": "book.xlsx",
+    "key": "c4",
+    "kind": "modified",
+    "moreNote": null,
+    "newFile": null,
+    "note": "Something outside the agents made several changes inside book.xlsx",
+    "rowNotes": [],
+    "secret": false,
+    "secretLine": null,
+    "treeAfter": null,
+    "treeBefore": null,
+    "viewUrl": "/timeline/1/view/c4"
+   },
+   "head": "Something outside the agents changed book.xlsx",
+   "id": "chg-c4",
+   "label": "Changed book.xlsx",
+   "lane": "other",
+   "path": "book.xlsx",
+   "sub": "Changed between agent calls; CoCheck can't tell who or what wrote it (you, an app, or another process).",
+   "title": "Changed book.xlsx"
+  },
+  {
+   "change": {
+    "ask": null,
+    "failed": null,
+    "file": "plan.xlsx",
+    "key": "c5",
+    "kind": "created",
+    "moreNote": null,
+    "newFile": null,
+    "note": "Sheet Sheet1 created: 5 rows by 4 columns, 18 cells (4 formulas)",
+    "rowNotes": [],
+    "secret": false,
+    "secretLine": null,
+    "treeAfter": null,
+    "treeBefore": null,
+    "viewUrl": "/timeline/1/view/c5"
+   },
+   "head": "Something, during agent calls, created plan.xlsx",
+   "id": "chg-c5",
+   "label": "Created plan.xlsx",
+   "lane": "unsure",
+   "path": "plan.xlsx",
+   "sub": "Found as an agent call ended that CoCheck had not seen start, so it is not credited with it. That call may have written it, or something else did (you, an app, or another process).",
+   "title": "Created plan.xlsx"
+  },
+  {
+   "calls": [
+    {
+     "id": "toolu_01H9vRi4hXfOBxGsSGr1rapk",
+     "text": "Ran a Python script (edit_model.py) on plan.xlsx"
+    },
+    {
+     "id": "toolu_01iL75MA3vESAf6kY01xGxsP",
+     "text": "Ran a Python script (edit_formula.py) on model.xlsx and plan.xlsx"
+    }
+   ],
+   "change": {
+    "ask": null,
+    "failed": null,
+    "file": "plan.xlsx",
+    "inferred": true,
+    "key": "c6",
+    "kind": "modified",
+    "moreNote": null,
+    "newFile": null,
+    "note": "Claude or Helper 1 made several changes inside plan.xlsx",
+    "rowNotes": [],
+    "secret": false,
+    "secretLine": null,
+    "treeAfter": null,
+    "treeBefore": null,
+    "viewUrl": "/timeline/1/view/c6"
+   },
+   "head": "Claude or Helper 1 changed plan.xlsx",
+   "id": "chg-c6",
+   "label": "Changed plan.xlsx",
+   "lane": "unsure",
+   "path": "plan.xlsx",
+   "sub": "Changed while Claude and Helper 1 were running; the record credits all of them, so CoCheck can't tell which one wrote it.",
+   "title": "Changed plan.xlsx"
+  }
+ ],
+ "task": 1
+}

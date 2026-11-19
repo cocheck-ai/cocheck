@@ -1,0 +1,16 @@
+{
+  "id": "C11",
+  "title": "a seeded fake token never appears in output",
+  "fixture": "toy",
+  "inputs": {
+    "before": "public-kit/toy-product/states/edit.before.json",
+    "after": "public-kit/toy-product/states/edit.after.json"
+  },
+  "env": {
+    "seedFakeToken": true
+  },
+  "expect": {
+    "outputContainsSeededToken": false,
+    "logContainsSeededToken": false
+  }
+}

@@ -1,0 +1,82 @@
+{
+ "actors": [
+  {
+   "chip": "Y",
+   "color": "#1c2740",
+   "fromStart": true,
+   "id": "you",
+   "name": "You"
+  },
+  {
+   "chip": "A",
+   "color": "#6fb0e3",
+   "fromStart": true,
+   "id": "claude",
+   "main": true,
+   "name": "The agent"
+  },
+  {
+   "chip": "U",
+   "color": "#7a7f88",
+   "id": "unsure",
+   "name": "Unknown"
+  },
+  {
+   "chip": "U",
+   "color": "#7a7f88",
+   "id": "other",
+   "name": "Unknown"
+  }
+ ],
+ "files": [
+  {
+   "connector": {
+    "id": "microsoft-word",
+    "subject": "memo.docx"
+   },
+   "file": "memo.docx",
+   "name": "memo.docx",
+   "versions": [
+    {
+     "change": "c2",
+     "chip": "U",
+     "kept": true,
+     "kind": "modified",
+     "label": "Changed",
+     "lane": "unsure",
+     "sha": "4c0160a73d6d0cd59d4593dd5cd270dff6a10a846895238a41bc2073de93054f",
+     "stop": "chg-c2"
+    }
+   ]
+  }
+ ],
+ "folder": "work",
+ "stops": [
+  {
+   "change": {
+    "ask": null,
+    "failed": null,
+    "file": "memo.docx",
+    "key": "c2",
+    "kind": "modified",
+    "moreNote": null,
+    "newFile": null,
+    "note": "Something, during agent calls, made several changes inside memo.docx",
+    "rowNotes": [],
+    "secret": false,
+    "secretLine": null,
+    "treeAfter": null,
+    "treeBefore": null,
+    "viewUrl": "/timeline/1/view/c2"
+   },
+   "head": "Something, during agent calls, changed memo.docx",
+   "id": "chg-c2",
+   "label": "Changed memo.docx",
+   "lane": "unsure",
+   "path": "memo.docx",
+   "sub": "Found as an agent call ended that CoCheck had not seen start, so it is not credited with it. That call may have written it, or something else did (you, an app, or another process).",
+   "title": "Changed memo.docx"
+  }
+ ],
+ "task": 1
+}

@@ -1,0 +1,30 @@
+{
+ "snapshot": "xlsx-inserted-row",
+ "client": "claude:/work",
+ "folder": "/work",
+ "blobs": {
+  "d7e9c7edd0b25c7eb7427d3a529325c23dd819860bb91dff32eb819481796015": "inserted-row-before.xlsx",
+  "ed3224f43fa34af534f40a24fb33141d199c5320e71314af0bceb0bb8a624a2f": "inserted-row-after.xlsx"
+ },
+ "steps": [
+  {
+   "seq": 1,
+   "phase": "Post",
+   "file": "model.xlsx",
+   "sha256": "d7e9c7edd0b25c7eb7427d3a529325c23dd819860bb91dff32eb819481796015",
+   "prevSha256": null,
+   "size": 7175,
+   "kept": "whole"
+  },
+  {
+   "seq": 2,
+   "phase": "Post",
+   "file": "model.xlsx",
+   "sha256": "ed3224f43fa34af534f40a24fb33141d199c5320e71314af0bceb0bb8a624a2f",
+   "prevSha256": "d7e9c7edd0b25c7eb7427d3a529325c23dd819860bb91dff32eb819481796015",
+   "size": 7222,
+   "kept": "whole"
+  }
+ ],
+ "pane": "xlsx-inserted-row"
+}

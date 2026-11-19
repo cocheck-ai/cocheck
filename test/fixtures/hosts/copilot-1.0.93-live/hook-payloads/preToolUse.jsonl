@@ -1,0 +1,3 @@
+{"sessionId":"d04e2784-9897-4b0b-9413-6d40501b2967","timestamp":0,"cwd":"/tmp/copilot-live/work","toolName":"bash","toolArgs":{"command":"printf '%s\\n' '--- data.csv ---' && cat data.csv","description":"Read data.csv"}}
+{"sessionId":"d04e2784-9897-4b0b-9413-6d40501b2967","timestamp":0,"cwd":"/tmp/copilot-live/work","toolName":"apply_patch","toolArgs":"*** Begin Patch\n*** Add File: totals.csv\n+a,b\n+4,6\n*** End Patch\n"}
+{"sessionId":"d04e2784-9897-4b0b-9413-6d40501b2967","timestamp":0,"cwd":"/tmp/copilot-live/work","toolName":"bash","toolArgs":{"command":"cat totals.csv","description":"Verify totals.csv"}}

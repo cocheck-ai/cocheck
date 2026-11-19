@@ -1,0 +1,13 @@
+{
+  "spec": "cocheck.connector/1",
+  "id": "microsoft-word",
+  "version": "0.1.0",
+  "entry": "state",
+  "matches": { "extensions": [".docx"] },
+  "run": { "darwin": ["node", "connector.mjs"], "win32": ["node", "connector.mjs"] },
+  "credentials": [],
+  "platforms": ["darwin", "win32"],
+  "requires": { "apps": ["Microsoft Word"] },
+  "diffMs": 60000,
+  "permissions": { "env": ["COCHECK_TEST_NO_OFFICE", "COCHECK_ALLOW_REAL_OFFICE", "COCHECK_OFFICE_TRACE"] }
+}

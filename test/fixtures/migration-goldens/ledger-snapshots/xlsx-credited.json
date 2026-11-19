@@ -1,0 +1,139 @@
+{
+ "snapshot": "xlsx-credited",
+ "client": "claude:/work",
+ "folder": "/work",
+ "blobs": {
+  "80f52b1df08b6f1f6f6c33bd0e9a31629b73e64896a40075ae7995b143710d6e": "formula-edit-before.xlsx",
+  "f0030866bbae25c2537b43e85d61be537e7a1d963152fcada886d78442f0caff": "formula-edit-after.xlsx",
+  "d7e9c7edd0b25c7eb7427d3a529325c23dd819860bb91dff32eb819481796015": "inserted-row-before.xlsx",
+  "ed3224f43fa34af534f40a24fb33141d199c5320e71314af0bceb0bb8a624a2f": "inserted-row-after.xlsx",
+  "0f52e6dab891b70bf1a24d96660f63f31cc54b810a750268e058591dbc28dd7c": "value-edit-before.xlsx",
+  "170a9014a44c13d1e7cbe95b21bac4673b415acb9b2724fd855f90b066da1c72": "value-edit-after.xlsx"
+ },
+ "ops": [
+  {
+   "tool": "Bash",
+   "intent": "cd /work && python3 edit_model.py",
+   "args": {
+    "tool_use_id": "toolu_01H9vRi4hXfOBxGsSGr1rapk",
+    "tool_name": "Bash",
+    "session_id": "042d7ed8-fd91-417a-a062-d2be3645f3f6",
+    "openedAt": 10,
+    "closedAt": 40,
+    "closedBy": "post",
+    "startSeq": 10,
+    "background": false,
+    "host": "claude",
+    "namedFiles": [
+     "/work/plan.xlsx"
+    ]
+   }
+  },
+  {
+   "tool": "Bash",
+   "intent": "cd /work && python3 edit_formula.py",
+   "args": {
+    "tool_use_id": "toolu_01iL75MA3vESAf6kY01xGxsP",
+    "tool_name": "Bash",
+    "session_id": "042d7ed8-fd91-417a-a062-d2be3645f3f6",
+    "agent_id": "ad3c777d13accf711",
+    "agent_type": "general-purpose",
+    "launch_tool_use_id": "toolu_01ncjkiMhwuuILtVLaKQzI0O",
+    "openedAt": 20,
+    "closedAt": 30,
+    "closedBy": "post",
+    "startSeq": 20,
+    "background": false,
+    "host": "claude",
+    "namedFiles": [
+     "/work/model.xlsx",
+     "/work/plan.xlsx"
+    ]
+   }
+  }
+ ],
+ "steps": [
+  {
+   "seq": 1,
+   "phase": "Post",
+   "file": "model.xlsx",
+   "sha256": "80f52b1df08b6f1f6f6c33bd0e9a31629b73e64896a40075ae7995b143710d6e",
+   "prevSha256": null,
+   "size": 7173,
+   "kept": "whole",
+   "callsOpen": [],
+   "credited": []
+  },
+  {
+   "seq": 2,
+   "phase": "Post",
+   "file": "model.xlsx",
+   "sha256": "f0030866bbae25c2537b43e85d61be537e7a1d963152fcada886d78442f0caff",
+   "prevSha256": "80f52b1df08b6f1f6f6c33bd0e9a31629b73e64896a40075ae7995b143710d6e",
+   "size": 7186,
+   "kept": "whole",
+   "callsOpen": [
+    "toolu_01iL75MA3vESAf6kY01xGxsP"
+   ],
+   "credited": [
+    "toolu_01iL75MA3vESAf6kY01xGxsP"
+   ]
+  },
+  {
+   "seq": 3,
+   "phase": "Post",
+   "file": "book.xlsx",
+   "sha256": "d7e9c7edd0b25c7eb7427d3a529325c23dd819860bb91dff32eb819481796015",
+   "prevSha256": null,
+   "size": 7175,
+   "kept": "whole",
+   "callsOpen": [],
+   "credited": []
+  },
+  {
+   "seq": 4,
+   "phase": "Pre",
+   "file": "book.xlsx",
+   "sha256": "ed3224f43fa34af534f40a24fb33141d199c5320e71314af0bceb0bb8a624a2f",
+   "prevSha256": "d7e9c7edd0b25c7eb7427d3a529325c23dd819860bb91dff32eb819481796015",
+   "size": 7222,
+   "kept": "whole",
+   "callsOpen": [],
+   "credited": []
+  },
+  {
+   "seq": 5,
+   "phase": "Post",
+   "file": "plan.xlsx",
+   "sha256": "0f52e6dab891b70bf1a24d96660f63f31cc54b810a750268e058591dbc28dd7c",
+   "prevSha256": null,
+   "size": 7174,
+   "kept": "whole",
+   "callsOpen": [],
+   "credited": []
+  },
+  {
+   "seq": 6,
+   "phase": "Post",
+   "file": "plan.xlsx",
+   "sha256": "170a9014a44c13d1e7cbe95b21bac4673b415acb9b2724fd855f90b066da1c72",
+   "prevSha256": "0f52e6dab891b70bf1a24d96660f63f31cc54b810a750268e058591dbc28dd7c",
+   "size": 7180,
+   "kept": "whole",
+   "callsOpen": [
+    "toolu_01H9vRi4hXfOBxGsSGr1rapk",
+    "toolu_01iL75MA3vESAf6kY01xGxsP"
+   ],
+   "credited": [
+    "toolu_01H9vRi4hXfOBxGsSGr1rapk",
+    "toolu_01iL75MA3vESAf6kY01xGxsP"
+   ]
+  }
+ ],
+ "pane": "xlsx-formula-edit",
+ "viewPairs": {
+  "model.xlsx": "xlsx-formula-edit",
+  "book.xlsx": "xlsx-inserted-row",
+  "plan.xlsx": "xlsx-value-edit"
+ }
+}

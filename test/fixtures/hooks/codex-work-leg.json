@@ -1,0 +1,105 @@
+{
+ "note": "Calls of the Codex Work mode live leg (2026-10-07, ledger of ~/cocheck-probe-run/home-codex), commands cut to 500 chars, the sandbox folder written as {FOLDER}. Those calls ran with cwd in the Codex workspace, not the folder.",
+ "calls": [
+  {
+   "id": "exec-e0c831bb-dc3a-40e3-a9a6-50ecc2b5a4d4",
+   "command": "pwd && rg --files {FOLDER} -g 'casebook.xlsx' -g 'AGENTS.md'"
+  },
+  {
+   "id": "exec-89bcd32c-153c-45a7-b6b1-bd6be6f13c6f",
+   "command": "cat /Users/user/.codex/plugins/cache/openai-primary-runtime/spreadsheets/26.1007.11041/skills/spreadsheets/SKILL.md"
+  },
+  {
+   "id": "exec-c3ca973a-2bb7-4f15-9b87-f97772d6e493",
+   "command": "mkdir -p work outputs\npython3 - <<'PY'\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\nfrom pathlib import Path\nimport json\np=Path('{FOLDER}/casebook.xlsx')\nn={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nwith ZipFile(p) as z:\n w=E.fromstring(z.read('xl/workbook.xml')); rel=E.fromstring(z.read('xl/_rels/workbook.xml.rels'))\n ids={x.attrib['Id']:x.attrib['Target'] for x in rel}\n s=next(x for x in w.find('m:sheets',n) if x.attrib['name']=='Inputs"
+  },
+  {
+   "id": "exec-09e966d3-1b35-4c49-95d4-4f7f275f7023",
+   "command": "cat > work/change.py <<'PY'\nimport sys,json,re,os\nfrom pathlib import Path\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\np=Path('outputs/casebook.xlsx'); state=json.loads(Path('work/state.json').read_text()); part=state['part']; cell,value=sys.argv[1:]\nwith ZipFile(p) as z:\n infos=z.infolist(); data={i.filename:z.read(i.filename) for i in infos}; comment=z.comment\nold=data[part]\npattern=rb'(<c\\b[^>]*\\br=\"'+cell.encode()+rb'\"[^>]*>)(.*?)(</c>)'\nm=re.search(pattern,old,re.S); ass"
+  },
+  {
+   "id": "exec-aa6d9024-b80e-428b-9626-6a32921c2e25",
+   "command": "python3 work/change.py B17 0.21"
+  },
+  {
+   "id": "exec-9b8b3e62-9b66-4432-8d0b-fe99c15c24ed",
+   "command": "python3 work/change.py B18 36500"
+  },
+  {
+   "id": "exec-fa5e26ef-f0dc-42b5-87a7-f8f3ca6f12ef",
+   "command": "python3 work/change.py B46 0.0525"
+  },
+  {
+   "id": "exec-a8adfd60-4ef8-41d6-aa3e-b99443f8c846",
+   "command": "python3 work/change.py B58 8"
+  },
+  {
+   "id": "exec-da11eed2-8af7-4e33-aeea-7073e12be369",
+   "command": "cat > work/step7.py <<'PY'\nfrom zipfile import ZipFile\nfrom pathlib import Path\nfrom xml.etree import ElementTree as E\nfrom xml.sax.saxutils import escape\nimport json,re,os\np=Path('outputs/casebook.xlsx'); state=json.loads(Path('work/state.json').read_text())\nwith ZipFile(p) as z:\n infos=z.infolist(); data={i.filename:z.read(i.filename) for i in infos}; comment=z.comment\nns={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nw=E.fromstring(data['xl/workbook.xml']); sheets=w.find('m:sh"
+  },
+  {
+   "id": "exec-22fda639-fe31-48c8-8ec7-663f3aa9e93e",
+   "command": "python3 - <<'PY'\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\nfrom pathlib import Path\nimport json,re\nstate=json.loads(Path('work/state.json').read_text()); part=state['part']; ns={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nexpected={'B39':'0.043','B17':'0.21','B18':'36500','B46':'0.0525','B58':'8'}\nwith ZipFile('{FOLDER}/casebook.xlsx') as old, ZipFile('outputs/casebook.xlsx') as new:\n assert new.testzip() is None\n root=E.fromstring(new.read(part))\n for cel"
+  },
+  {
+   "id": "exec-a3089bb9-e1e5-4085-a9fc-cb48980bc41d",
+   "command": "python3 - <<'PY'\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\np='{FOLDER}/casebook.xlsx'; ns={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nwith ZipFile(p) as z:\n w=E.fromstring(z.read('xl/workbook.xml')); rel={r.attrib['Id']:r.attrib['Target'] for r in E.fromstring(z.read('xl/_rels/workbook.xml.rels'))}\n s=next(s for s in w.find('m:sheets',ns) if s.attrib['name']=='Inputs'); t=rel[s.attrib['{http://schemas.openxmlformats.org/officeDocument"
+  },
+  {
+   "id": "exec-088c239d-1a1c-4bc8-b89b-ab7c1667c9fc",
+   "command": "python3 - <<'PY'\nfrom pathlib import Path\ns=Path('work/change.py').read_text().replace(\"p=Path('outputs/casebook.xlsx')\", \"p=Path('{FOLDER}/casebook.xlsx')\")\ns=s.replace(\"with ZipFile('work/next.xlsx','w') as z:\", \"import io\\nbuffer=io.BytesIO()\\nwith ZipFile(buffer,'w') as z:\")\ns=s.replace(\"os.replace('work/next.xlsx',p)\", \"p.write_bytes(buffer.getvalue())\")\ns=s.replace(\"old=data[part]\", \"import hashlib\\nif cell=='B39':\\n Path('work/inplace_hashes.json').write_text(json.dumps({name:hashlib.sha256(b)."
+  },
+  {
+   "id": "exec-236e3a61-2661-482c-ad49-3bd48bddf241",
+   "command": "python3 work/inplace_change.py B17 0.21"
+  },
+  {
+   "id": "exec-fc379d3f-443d-49c4-9b56-5f1d15a6d2b6",
+   "command": "python3 work/inplace_change.py B18 36500"
+  },
+  {
+   "id": "exec-bcd5ce45-c9b7-430b-ae67-25484f18f010",
+   "command": "python3 work/inplace_change.py B46 0.0525"
+  },
+  {
+   "id": "exec-14818cba-b3f4-41d1-9bcf-aff7ef5090cf",
+   "command": "python3 work/inplace_change.py B58 8"
+  },
+  {
+   "id": "exec-e6910f97-4b3d-491e-bab2-07e4024ca51d",
+   "command": "python3 - <<'PY'\nfrom pathlib import Path\ns=Path('work/step7.py').read_text().replace(\"p=Path('outputs/casebook.xlsx')\", \"p=Path('{FOLDER}/casebook.xlsx')\")\ns=s.replace(\"with ZipFile('work/next.xlsx','w') as z:\", \"import io\\nbuffer=io.BytesIO()\\nwith ZipFile(buffer,'w') as z:\").replace(\"os.replace('work/next.xlsx',p)\",\"p.write_bytes(buffer.getvalue())\")\ns=s.replace(\"with ZipFile(p) as z:\\n assert z.testzip() is None\", \"with ZipFile(p) as z:\\n for name,b in data.items(): assert z.read(name)==b\\n assert"
+  },
+  {
+   "id": "exec-273ae7b6-e4c2-4604-b4b1-1669fdada5a0",
+   "command": "python3 - <<'PY'\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\nfrom pathlib import Path\nimport json,hashlib\np='{FOLDER}/casebook.xlsx'; state=json.loads(Path('work/state.json').read_text()); part=state['part']; n={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nexpected={'B39':'0.043','B17':'0.21','B18':'36500','B46':'0.0525','B58':'8'}\nwith ZipFile(p) as z:\n assert z.testzip() is None\n root=E.fromstring(z.read(part)); cells={c.attrib['r']:c for c in root.finda"
+  },
+  {
+   "id": "exec-c74eba05-22d2-4bcd-be0e-6a0cb15d0676",
+   "command": "python3 - <<'PY'\nfrom pathlib import Path\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\nimport io,re\np=Path('{FOLDER}/casebook.xlsx'); n={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nwith ZipFile(p) as z:\n infos=z.infolist(); data={i.filename:z.read(i.filename) for i in infos}; comment=z.comment\nw=E.fromstring(data['xl/workbook.xml']); sheets=w.find('m:sheets',n); assert not any(s.get('name')=='Sensitivity' for s in sheets)\nrels=E.fromstring(data['xl/_rels/w"
+  },
+  {
+   "id": "exec-65f12fff-a4d8-4e2b-bf50-8d07393db2d2",
+   "command": "python3 -u - <<'PY'\nimport random,time,json\nfrom array import array\nprint('STARTING LONG RUN',flush=True)\nrng=random.Random(20261007); draws=array('d'); start=time.monotonic(); next_progress=10; batch=0\nwhile batch<100:\n draws.extend(rng.gauss(0.05,0.02) for _ in range(10000)); batch+=1\n target=start+batch*0.9\n while time.monotonic()<target:\n  elapsed=time.monotonic()-start\n  if elapsed>=next_progress:\n   print(f'PROGRESS {next_progress}s: {len(draws):,} draws',flush=True); next_progress+=10\n  t"
+  },
+  {
+   "id": "exec-8a8e5448-9069-401f-99a1-8ceed231abc4",
+   "command": "python3 - <<'PY'\nfrom pathlib import Path\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\nimport io,re\np=Path('{FOLDER}/casebook.xlsx'); n={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nwith ZipFile(p) as z:\n infos=z.infolist(); data={i.filename:z.read(i.filename) for i in infos}; comment=z.comment\nw=E.fromstring(data['xl/workbook.xml']); s=next(s for s in w.find('m:sheets',n) if s.get('name')=='Sensitivity'); rel={r.get('Id'):r.get('Target') for r in E.fromstr"
+  },
+  {
+   "id": "exec-5028d62f-8218-4470-8a07-434289d71da6",
+   "command": "python3 - <<'PY'\nfrom pathlib import Path\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\nimport io,re\np=Path('{FOLDER}/casebook.xlsx'); n={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nwith ZipFile(p) as z:\n infos=z.infolist(); data={i.filename:z.read(i.filename) for i in infos}; comment=z.comment\nw=E.fromstring(data['xl/workbook.xml']); s=next(s for s in w.find('m:sheets',n) if s.get('name')=='Sensitivity'); rel={r.get('Id'):r.get('Target') for r in E.fromstr"
+  },
+  {
+   "id": "exec-2ce56c3e-04d0-4a21-897f-774bcaf48612",
+   "command": "python3 - <<'PY'\nfrom pathlib import Path\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\nimport io,re\np=Path('{FOLDER}/casebook.xlsx'); uri='http://schemas.openxmlformats.org/spreadsheetml/2006/main'; n={'m':uri}\nwith ZipFile(p) as z:\n infos=z.infolist(); data={i.filename:z.read(i.filename) for i in infos}; comment=z.comment\nw=E.fromstring(data['xl/workbook.xml']); s=next(s for s in w.find('m:sheets',n) if s.get('name')=='Scenario log'); rel={r.get('Id'):r.get('Target') for r in"
+  },
+  {
+   "id": "exec-b55e9cbf-7763-41fb-9ccb-b48a583e6fb2",
+   "command": "python3 - <<'PY'\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\np='{FOLDER}/casebook.xlsx'; n={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nwith ZipFile(p) as z:\n assert z.testzip() is None\n w=E.fromstring(z.read('xl/workbook.xml')); s=next(s for s in w.find('m:sheets',n) if s.get('name')=='Scenario log'); rel={r.get('Id'):r.get('Target') for r in E.fromstring(z.read('xl/_rels/workbook.xml.rels'))}; t=rel[s.get('{http://schemas.openxmlformats.org/officeDocume"
+  },
+  {
+   "id": "exec-0fff51c5-28a6-462f-af50-1beb0c55e77e",
+   "command": "python3 - <<'PY'\nfrom zipfile import ZipFile\nfrom xml.etree import ElementTree as E\np='{FOLDER}/casebook.xlsx'; n={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}\nwith ZipFile(p) as z:\n assert z.testzip() is None\n w=E.fromstring(z.read('xl/workbook.xml')); rel={r.get('Id'):r.get('Target') for r in E.fromstring(z.read('xl/_rels/workbook.xml.rels'))}\n def sheet(name):\n  s=next(s for s in w.find('m:sheets',n) if s.get('name')==name); t=rel[s.get('{http://schemas.openxmlformats.org/off"
+  }
+ ]
+}

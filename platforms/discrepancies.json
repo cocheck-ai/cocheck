@@ -1,0 +1,426 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "codex-no-failure-event",
+      "title": "Codex has no failure event",
+      "platforms": [
+        "codex"
+      ],
+      "detail": "The hooks page lists 12 events (the source has 14, none a failure event) and no tool-failure one, so a failing Bash command arrives as PostToolUse. A Codex call that closes with no failure event is therefore not proof it succeeded, and the codex profile keeps failureEvent false. The shared event-name table still maps PostToolUseFailure for Codex; that entry is inert because it is never installed.",
+      "fact": {
+        "claim": "Codex documents no PostToolUseFailure event.",
+        "kind": "documented",
+        "source": "https://learn.chatgpt.com/docs/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Re-checked at rust-v0.164.0 (14 events, none a failure event) and live on 0.164.0-alpha.11.1; the 0.164.0 additions are read, see codex-0164-events-unread."
+      }
+    },
+    {
+      "id": "copilot-no-call-id",
+      "title": "Copilot has no call id in any hook payload",
+      "platforms": [
+        "copilot-cli",
+        "copilot-vscode"
+      ],
+      "detail": "No tool call id, turn id or message id appears in a Copilot hook payload (tool events carry sessionId, toolName and toolArgs only). CoCheck takes the id from the session file or makes a synthetic one and binds a Post to the oldest open Pre with the same tool and arguments, so two identical concurrent calls can be paired the wrong way round.",
+      "fact": {
+        "claim": "No per-call id in any Copilot CLI hook stdin payload.",
+        "kind": "observed",
+        "source": "probe:versions/1.0.93/hook-payloads/preToolUse.jsonl",
+        "date": "2026-10-18",
+        "verified_on": "1.0.93",
+        "status": "confirmed",
+        "note": "The docs (hooks-reference, read 2026-10-24) also document none. VS Code input beyond the shared reference was not read."
+      }
+    },
+    {
+      "id": "copilot-reads-claude-repo-settings",
+      "title": "Copilot reads a repo's .claude/settings.json hooks",
+      "platforms": [
+        "copilot-cli",
+        "copilot-vscode",
+        "claude-code"
+      ],
+      "detail": "Copilot CLI and VS Code load the hooks field of the repo's .claude/settings.json and .claude/settings.local.json. A hook CoCheck writes there for Claude Code (a repo-scope install) also runs under Copilot, with a different payload shape and no --host copilot flag, so it could record a Copilot session under the wrong host. Copilot does not list the user-level ~/.claude/settings.json, so a user-level Claude install is not read (by omission on the page, unverified).",
+      "fact": {
+        "claim": "Copilot CLI reads hooks from the repo's .claude/settings.json and .claude/settings.local.json.",
+        "kind": "documented",
+        "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Read on the page via a summarizer. Not probed."
+      }
+    },
+    {
+      "id": "cloud-surfaces-cannot-reach-the-mac",
+      "title": "Cloud surfaces cannot reach the Mac",
+      "platforms": [
+        "claude-code",
+        "codex",
+        "copilot-cli"
+      ],
+      "detail": "Claude Code cloud sessions, the Copilot cloud coding agent and Codex Work Cloud run on the vendor's machines. A command hook there cannot write ~/CoCheckData. Claude cloud sessions read only the repo's .claude/settings.json and no local or user-level plugins; Copilot cloud runs only .github/hooks/*.json from the default branch; Codex Work Cloud runs only admin-managed remote mcp_tool hooks. CoCheck sees only files that reach the Mac afterwards.",
+      "fact": {
+        "claim": "Cloud sessions of Claude Code, Copilot and Codex run hooks off the user's Mac or not at all.",
+        "kind": "documented",
+        "source": "https://code.claude.com/docs/en/claude-code-on-the-web",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Claude from the web page; Copilot from https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/use-hooks; Codex from https://learn.chatgpt.com/docs/hooks. All read via a summarizer on 2026-10-24."
+      }
+    },
+    {
+      "id": "codex-0164-events-unread",
+      "title": "Codex 0.164.0 added two model-request events (resolved)",
+      "platforms": [
+        "codex"
+      ],
+      "detail": "0.164.0 (2026-10-23) has 14 hook events: the 12 on the docs page plus PreModelRequest and PostModelRequest (observation-only, PR #55144), which the hooks page still omits. PR #55657 is an in-process Rust extension trait, not a hook. Both new events fired live on 0.164.0-alpha.11.1.",
+      "fact": {
+        "claim": "Codex 0.164.0 has 14 hook events; PreModelRequest and PostModelRequest are new and the docs page lists 12.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "Source: https://github.com/openai/codex/blob/rust-v0.164.0/codex-rs/hooks/src/lib.rs (HookEventName)."
+      }
+    },
+    {
+      "id": "claude-pretooluse-timeout-conflict",
+      "title": "Two Claude pages disagree on a timed-out PreToolUse",
+      "platforms": [
+        "claude-code"
+      ],
+      "detail": "hooks.md says a timed-out PreToolUse does not block unless onFailure is block; the Agent SDK page says it blocks the call with a hook-did-not-respond result (2.1.210 and later). A hook that must never block should set onFailure explicitly; a probe with a sleeping hook would settle it.",
+      "fact": {
+        "claim": "hooks.md and agent-sdk/hooks.md disagree on whether a timed-out PreToolUse blocks the call.",
+        "kind": "documented",
+        "source": "https://code.claude.com/docs/en/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "contradicted",
+        "note": "Second page: https://code.claude.com/docs/en/agent-sdk/hooks."
+      }
+    },
+    {
+      "id": "hook-sandbox-unknown",
+      "title": "Whether hook commands run inside the sandbox differs by host",
+      "platforms": [
+        "codex",
+        "copilot-cli",
+        "copilot-vscode",
+        "claude-code"
+      ],
+      "detail": "Settled 2026-10-24: Codex hooks run outside the sandbox (source and live, write and localhost ok under workspace-write). Copilot CLI hooks run inside the sandbox when it is on (it is off by default); with --sandbox they fail open until sandbox.userPolicy grants the script and ~/CoCheckData. VS Code hooks wrote outside the workspace and reached localhost (sandbox state not recorded). Claude Code is still unknown.",
+      "fact": {
+        "claim": "Codex hooks run outside the sandbox; Copilot CLI hooks run inside it when enabled; Claude Code's answer is still unknown.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "Copilot CLI evidence: probe:versions/1.0.98/out-sandbox-no-policy.txt. Claude Code: no page read says either way."
+      }
+    },
+    {
+      "id": "copilot-builtin-subagent-fires-start-stop",
+      "title": "Copilot's built-in general-purpose subagent fires subagentStart and subagentStop",
+      "platforms": [
+        "copilot-cli",
+        "copilot-vscode"
+      ],
+      "detail": "The hooks reference says the built-in general-purpose subagent fires no subagentStart or subagentStop. Live, it does on both Copilot CLI 1.0.98 and VS Code 1.140.0 (via the task tool), in the same shape as a custom agent.",
+      "fact": {
+        "claim": "The built-in general-purpose subagent fires subagentStart and subagentStop.",
+        "kind": "observed",
+        "source": "probe:versions/1.0.98/hook-calls-camel.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.0.98",
+        "status": "confirmed",
+        "note": "Docs: https://docs.github.com/en/copilot/reference/hooks-reference. VS Code: probe:versions/1.140.0/hook-calls-vscode.jsonl."
+      }
+    },
+    {
+      "id": "copilot-permissionrequest-no-snake-case",
+      "title": "PascalCase PermissionRequest keeps a camelCase payload",
+      "platforms": [
+        "copilot-cli",
+        "copilot-vscode"
+      ],
+      "detail": "The docs say a PascalCase-registered event switches to the VS Code format (snake_case fields). Live on CLI 1.0.98, PermissionRequest (and userPromptTransformed, which has no alias) stay camelCase: hookName, sessionId, toolName, toolInput with lowercase tool names, while PreToolUse, PostToolUse and the others switch.",
+      "fact": {
+        "claim": "PermissionRequest registered as PascalCase does not switch its payload to snake_case.",
+        "kind": "observed",
+        "source": "probe:versions/1.0.98/hook-calls-pascal.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.0.98",
+        "status": "confirmed",
+        "note": "Docs: https://docs.github.com/en/copilot/reference/hooks-reference"
+      }
+    },
+    {
+      "id": "codex-spawn-tool-name",
+      "title": "Codex spawn tool name is collaborationspawn_agent, not spawn_agent",
+      "platforms": [
+        "codex"
+      ],
+      "detail": "The docs say spawn_agent also matches Agent. In PreToolUse and PostToolUse on 0.164.0-alpha.11.1 the tool_name is collaborationspawn_agent (and collaborationwait_agent), namespace and name joined with no separator. Whether a spawn_agent or Agent matcher still matches it was not tested; do not match on the documented name alone.",
+      "fact": {
+        "claim": "Codex reports spawn and wait tool calls as collaborationspawn_agent and collaborationwait_agent.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "Docs: https://learn.chatgpt.com/docs/hooks"
+      }
+    },
+    {
+      "id": "claude-updatedmcptooloutput-name",
+      "title": "Claude Code: updatedMCPToolOutput versus updatedToolOutput is unresolved",
+      "platforms": [
+        "claude-code"
+      ],
+      "detail": "The hooks page names the PostToolUse rewrite field updatedToolOutput; the 2.1.296 changelog says managed PostToolUse hooks did not apply updatedMCPToolOutput. It looks like a rename or alias but no page says which, so the register records only the documented name.",
+      "fact": {
+        "claim": "Whether updatedMCPToolOutput is an old name or an alias of updatedToolOutput is not stated.",
+        "kind": "documented",
+        "source": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "unverified",
+        "note": "Hooks page: https://code.claude.com/docs/en/hooks (read 2026-10-24)."
+      }
+    },
+    {
+      "id": "vscode-docs-nine-events-more-fire",
+      "title": "VS Code docs list nine hook events but more fire",
+      "platforms": [
+        "copilot-vscode"
+      ],
+      "detail": "The VS Code hooks page names nine events and defers to the GitHub reference for the rest. Live on 1.140.0, userPromptTransformed, permissionRequest and notification also fired (11 distinct events in one scripted session), so the earlier 'missing' list was documentation lag. postToolUseFailure and errorOccurred were not exercised and are unverified.",
+      "fact": {
+        "claim": "VS Code 1.140.0 fires userPromptTransformed, permissionRequest and notification, which its docs page does not list.",
+        "kind": "observed",
+        "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.140.0",
+        "status": "confirmed",
+        "note": "Docs: https://code.visualstudio.com/docs/copilot/customization/hooks"
+      }
+    },
+    {
+      "id": "copilot-shell-failure-reads-as-success",
+      "title": "Copilot reports failing shell commands as success",
+      "platforms": [
+        "copilot-cli",
+        "copilot-vscode"
+      ],
+      "detail": "A shell command that exits non-zero arrives as postToolUse with resultType success; the exit code appears only in the result text (<shellId: N completed with exit code 3>), and postToolUseFailure does not fire. postToolUseFailure fires only for tool-level failures such as viewing a missing path. A failure is visible only by parsing the text.",
+      "fact": {
+        "claim": "Failing shell commands arrive as postToolUse success with the exit code only in text.",
+        "kind": "observed",
+        "source": "probe:versions/1.0.98/hook-calls-gh.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.0.98",
+        "status": "confirmed",
+        "note": "VS Code 1.140.0 behaves the same: probe:versions/1.140.0/hook-calls-vscode.jsonl."
+      }
+    },
+    {
+      "id": "codex-posttooluse-no-exit-code",
+      "title": "Codex PostToolUse carries no exit code",
+      "platforms": [
+        "codex"
+      ],
+      "detail": "For a failed command tool_response is the bare output string; there is no exit code, is_error or structure, and a success returns an empty string. A failure that prints nothing is indistinguishable from a success in the payload.",
+      "fact": {
+        "claim": "Codex PostToolUse has no exit code for failed commands.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed"
+      }
+    },
+    {
+      "id": "hook-trust-silent-skip",
+      "title": "Codex untrusted hooks and Copilot untrusted folders skip hooks silently",
+      "platforms": [
+        "codex",
+        "copilot-cli"
+      ],
+      "detail": "Codex skips a hook that is untrusted or whose content hash changed, with no warning in stdout, stderr or any log; trust can be read through app-server hooks/list (trustStatus). Copilot CLI skips repo hooks from an untrusted folder with no trace until the folder is in trustedFolders. In both cases capture stops with no visible error.",
+      "fact": {
+        "claim": "Codex skips untrusted hooks silently.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/run1-untrusted.err",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "Copilot: probe:versions/1.0.98/README.md."
+      }
+    },
+    {
+      "id": "copilot-double-fire",
+      "title": "Copilot records a call twice when hooks sit in .github/hooks and .claude/settings.json",
+      "platforms": [
+        "copilot-cli"
+      ],
+      "detail": "Both sources run and nothing de-duplicates, so a CoCheck install in both places records each call twice, in two payload formats (camelCase and snake_case).",
+      "fact": {
+        "claim": "A .github/hooks file and a .claude/settings.json hook both fire for each call.",
+        "kind": "observed",
+        "source": "probe:versions/1.0.98/hook-calls-gh.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.0.98",
+        "status": "confirmed",
+        "note": "Second source: hook-calls-cl.jsonl in the same folder."
+      }
+    },
+    {
+      "id": "copilot-vscode-subagent-linkage",
+      "title": "VS Code subagent calls carry no agentId",
+      "platforms": [
+        "copilot-vscode",
+        "copilot-cli"
+      ],
+      "detail": "Copilot CLI marks every call inside a subagent with agentId and parentAgentId. VS Code 1.140.0 does not: inner calls arrive under the subagent's own sessionId and are linked to the parent only at subagentStop (agentId equals that sessionId) or via permissionRequest (which keeps the parent sessionId).",
+      "fact": {
+        "claim": "VS Code subagent calls carry no agentId; the link appears at subagentStop.",
+        "kind": "observed",
+        "source": "probe:versions/1.140.0/hook-calls-vscode.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "1.140.0",
+        "status": "confirmed",
+        "note": "CLI: probe:versions/1.0.98/hook-calls-camel.jsonl."
+      }
+    },
+    {
+      "id": "claude-effort-docs-vs-recording",
+      "title": "Claude Code docs list effort as a common field, the 2.1.302 recording lacks it on some events",
+      "platforms": [
+        "claude-code"
+      ],
+      "detail": "The hooks reference lists `effort` ({level}) among the common fields. In the 2.1.302 recording it is present on PreToolUse, PostToolUse and Stop and absent from SessionStart, UserPromptSubmit and SessionEnd.",
+      "fact": {
+        "claim": "effort is absent from SessionStart, UserPromptSubmit and SessionEnd payloads in the 2.1.302 recording.",
+        "kind": "observed",
+        "source": "probe:versions/2.1.302/payloads.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "2.1.302",
+        "status": "confirmed",
+        "note": "Docs: https://code.claude.com/docs/en/hooks"
+      }
+    },
+    {
+      "id": "copilot-cloud-agent-unsupported",
+      "title": "CoCheck does not support the Copilot cloud coding agent",
+      "platforms": [
+        "copilot-cli"
+      ],
+      "detail": "Registered as unsupported (2026-10-24). The cloud coding agent runs on GitHub's runner, not on the Mac: a hook there cannot write the CoCheck data home or the person's folder, it runs only .github/hooks/*.json from the repo's default branch (bash entries only), and CoCheck's install is user-level (~/.copilot/hooks), which that agent never reads. CoCheck sees only the files that reach the Mac afterwards. See cloud-surfaces-cannot-reach-the-mac.",
+      "fact": {
+        "claim": "The Copilot cloud coding agent runs only repo .github/hooks on GitHub's runner, so user-level hooks and the Mac's data home are out of its reach.",
+        "kind": "documented",
+        "source": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/use-hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Read via a summarizer; not probed (a cloud run needs a GitHub repo and an agent task)."
+      }
+    },
+    {
+      "id": "copilot-no-prompt-context-channel",
+      "title": "No hook channel puts the 'save in the folder' words in front of a Copilot session",
+      "platforms": [
+        "copilot-cli",
+        "copilot-vscode"
+      ],
+      "detail": "Claude Code and Codex get CoCheck's context text as UserPromptSubmit output. Copilot's userPromptSubmitted has no output channel (modifiedPrompt is honored only by SDK hooks); sessionStart, subagentStart and postToolUse document an additionalContext output that was never observed to reach the model, and every session starts untracked, so sessionStart cannot carry words about tracking. CoCheck therefore sends nothing from a Copilot hook. The words reach the session through the cocheck skill that `cocheck install` writes to ~/.copilot/skills (the skill says the folder the person is in becomes the task folder and the files go inside it), read when the person says start tracking. Gap: a person who never loads the skill gets no such words. Candidate for later: postToolUse additionalContext on the `cocheck track start` call, untested.",
+      "fact": {
+        "claim": "userPromptSubmitted output is not read by the CLI (modifiedPrompt is SDK-only); additionalContext exists on sessionStart, subagentStart and postToolUse and was not observed to reach the model.",
+        "kind": "documented",
+        "source": "https://docs.github.com/en/copilot/reference/hooks-configuration",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "confirmed",
+        "note": "Event output fields as registered in platforms/copilot-cli/capabilities.json; no probe printed context and checked the model's reply."
+      }
+    },
+    {
+      "id": "copilot-sandbox-hooks-need-policy",
+      "title": "With Copilot's sandbox on, CoCheck's hook fails open unless the policy grants it",
+      "platforms": [
+        "copilot-cli"
+      ],
+      "detail": "The sandbox is off by default. With it on (copilot --sandbox or /sandbox enable) every hook failed with exit 126 and Copilot carried on, so CoCheck recorded nothing, until sandbox.userPolicy.filesystem.readwritePaths in the person's settings.json granted the hook script and the data home. CoCheck never edits the person's Copilot settings: `cocheck install` and `cocheck status` print what to add (the CoCheck folder and the data folder). Gap: the person must make that change, and nothing detects a sandboxed session that records nothing beyond the 'not recording' note the launcher writes when it runs.",
+      "fact": {
+        "claim": "With --sandbox and no policy every hook failed (exit 126, fail-open); a userPolicy readwritePaths grant made the hook run.",
+        "kind": "observed",
+        "source": "probe:versions/1.0.98/out-sandbox-no-policy.txt",
+        "date": "2026-10-24",
+        "verified_on": "1.0.98",
+        "status": "confirmed",
+        "note": "The granted run is the second half of probe:versions/1.0.98/hook-calls-camel.jsonl (lines 31 onward)."
+      }
+    },
+    {
+      "id": "copilot-vscode-reads-user-hooks-unverified",
+      "title": "VS Code agent mode reading ~/.copilot/hooks is documented, not probed",
+      "platforms": [
+        "copilot-vscode"
+      ],
+      "detail": "CoCheck's one Copilot install is the user-level file $COPILOT_HOME/hooks/cocheck.json. The VS Code hooks page lists ~/.copilot/hooks as a source; the 1.140.0 probe used a repo .github/hooks file only, so a live VS Code session reading CoCheck's file is the real-use check, not a recorded fact.",
+      "fact": {
+        "claim": "VS Code Copilot hooks are loaded from ~/.copilot/hooks.",
+        "kind": "documented",
+        "source": "https://code.visualstudio.com/docs/copilot/customization/hooks",
+        "date": "2026-10-24",
+        "verified_on": null,
+        "status": "unverified",
+        "note": "Not run: the probe would need a file in the real ~/.copilot."
+      }
+    },
+    {
+      "id": "codex-failure-inferred-from-output",
+      "title": "Codex failures are guessed from the output text",
+      "platforms": [
+        "codex"
+      ],
+      "detail": "Codex sends no failure event and PostToolUse has no exit code, so CoCheck reads a command as failed only when every line of its output is a shell error line (such as 'No such file or directory'). That is a guess: a command that fails with no output, or with output that does not look like a shell error, shows as a success, and a command that prints only such lines and succeeds would show as failed.",
+      "fact": {
+        "claim": "CoCheck infers Codex command failure from tool_response text only.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/hook-calls-run2.jsonl",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "The rule is in src/hosts/codex.ts (codexFailure); the failing ls line in the probe is the only failure shape seen."
+      }
+    },
+    {
+      "id": "codex-trust-not-written-by-install",
+      "title": "Codex install cannot trust its own hooks",
+      "platforms": [
+        "codex"
+      ],
+      "detail": "CoCheck writes its hooks to config.toml but does not write Codex's trust record, because the hash Codex checks is Codex's own and no source in the register says how it is made. After an install or an update that changes the hook command, Codex skips the hooks until the person trusts them in Codex. cocheck status reads the trust state through app-server hooks/list and says so.",
+      "fact": {
+        "claim": "Install leaves Codex hooks for the person to trust; status reports untrusted or modified hooks.",
+        "kind": "observed",
+        "source": "probe:versions/0.164.0-alpha.11.1/app-server-hooks-list.json",
+        "date": "2026-10-24",
+        "verified_on": "0.164.0-alpha.11.1",
+        "status": "confirmed",
+        "note": "The app-server request used by status (initialize, initialized, hooks/list over stdio) was written from the listing shape, not exercised against a live app-server."
+      }
+    }
+  ]
+}

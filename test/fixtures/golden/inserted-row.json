@@ -1,0 +1,59 @@
+[
+  {
+    "sheet": "Sheet1",
+    "cell": "3:3",
+    "kind": "structure",
+    "note": "row inserted"
+  },
+  {
+    "sheet": "Sheet1",
+    "cell": "A3",
+    "kind": "value",
+    "valueBefore": null,
+    "valueAfter": "Doohickey",
+    "formulaBefore": null,
+    "formulaAfter": null,
+    "numFmtAfter": "General"
+  },
+  {
+    "sheet": "Sheet1",
+    "cell": "B3",
+    "kind": "value",
+    "valueBefore": null,
+    "valueAfter": 4,
+    "formulaBefore": null,
+    "formulaAfter": null,
+    "numFmtAfter": "General"
+  },
+  {
+    "sheet": "Sheet1",
+    "cell": "C3",
+    "kind": "value",
+    "valueBefore": null,
+    "valueAfter": 1.25,
+    "formulaBefore": null,
+    "formulaAfter": null,
+    "numFmtAfter": "\"$\"#,##0.00"
+  },
+  {
+    "sheet": "Sheet1",
+    "cell": "D3",
+    "kind": "formula",
+    "valueBefore": null,
+    "valueAfter": 5,
+    "formulaBefore": null,
+    "formulaAfter": "B3*C3",
+    "numFmtAfter": "\"$\"#,##0.00"
+  },
+  {
+    "sheet": "Sheet1",
+    "cell": "D5->D6",
+    "kind": "formula",
+    "valueBefore": 47.5,
+    "valueAfter": 52.5,
+    "formulaBefore": "SUM(D2:D4)",
+    "formulaAfter": "SUM(D2:D5)",
+    "numFmtBefore": "\"$\"#,##0.00",
+    "numFmtAfter": "\"$\"#,##0.00"
+  }
+]
