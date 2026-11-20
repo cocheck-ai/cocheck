@@ -65,7 +65,7 @@ jobs:
   windows:
     if: github.event_name != 'workflow_dispatch' || inputs.jobs == 'all' || inputs.jobs == 'windows'
     runs-on: windows-latest
-    timeout-minutes: 40   # the full fast tier ran all 565 files in 26.9 min (run 44237959857); 30 left no room for setup and cleanup
+    timeout-minutes: 40   # the full fast tier ran all 565 files in 26.9 min; 30 left no room for setup and cleanup
     steps:
       - uses: actions/checkout@v4
         with:

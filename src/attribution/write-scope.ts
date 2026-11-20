@@ -1457,7 +1457,7 @@ export interface PathProbe {
   dirExists(p: string): boolean;
 }
 
-/** For recorded drives, whose paths are no longer there to look at: every path as written, no curl config. */
+/** For paths that cannot be looked at on this machine (a Windows path judged on another OS, as the tests do): every path as written, no curl config. */
 export const lexicalProbe: PathProbe = { canonical: (p) => path.posix.normalize(p), curlConfig: () => false, exists: () => true, dirExists: () => true };
 
 const MAX_HOPS = 16;

@@ -103,68 +103,11 @@ export function joined(pending: string[], max: number): string {
   return cut(pending.join("\n\n"), max);
 }
 
-/** One-off, to be removed: one line `advance` read, as metadata only. Never holds a word of the line. */
-interface LineMeta {
-  type: string;
-  isSidechain: boolean;
-  messageId: string | null;
-  kinds: string[];
-  /** Per text block of an assistant line, its byte length. Never the text. */
-  textBytes: number[];
-  start: number;
-  end: number;
-}
-
-/** One-off: what `advance` did, filled in only when the caller passes one. Metadata only, never words. */
-interface AdvanceReport {
-  hitCap: boolean;
-  hitBudget: boolean;
-  /** The file was shorter than the cursor's offset: rotated or truncated. */
-  truncated?: boolean;
-  /** The last lines read (newest last), at most `LINES_REPORTED`. */
-  lines: LineMeta[];
-}
-
-const LINES_REPORTED = 5;
-const LINE_TYPES = new Set(["assistant", "user", "system", "summary"]);
-const BLOCK_KINDS = new Set(["text", "thinking", "tool_use", "tool_result"]);
-
-/** One-off: a message id that may enter the dump: 1 to 64 characters of A-Z a-z 0-9 _ -, else null. */
-function dumpId(id: unknown): string | null {
-  return typeof id === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(id) ? id : null;
-}
-
-/** The kind of a line without reading its words: the parsed top-level type from an allowlist; only an assistant line gives an id, block kinds and text sizes. */
-function lineMeta(line: string, start: number, end: number): LineMeta {
-  const meta: LineMeta = { type: "other", isSidechain: false, messageId: null, kinds: [], textBytes: [], start, end };
-  let d: any;
-  try {
-    d = JSON.parse(line);
-  } catch {
-    return meta;
-  }
-  if (d === null || typeof d !== "object") return meta;
-  meta.isSidechain = d.isSidechain === true;
-  if (typeof d.type === "string" && LINE_TYPES.has(d.type)) meta.type = d.type;
-  if (meta.type !== "assistant") return meta;
-  meta.messageId = dumpId(d.message?.id);
-  if (Array.isArray(d.message?.content)) {
-    for (const b of d.message.content) {
-      const t = b?.type;
-      meta.kinds.push(typeof t === "string" && BLOCK_KINDS.has(t) ? t : "other");
-      if (t === "text") meta.textBytes.push(typeof b.text === "string" ? Buffer.byteLength(b.text) : 0);
-    }
-  }
-  return meta;
-}
-
 /**
  * Reads what the file gained since the cursor's offset and folds it into the cursor. Never throws, never reads more than
  * `READ_CAP_BYTES`, and leaves the cursor as it was when the file cannot be read.
  */
-export function advance(host: NarrationHost, cur: NarrationCursor, opts: { maxBytes?: number; budgetMs?: number; report?: AdvanceReport; forward?: true } = {}): void {
-  const report = opts.report;
-  const seen: Array<{ line: string; start: number; end: number }> = [];
+export function advance(host: NarrationHost, cur: NarrationCursor, opts: { maxBytes?: number; budgetMs?: number; forward?: true } = {}): void {
   const maxBytes = opts.maxBytes ?? READ_CAP_BYTES;
   const deadline = performance.now() + (opts.budgetMs ?? READ_BUDGET_MS);
   let fd: number | undefined;
@@ -182,7 +125,6 @@ export function advance(host: NarrationHost, cur: NarrationCursor, opts: { maxBy
       cur.pending = [];
       cur.msg = undefined;
       cur.closing = undefined;
-      if (report) report.truncated = true;
     }
     let start = cur.offset;
     let skip = cur.skip;
@@ -192,7 +134,6 @@ export function advance(host: NarrationHost, cur: NarrationCursor, opts: { maxBy
       skip = true;
       cur.pending = [];
       cur.msg = undefined;
-      if (report) report.hitCap = true;
     }
     const want = Math.min(maxBytes, stat.size - start);
     if (want <= 0) return;
@@ -208,7 +149,6 @@ export function advance(host: NarrationHost, cur: NarrationCursor, opts: { maxBy
       const nl = buf.indexOf(10, 0);
       if (nl < 0 || nl >= got) {
         // Still inside the long line: step over everything read.
-        if (report) report.hitCap = true;
         cur.offset = start + got;
         cur.skip = true;
         return;
@@ -222,22 +162,13 @@ export function advance(host: NarrationHost, cur: NarrationCursor, opts: { maxBy
       const nl = buf.indexOf(10, pos);
       if (nl < 0 || nl >= got) break;
       if (pos < nl) {
-        const line = buf.toString("utf8", pos, nl);
-        fold(cur, line);
-        if (report) {
-          seen.push({ line, start: start + pos, end: start + nl + 1 });
-          if (seen.length > LINES_REPORTED) seen.shift();
-        }
+        fold(cur, buf.toString("utf8", pos, nl));
       }
       pos = nl + 1;
-      if (++lines % 64 === 0 && performance.now() > deadline) {
-        if (report) report.hitBudget = true;
-        break;
-      }
+      if (++lines % 64 === 0 && performance.now() > deadline) break;
     }
     if (pos === 0 && got >= maxBytes) {
       // No newline in a full window: a line longer than the cap. Step over it and drop the rest of it next time.
-      if (report) report.hitCap = true;
       cur.offset = start + got;
       cur.skip = true;
       return;
@@ -246,7 +177,6 @@ export function advance(host: NarrationHost, cur: NarrationCursor, opts: { maxBy
   } catch {
     // An unreadable file is "no narration recorded", not an error.
   } finally {
-    if (report) for (const l of seen) report.lines.push(lineMeta(l.line, l.start, l.end));
     if (fd !== undefined) {
       try {
         closeSync(fd);
@@ -262,11 +192,11 @@ export function advance(host: NarrationHost, cur: NarrationCursor, opts: { maxBy
  * jumping to the newest bytes, so lines written just after the call's Pre are not stepped over when the file has since grown past
  * the cap. Bounded by the read budget (`budgetMs`, so a caller that reads again after it shares one budget between the two reads); what it cannot reach in time stays for the next event, whose plain `advance` takes over.
  */
-export function advanceForward(host: NarrationHost, cur: NarrationCursor, opts: { report?: AdvanceReport; budgetMs?: number } = {}): void {
+export function advanceForward(host: NarrationHost, cur: NarrationCursor, opts: { budgetMs?: number } = {}): void {
   const deadline = performance.now() + (opts.budgetMs ?? READ_BUDGET_MS);
   for (;;) {
     const before = cur.offset;
-    advance(host, cur, { forward: true, budgetMs: Math.max(1, deadline - performance.now()), ...(opts.report === undefined ? {} : { report: opts.report }) });
+    advance(host, cur, { forward: true, budgetMs: Math.max(1, deadline - performance.now()) });
     let size = before;
     try {
       size = statSync(cur.path).size;

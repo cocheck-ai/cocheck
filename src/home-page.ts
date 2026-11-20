@@ -1,5 +1,4 @@
-// The home page: one dense row per task, each linking to its review page. Public by design
-// (open-core plan: capture and plain viewing are public): it reads the ledger's capture tables and the host's own session title, calls no model and
+// The home page: one dense row per task, each linking to its review page. It reads the ledger's capture tables and the host's own session title, calls no model and
 // states no verdict beyond the standing the review page already shows. This file draws and gathers; the standing of a task comes from the caller.
 import { count, esc, fileBase, momentText, plural, userText, words, type Shown } from "./display.ts";
 import { findProfile } from "./hosts/index.ts";

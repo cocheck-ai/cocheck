@@ -13,3 +13,4 @@ test/baseline-compare.test.ts export-ignore
 docs/readme-pitch-draft.md export-ignore
 scripts/public-denylist.txt export-ignore
 scripts/public-gate-allow.txt export-ignore
+docs/design export-ignore

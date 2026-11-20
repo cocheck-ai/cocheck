@@ -5,7 +5,7 @@ import vm from "node:vm";
 import { buildRailModel, type RailModel } from "../src/timeline/rail/model.ts";
 import type { Change, Timeline } from "../src/timeline/timeline.ts";
 
-// the rail layout of review page v2 (docs/design/review-page-v2.md, "The rail"). Every row type has a slot of its own: call headers,
+// the rail layout of review page v2 (the review page v2 design, "The rail"). Every row type has a slot of its own: call headers,
 // quiet rows and failure groups never sit between or on top of stops. A run of failed calls by one actor is one counted stop, and a failure
 // on a call group attaches once. Call headers collapse and the legend hides an actor's rows. The page code runs as is in a vm with a DOM stub.
 

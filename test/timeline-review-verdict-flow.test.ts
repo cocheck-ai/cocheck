@@ -6,7 +6,7 @@ import { buildRailModel } from "../src/timeline/rail/model.ts";
 import { renderReviewShell } from "../src/timeline/rail/page.ts";
 import type { Change, Timeline } from "../src/timeline/timeline.ts";
 
-// The review page v2 shell (docs/design/review-page-v2.md). No start stop: the page opens on the first step that needs a verdict.
+// The review page v2 shell (the review page v2 design). No start stop: the page opens on the first step that needs a verdict.
 // The verdict control is Pass and Fail with P, F and U; a call header's verdict covers the files under it that have none of their own.
 // The page code runs as is in a vm with a DOM stub; the verdict route is a fake that keeps state like the real one (one row per POST).
 

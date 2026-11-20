@@ -8,7 +8,7 @@ Say what you found, the steps to reproduce it, which CoCheck version it affects 
 
 ## What counts
 
-CoCheck keeps a local record of what an AI agent changed in your files. Problems of interest include: a way to read or alter the record or the stored file copies without the key, a secret in a format the gitleaks rules detect that reaches the review page, a log or the text sent for an AI step line without being replaced by a withheld marker (a password in plain prose with no vendor format is not detected, by design; see [docs/security.md](docs/security.md)), a hook that runs or writes outside the folders you registered, and an installer change to your agent settings that CoCheck does not report.
+CoCheck keeps a local record of what an AI agent changed in your files. Problems of interest include: a way to read or alter the record or the stored file copies without the key, a secret in a format the gitleaks rules detect that reaches the review page or a log without being replaced by a withheld marker (a password in plain prose with no vendor format is not detected, by design; see [docs/security.md](docs/security.md)), a hook that runs or writes outside the folders you registered, and an installer change to your agent settings that CoCheck does not report.
 
 How stored copies are encrypted is described in [docs/security.md](docs/security.md).
 

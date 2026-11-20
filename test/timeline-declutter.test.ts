@@ -8,7 +8,7 @@ import { renderReviewShell } from "../src/timeline/rail/page.ts";
 import { translateShell } from "../src/timeline/describe.ts";
 import type { Change, Timeline } from "../src/timeline/timeline.ts";
 
-// each step's body is decluttered (docs/design/review-page-v2.md, "Every step has the same frame", "Layout per step type", "AI text",
+// each step's body is decluttered (the review page v2 design, "Every step has the same frame", "Layout per step type", "AI text",
 // "Words to cut"). Failure steps have no panes; "created"
 // is said once; a change too big to read cell by cell is one card; a text change has no notes column; the view's limits sit behind one
 // disclosure under one engine line; and no step body carries the cut words. The page code runs as is in a vm with a DOM stub.

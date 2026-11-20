@@ -362,7 +362,7 @@ Read these limits before you trust a green run:
 <a id="installing"></a>
 ### Installing
 
-To install a built connector, copy its folder (the one with `cocheck-connector.json` at its top) to `connectors/<id>/` under the CoCheck home folder (the folder named by `$COCHECK_HOME`, else `~/.cocheck`), where `<id>` is the `id` in the manifest. Then run `cocheck connector doctor <id>`: it reads the manifest in that folder and reports what is wrong, or that the connector is fine. If the connector declares credentials, store each one with `cocheck connector auth` first; see [Credentials](#credentials).
+To install a built connector, copy its folder (the one with `cocheck-connector.json` at its top) to `connectors/<id>/` inside the data folder you passed to `cocheck install --home` (for example `~/CoCheckData/connectors/my-connector`; `$COCHECK_HOME`, when set, names that folder instead), where `<id>` is the `id` in the manifest. Then run `cocheck connector doctor <id>`: it reads the manifest in that folder and reports what is wrong, or that the connector is fine. If the connector declares credentials, store each one with `cocheck connector auth` first; see [Credentials](#credentials).
 
 <a id="one-winner"></a>
 ## One winner

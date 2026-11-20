@@ -9,11 +9,12 @@
 # It prints the commands for you to run yourself: the tag push, `npm publish <that exact tarball>` (so the formula's sha256 matches the published
 # file), and the formula copy into a tap checkout.
 #
-# Before anything runs, the whole history reachable from HEAD goes through the gate (`public-gate.ts --git-history`); a hit refuses the release.
+# Before anything else runs (only `npm ci`, which the gate needs for its zip reader), the whole history reachable from HEAD goes through the gate
+# (`public-gate.ts --git-history`); a hit refuses the release.
 #
 # The suite record: a full, clean, green `npm test` writes `<git dir>/cocheck-test-pass/<HEAD sha>` (scripts/lib/test-pass-record.ts). A HEAD with a record
 # skips the suite here ("release: suite already passed on <sha>"); typecheck always runs. COCHECK_RELEASE_CHECKS replaces the checks entirely
-# (default: "npm run typecheck", then the suite unless it has a record). COCHECK_RELEASE_REMOTE names the git remote printed in the tag-push command (default: public).
+# (default: "npm run typecheck", then the suite unless it has a record). COCHECK_RELEASE_REMOTE names the git remote printed in the tag-push command (default: `public` when that remote exists, else `origin`).
 set -eu
 
 # The gate reads its allow file from this variable when it is set (the gate tests use that). A release must judge the tarball by the committed allow
@@ -27,8 +28,7 @@ case "$version" in
 esac
 case "$version" in *[!0-9.]*) echo "version must be plain X.Y.Z, got $version" >&2; exit 2 ;; esac
 tag="v$version"
-remote="${COCHECK_RELEASE_REMOTE:-public}"
-[ -n "$remote" ] || remote=public
+remote="${COCHECK_RELEASE_REMOTE:-}"
 
 cd "$(dirname "$0")/.."
 root=$(pwd)
@@ -36,6 +36,10 @@ root=$(pwd)
 current=$(node -p "require('./package.json').version")
 [ "$current" = "$version" ] || { echo "release: package.json says $current, not $version; bump the version and commit it first" >&2; exit 1; }
 if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then echo "release: tag $tag already exists" >&2; exit 1; fi
+if [ -z "$remote" ]; then
+  # A maintainer checkout names the public repository `public`; a fresh clone of the public repository has only `origin`.
+  if git remote get-url public >/dev/null 2>&1; then remote=public; else remote=origin; fi
+fi
 head=$(git rev-parse HEAD)
 gitdir=$(git rev-parse --absolute-git-dir)
 
@@ -66,7 +70,11 @@ check_unchanged() {
   [ "$(git rev-parse HEAD)" = "$head" ] || fail "HEAD moved during the release; nothing was tagged"
 }
 
-# The first real step, before npm ci and the build: a tag push publishes every commit reachable from HEAD, and that cannot be undone. The private
+# The gate's file scan reads zip files with fflate, and node resolves that import as the gate loads, even for --git-history. Without the
+# dependencies installed a fresh clone would fail here with an error read as "the history holds commits the gate refuses", so npm ci comes first.
+npm ci
+
+# The first real check, before the build and the suite: a tag push publishes every commit reachable from HEAD, and that cannot be undone. The private
 # repository's history names its owner and its internal work, so the gate's denylist judges every commit's author, committer and message here.
 [ -f "$root/scripts/public-gate.ts" ] || fail "scripts/public-gate.ts is missing; the release cannot be checked for public safety"
 history=$(node "$root/scripts/public-gate.ts" --git-history "$root") || {
@@ -74,7 +82,6 @@ history=$(node "$root/scripts/public-gate.ts" --git-history "$root") || {
   fail "the history holds commits the public gate refuses (first hits above: <sha> <field>: <rule id>); run the release from the public checkout, not the private repo. Nothing was tagged."
 }
 
-npm ci
 npm run build
 if [ -n "${COCHECK_RELEASE_CHECKS:-}" ]; then
   sh -c "$COCHECK_RELEASE_CHECKS"
@@ -150,4 +157,5 @@ Run these yourself, in this order (docs/release.md has the one-time setup first)
   git -C "\$tap" add Formula/cocheck.rb && TZ=UTC git -C "\$tap" commit -m "cocheck $version"
   git -C "\$tap" push -u origin cocheck-$version
   GH_TOKEN=\$(gh auth token --user cocheckai) gh pr create --repo cocheck-ai/homebrew-tap --head cocheck-$version --base main --title "cocheck $version" --body "Formula for cocheck $version."
+  GH_TOKEN=\$(gh auth token --user cocheckai) gh release create $tag --repo cocheck-ai/cocheck --verify-tag --prerelease --title "CoCheck $version Preview" --notes-file <this version's release notes>
 DONE

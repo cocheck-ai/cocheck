@@ -30,7 +30,7 @@ It handles any file type. Text and code get a line diff, and PDFs get pages with
 - **Tracking is off by default.** Every session starts untracked. An untracked session records nothing and gets no extra text in its context. Tracking is per session.
 - **States.** In a tracked session, each hook run compares the task folder with the last stored state and stores whole copies of files that changed. Copies live in the data folder the person chose at install.
 - **Attribution.** A change is credited to the agent calls that were open when the hook found it. When several calls overlap, they share the credit, and the page says so. A change found with no call open is shown as not from an agent call. Stronger attribution is in the works and is not available yet.
-- **The review page.** A local process serves the page to the person's browser. Nothing leaves the machine. Optional AI summary lines are off by default; when the person turns them on, text goes to Anthropic through their own `claude` account. See `docs/install.md` for exactly what is sent.
+- **The review page.** A local process serves the page to the person's browser. Nothing leaves the machine.
 - **Storage.** Up to 1 GB per task. Stored copies are encrypted at rest; see `docs/security.md`. A task that is never signed off expires after 7 idle days.
 
 ## 3. State of the project
@@ -115,13 +115,15 @@ If CoCheck says `CoCheck: not recording.`, read the reason it prints and tell yo
 | `cocheck connector test <dir>` | Tests a connector against recorded states or the conformance cases. |
 | `cocheck connector doctor [<id>]` | Reports the health of installed connectors. |
 | `cocheck connector auth <id> --name <credential>` | Stores or deletes a credential for a connector. |
+| `cocheck connector list` | For each file type, the connectors that claim it and which one is enabled. |
+| `cocheck connector enable\|disable <id> <type>` | Chooses which connector shows a file type. |
 | `cocheck --help`, `cocheck --version` | Usage and version. |
 
 ## 7. Connectors
 
 A connector teaches CoCheck to read one product: given two saved states of an item, it answers what changed. Three ship with CoCheck: Microsoft Excel, Word and PowerPoint. They are connectors on the same standard as any other: the same manifest, the same answers, the same checks. CoCheck's own code does not read, draw or order Office files. The few things a built-in still has that an outside connector does not are listed in `public-kit/GUIDE.md`. Files with no connector still get a text diff, pages (PDF) or a fingerprint.
 
-Anyone can build a connector, including for a product reached through an MCP tool. If your user asks for one, start at `public-kit/GUIDE.md`. It goes from nothing to a connector that passes `cocheck connector test`. The specification is in `public-kit/spec/`.
+Anyone can build a connector, including for a product reached through an MCP tool. If your user asks for one, start at `public-kit/GUIDE.md`. An installed connector lives in `connectors/<id>/` inside the data folder passed to `cocheck install --home`. It goes from nothing to a connector that passes `cocheck connector test`. The specification is in `public-kit/spec/`.
 
 ## 8. Where to read more
 
