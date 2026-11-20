@@ -17,10 +17,10 @@ async function edited(part: string, edit: (s: string) => string): Promise<Uint8A
 }
 
 describe("pptx saved again only for allow-listed parts", () => {
-  // Only the per-save properties are set aside (docprops-noise.ts). the first saved-again pair is a regenerated deck whose
-  // dcterms:created moved, which no plain save does, so it is off the allow-list now; a save that moves only the per-save fields is on it.
-  it("the v2 -> v3 pair (created time moved, a regeneration) is off the allow-list; per-save fields and section ids alone are on it", async () => {
-    assert.equal(pptxOnlySavedDetailsDiffer(await readFile(V2), await readFile(V3)), false);
+  // Only the per-save properties are set aside (docprops-noise.ts, plus the creation time in the re-save check). The first saved-again pair
+  // is a regenerated deck whose dcterms:created moved and whose body is byte-identical: a re-save. A save that moves only the per-save fields is on it too.
+  it("the v2 -> v3 pair (created time moved, a regeneration with the same body) is on the allow-list; so are per-save fields and section ids alone", async () => {
+    assert.equal(pptxOnlySavedDetailsDiffer(await readFile(V2), await readFile(V3)), true);
     const saved = await edited("docProps/core.xml", (s) => s.replace(/(<dcterms:modified[^>]*>)[^<]*</, "$12027-01-01T00:00:00Z<").replace(/(<cp:revision>)\d+</, "$12<"));
     assert.equal(pptxOnlySavedDetailsDiffer(await readFile(V2), saved), true);
     const titled = await edited("docProps/core.xml", (s) => s.replace(/<dc:title>[^<]*</, "<dc:title>Renamed<"));

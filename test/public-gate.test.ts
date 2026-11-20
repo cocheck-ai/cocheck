@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
@@ -45,8 +45,14 @@ function docx(creator: string, extra: Record<string, string> = {}): Uint8Array {
 }
 const pdf = (author: string): string => `%PDF-1.4\n1 0 obj\n<< /Title (Report) /Author (${author}) >>\nendobj\ntrailer\n<< /Info 1 0 R >>\n%%EOF\n`;
 
+// The deny list and the allow file are export-ignored (the deny list names the owner), so a public copy has neither and the gate cannot run.
+const NO_LISTS = existsSync(path.join(ROOT, "scripts", "public-denylist.txt")) && existsSync(path.join(ROOT, "scripts", "public-gate-allow.txt")) ? false : "the deny list and allow file are not in a public copy";
+
+// The public copy is itself an export: the export-ignored files are not in it, so there is nothing to check there.
+const isExportSource = !NO_LISTS && git(ROOT, "ls-files", "scripts/baseline-capture.ts").trim() !== "";
+
 describe("public export: git archive leaves private files out", () => {
-  it("lists none of the export-ignored files", () => {
+  it("lists none of the export-ignored files", { skip: isExportSource ? false : "not the export source (a public copy)" }, () => {
     const tracked = git(ROOT, "ls-files").split("\n").filter(Boolean);
     const bases = ["baseline-capture", "baseline-compare", "live-office-check", "rediff-step"];
     const mustLeave = new Set(tracked.filter((f) => bases.some((b) => path.basename(f).startsWith(b))));
@@ -62,7 +68,7 @@ const hexUtf16 = (text: string): string => "FEFF" + [...text].map((c) => c.charC
 const octalUtf16 = (text: string): string => "\\376\\377" + [...text].map((c) => `\\000\\${c.charCodeAt(0).toString(8).padStart(3, "0")}`).join("");
 const pdfWith = (info: string): string => `%PDF-1.4\n1 0 obj\n<< ${info} >>\nendobj\ntrailer\n<< /Info 1 0 R >>\n%%EOF\n`;
 
-describe("public-gate metadata allow-list (exact values)", () => {
+describe("public-gate metadata allow-list (exact values)", { skip: NO_LISTS }, () => {
   it("passes each allowed creator and lastModifiedBy, fails any other value, including a near match", () => {
     for (const ok of ["CoCheck", "CoCheck test fixture", "python-docx", "openpyxl", "Steve Canny", "PptxGenJS"]) {
       const d = tmp();
@@ -94,7 +100,7 @@ describe("public-gate metadata allow-list (exact values)", () => {
   });
 });
 
-describe("public-gate PDF Info strings are decoded", () => {
+describe("public-gate PDF Info strings are decoded", { skip: NO_LISTS }, () => {
   it("fails a /Title whose hex UTF-16 text is a denylisted word", () => {
     const d = tmp();
     put(d, "t.pdf", pdfWith(`/Title <${hexUtf16(OWNER)}>`));
@@ -117,7 +123,7 @@ describe("public-gate PDF Info strings are decoded", () => {
   });
 });
 
-describe("public-gate allow file (exact file, exact rule, pinned hash)", () => {
+describe("public-gate allow file (exact file, exact rule, pinned hash)", { skip: NO_LISTS }, () => {
   const body = `// ${OWNER} planted by design\n`;
   const entry = (rel: string, rule: string, hash: string): string => `${rel} ${rule} ${hash} # plants a name by design\n`;
   function setup(): { d: string; allow: string; rule: string } {
@@ -166,7 +172,7 @@ describe("public-gate allow file (exact file, exact rule, pinned hash)", () => {
   });
 });
 
-describe("public-gate", () => {
+describe("public-gate", { skip: NO_LISTS }, () => {
   it("passes a clean tree and counts files", () => {
     const d = tmp();
     put(d, "a.ts", "export const x = 1;\n");
@@ -270,7 +276,7 @@ function runExport(priv: string, pub: string, env: Record<string, string | undef
 const snapshot = (pub: string): string =>
   [git(pub, "rev-parse", "--abbrev-ref", "HEAD"), git(pub, "for-each-ref"), git(pub, "status", "--porcelain=v2", "--branch"), readdirSync(pub).sort().join(",")].join("\n--\n");
 
-describe("export-public.sh", () => {
+describe("export-public.sh", { skip: NO_LISTS }, () => {
   it("refuses when a bot variable is unset, and leaves the public checkout unchanged", () => {
     const { priv, pub } = repos({ "a.ts": "export {};\n" });
     const before = snapshot(pub);

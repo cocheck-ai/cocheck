@@ -11,7 +11,7 @@ import type { RawOp } from "../src/timeline/runs.ts";
 const TOKEN = "gAAAAABq5_3NUG0wSgKuMUeiMpzd-EJbo7QvRrNzPYhcB8EL_8b12MzGEspP-jPxPBxiD5cr02TI2Zx_vK1welX5XfxLSRvQ0T1uqH4JU_JD4jBeAkxctldmHAMqiZZ9yQ0_kLw8hT3sXc1vNn5pP7rA2dE4fG6hJ8kL0mQ";
 const hooks = { text: (s: string) => s, path: (s: string) => s };
 
-const c = (id: string, seq: number, extra: Record<string, unknown>) => call(id, { session: "s1", tool: "collaborationspawn_agent", desc: id, at: seq * 10, named: [], extra: { startSeq: seq, ...extra } });
+const c = (id: string, seq: number, extra: Record<string, unknown>) => call(id, { session: "s1", host: "codex", tool: "collaborationspawn_agent", desc: id, at: seq * 10, named: [], extra: { startSeq: seq, ...extra } });
 const input = (ops: RawOp[]): TimelineInput => ({ taskId: 1, build: "t", ops, fileStates: [], folder: "/w", valuesExpiredAt: null, removals: [], stored: new Map(), formats: new Map(), quickLook: false } as unknown as TimelineInput);
 const startOf = (fields: Record<string, string>, dropped?: Record<string, string>) => {
   const ops = [prompt("s1", ["Go."], { requests: [{ seq: 1, at: 10, firstStep: null }] }), c("A1", 2, { toolLabel: { fields, ...(dropped ? { dropped } : {}) } }), stop("s1", "done")];
@@ -28,7 +28,7 @@ describe("encrypted helper brief (Codex)", () => {
   });
   it("the hook's label records no token (dropped, with the reason), for a string and for Codex's object", () => {
     for (const message of [TOKEN, { type: "encrypted_content", encrypted_content: TOKEN }]) {
-      const l = toolLabel("collaborationspawn_agent", { task_name: "recipe", message }, hooks);
+      const l = toolLabel("spawn_agent", { task_name: "recipe", message }, hooks);
       assert.equal(l.fields.task_name, "recipe");
       assert.ok(!("message" in l.fields), JSON.stringify(l));
       assert.ok(!JSON.stringify(l).includes("gAAAAA"));
@@ -54,7 +54,7 @@ describe("encrypted helper brief (Codex)", () => {
     const s = startOf({ task_name: "recipe", message: plain });
     assert.equal(s.brief!.encrypted, undefined);
     assert.deepEqual(s.brief!.lines, [plain]);
-    const l = toolLabel("collaborationspawn_agent", { task_name: "recipe", message: plain }, hooks);
+    const l = toolLabel("spawn_agent", { task_name: "recipe", message: plain }, hooks);
     assert.equal(l.fields.message, plain);
   });
 });

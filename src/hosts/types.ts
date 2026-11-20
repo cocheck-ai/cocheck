@@ -102,6 +102,11 @@ export interface HostProfile {
   refineKind?(kind: EventKind, payload: Record<string, unknown>): EventKind;
   /** A host whose tool arguments may arrive as JSON text: the parsed value (anything that is not such text passes through). */
   parseToolInput?(value: unknown): unknown;
+  /**
+   * A host that reports a tool under a namespaced form of its name: the tool's own name, from the reported name and the payload (empty
+   * when read from a stored record). Every rule keyed on a tool name reads this form; it is applied at ingest and again when stored records are read.
+   */
+  toolName?(reported: string, payload: Record<string, unknown>): string;
 
   // ---- call ids ----
   /**

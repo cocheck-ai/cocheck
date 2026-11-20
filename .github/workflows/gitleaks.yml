@@ -1,0 +1,49 @@
+# Secret scan of the commits a pull request brings (and of each push to main) with gitleaks, as a backstop to GitHub's own secret scanning.
+# The binary is pinned by version and sha256 (the same version as vendor/gitleaks/VERSION). The rules come from .github/gitleaks.toml as it
+# is on the base commit, so a pull request cannot loosen its own scan; the working copy is used only when the base has no such file.
+# Findings are redacted in the log.
+name: gitleaks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks (pinned)
+        run: |
+          set -euo pipefail
+          v=8.30.1
+          f="gitleaks_${v}_linux_x64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$f" "https://github.com/gitleaks/gitleaks/releases/download/v$v/$f"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/$f" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$f" -C "$RUNNER_TEMP" gitleaks
+      - name: Scan the new commits
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          zero=0000000000000000000000000000000000000000
+          if [ "$EVENT" = pull_request ]; then base="$PR_BASE"; head="$PR_HEAD"; else base="$BEFORE"; head="$AFTER"; fi
+          cfg="$RUNNER_TEMP/gitleaks.toml"
+          if [ "$base" != "$zero" ] && git cat-file -e "$base:.github/gitleaks.toml" 2>/dev/null; then
+            git show "$base:.github/gitleaks.toml" > "$cfg"
+          else
+            cp .github/gitleaks.toml "$cfg"
+          fi
+          if [ "$base" = "$zero" ]; then range="$head"; else range="$base..$head"; fi
+          "$RUNNER_TEMP/gitleaks" git --config "$cfg" --log-opts="$range" --redact --no-banner --exit-code 1 .

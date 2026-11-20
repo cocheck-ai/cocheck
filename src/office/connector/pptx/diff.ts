@@ -1,5 +1,6 @@
 import type { LayerDiffRow } from "../../../formats/layer.ts";
 import { alignSequences } from "../../../formats/files/align.ts";
+import { chartDiff, chartDigest, type Skip } from "../shared/chart-diff.ts";
 import type { ChartData, Comment, Deck, Link, Para, ParaPart, Shape, Slide } from "./reader.ts";
 
 /**
@@ -103,11 +104,15 @@ export interface Placed {
   path: string;
 }
 
+/** The words a shape or group is shown by: its name, else (no name, or only spaces) its role, else its kind. */
+const KIND_WORDS: Record<Shape["kind"], string> = { text: "Text box", table: "Table", chart: "Chart", group: "Group", other: "Shape" };
+const shownName = (name: string, fallback: string): string => safe(name.trim() !== "" ? name : fallback);
+
 export function place(shapes: Shape[]): Placed[] {
   const seen = new Map<string, number>();
   return shapes.map((shape) => {
-    const prefix = shape.scope.map((g) => safe(g.name)).join(" / ");
-    const base = `${prefix ? `${prefix} / ` : ""}${safe(shape.name)}`;
+    const prefix = shape.scope.map((g) => shownName(g.name, KIND_WORDS.group)).join(" / ");
+    const base = `${prefix ? `${prefix} / ` : ""}${shownName(shape.name, shape.role ?? KIND_WORDS[shape.kind])}`;
     const n = (seen.get(base) ?? 0) + 1;
     seen.set(base, n);
     return { shape, path: n === 1 ? base : `${base} (${n})` };
@@ -351,6 +356,25 @@ function diffGeometry(loc: string, sa: Shape, sb: Shape, out: LayerDiffRow[]): v
   out.push(row(loc, kind, words(sa), words(sb), { unit: `${loc} / geometry`, shapeKind: sb.kind }));
 }
 
+/**
+ * What else differs in a matched chart's part, from the shared structural diff: a number format, a colour, an axis scale, a legend position.
+ * What another row already says is left out here, so nothing is said twice: the text and values `diffChart` rows (titles, axis titles, series
+ * names and points, data labels) and what the shape's unmodelled hash carries (`chartExtras` in the reader: legend presence, legend entries,
+ * trendline names and types).
+ */
+const MODELLED: Skip = (el, path, pair) => {
+  const parent = path[path.length - 1]?.name;
+  if (el.name === "tx" && (parent === "title" || parent === "ser" || parent === "dLbl")) return true;
+  if (el.name === "title" || el.name === "ser" || el.name === "legend" || el.name === "trendline") return pair.a === undefined || pair.b === undefined;
+  if (parent === "trendline" && (el.name === "name" || el.name === "trendlineType")) return true;
+  return el.name === "legendEntry" || el.name === "pt" || el.name === "ptCount";
+};
+function chartFormat(loc: string, a: ChartData, b: ChartData, out: LayerDiffRow[]): void {
+  if (a.tree === undefined || b.tree === undefined) return;
+  const { lines } = chartDiff(a.tree, b.tree, MODELLED);
+  if (lines.length > 0) out.push(row(loc, "chart changed", chartDigest(a.tree), chartDigest(b.tree), { unit: `${loc} / chart`, changes: lines, shapeKind: "chart" }));
+}
+
 function diffSlide(n: number, a: Slide, b: Slide, out: LayerDiffRow[]): void {
   const slide = `Slide ${n}`;
   const { pairs, removed, added } = matchShapes(place(a.shapes), place(b.shapes));
@@ -367,6 +391,7 @@ function diffSlide(n: number, a: Slide, b: Slide, out: LayerDiffRow[]): void {
       const had = out.length;
       diffChart(loc, sa.chart, sb.chart, out);
       const cacheChanged = out.length > had;
+      chartFormat(loc, sa.chart, sb.chart, out);
       const [wa, wb] = [sa.chart.workbook, sb.chart.workbook];
       if (wa !== undefined && wb !== undefined) {
         if (wa !== wb) out.push(row(`${loc} / workbook`, "chart workbook changed", "embedded workbook", "embedded workbook (edited)", { unit: `${loc} / workbook`, cache: cacheChanged ? "changed" : "unchanged" }));
@@ -547,6 +572,7 @@ export function unitValues(deck: Deck): Map<string, unknown> {
         r.forEach((cell, ci) => out.set(`${loc} / R${ri + 1}C${ci + 1}`, cell));
       });
       if (s.chart) {
+        if (s.chart.tree) out.set(`${loc} / chart`, chartDigest(s.chart.tree));
         out.set(`${loc} / title`, s.chart.title);
         for (const ax of s.chart.axes) out.set(`${loc} / ${ax.label}`, ax.title);
         s.chart.series.forEach((ser, si) => {

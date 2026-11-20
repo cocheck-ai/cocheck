@@ -9,6 +9,7 @@ import { openLedger } from "../src/ledger.ts";
 import { runHook } from "../src/hook-cli.ts";
 import { setTracking } from "../src/tracking.ts";
 import { waitsOnHelpers } from "../src/credit-guard.ts";
+import { codexToolName } from "../src/hosts/codex.ts";
 
 // Copilot CLI 1.0.103 live run (platforms/copilot-cli/versions/1.0.103). The main agent's `read_agent` calls (wait:true) stay open
 // while three helpers write; a read_agent is a wait, so it must never hold credit for a helper's write. The records are the hook inputs
@@ -102,7 +103,7 @@ describe("a Copilot read_agent wait never holds credit for a helper's write", ()
 describe("which calls wait on helpers", () => {
   it("Codex wait_agent and Copilot read_agent with wait:true wait; every other call does not", () => {
     assert.equal(waitsOnHelpers("wait_agent", {}), true);
-    assert.equal(waitsOnHelpers("collaborationwait_agent", {}), true);
+    assert.equal(waitsOnHelpers(codexToolName("collaborationwait_agent"), {}), true);
     assert.equal(waitsOnHelpers("read_agent", { agent_id: "x", wait: true, timeout: 180 }), true);
     assert.equal(waitsOnHelpers("read_agent", { agent_id: "x" }), false);
     assert.equal(waitsOnHelpers("read_agent", { agent_id: "x", wait: "true" }), false);

@@ -505,6 +505,15 @@ const KNOWN_ROOTS = new RegExp(`^/(?:${ROOT_NAMES})\\b`);
 /** Files whose renderer is available on this machine (PDF): the view reads their text, so a note makes no reading claim. */
 const rendererReads = (file: string): boolean => registeredExtensions().includes(path.extname(file).toLowerCase());
 
+/**
+ * A line shaped like a raised error, the form runtimes share when they print one: an error or exception type name (optionally
+ * namespace-qualified, optionally with a bracketed code) then a colon and the message: "Error: ...", "ValueError: ...",
+ * "java.lang.IllegalStateException: ...", "TypeError [ERR_X]: ...". A short lead-in of plain words (at most 60 characters) may come first ("Caused by: ",
+ * "Unhandled exception. ", "Uncaught "). A quoted source line ("throw new Error('...')", "raise ValueError(...)") or a trace frame naming a
+ * file never has the shape.
+ */
+const RAISED_ERROR_LINE = /^(?:[A-Za-z][\w .:]{0,60}\s)?(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$]*(?:Error|Exception)(?:\s*\[[^\]]*\])?: \S/;
+
 export function buildTimeline(input: TimelineInput): Timeline {
   const expired = input.valuesExpiredAt !== null;
   const taskHost = input.host ?? null;
@@ -728,9 +737,10 @@ export function buildTimeline(input: TimelineInput): Timeline {
     return { text: head.text + mid.text + tail.text, redacted: head.redacted || mid.redacted || tail.redacted };
   };
   // The host's error text on the rail is its first error line, outside paths masked. The rest of a stack trace stays in the host.
+  // A line shaped like a raised error comes first (see RAISED_ERROR_LINE); else the first line with an error word; else the first line.
   const hostErrorLine = (raw: string | null): string | null => {
     const lines = (raw ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
-    const one = lines.find((l) => /error|exception|\bfailed\b|cannot|no such|not found|denied|invalid/i.test(l)) ?? lines[0];
+    const one = lines.find((l) => RAISED_ERROR_LINE.test(l)) ?? lines.find((l) => /error|exception|\bfailed\b|cannot|no such|not found|denied|invalid/i.test(l)) ?? lines[0];
     return one === undefined ? null : clampText(scrub(one).text, 240);
   };
   /** The whole error text with outside paths masked, for "Show output". */

@@ -1,0 +1,37 @@
+# Gitleaks rules for the public CI scan (.github/workflows/gitleaks.yml): the gitleaks default rules of the pinned binary
+# (the same version as vendor/gitleaks/VERSION), plus the files that hold fake secrets on purpose as test fixtures.
+# Keep the path list exact (one file per entry). A new fixture with a fake secret needs its own entry here.
+title = "cocheck public ci"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Test fixtures and recorded host sessions that carry fake secrets on purpose"
+paths = [
+  '''^platforms/claude-code/versions/2\.1\.302/sessions/b0f5204b-5694-452a-b345-e478329f2f19\.jsonl$''',
+  '''^platforms/copilot-cli/versions/1\.0\.93/session-events\.jsonl$''',
+  '''^test/codex-patch-secrets\.test\.ts$''',
+  '''^test/connector-evidence\.test\.ts$''',
+  '''^test/connector-file-capture-offhook\.test\.ts$''',
+  '''^test/connector-image-pictures\.test\.ts$''',
+  '''^test/connector-subject-display\.test\.ts$''',
+  '''^test/connector-v1-page\.test\.ts$''',
+  '''^test/fixtures/hosts/copilot-1\.0\.93/session-events\.jsonl$''',
+  '''^test/hook-adapter-tool-label\.test\.ts$''',
+  '''^test/hook-journal-blackbox\.test\.ts$''',
+  '''^test/hook-no-bodies\.test\.ts$''',
+  '''^test/hook-subagent-finish\.test\.ts$''',
+  '''^test/mcp-card\.test\.ts$''',
+  '''^test/probe-host-scrubs-recordings\.slow\.test\.ts$''',
+  '''^test/runs-tool-label-dropped\.test\.ts$''',
+  '''^test/secret-gitleaks\.test\.ts$''',
+  '''^test/secret-reveal\.test\.ts$''',
+  '''^test/secret-withhold\.test\.ts$''',
+  '''^test/timeline-general-page\.test\.ts$''',
+  '''^test/timeline-helper-brief\.test\.ts$''',
+  '''^test/timeline-rail-model-and-routes\.test\.ts$''',
+  '''^test/timeline\.test\.ts$''',
+  '''^test/tool-label-secret\.test\.ts$''',
+  '''^vendor/gitleaks/gitleaks\.toml$''',
+]

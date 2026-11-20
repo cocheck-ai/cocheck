@@ -38,7 +38,17 @@ export interface Drawing {
   anchor?: Rect;
   /** The anchor's own offset into its first cell (xdr:colOff and xdr:rowOff, EMU), present when either is not zero. */
   anchorOffset?: { x: number; y: number };
+  /** The anchor exactly as the file writes it, for placing the frame on a printed page: a two-cell anchor's corners, a one-cell anchor's corner and size,
+   * or an absolute anchor's position and size (EMU; columns and rows 0-based as in the file). */
+  place?: DrawingPlace;
 }
+
+/** A frame corner: a cell (0-based column and row) and the offset into it in EMU. */
+export interface AnchorCorner { col: number; row: number; colOff: number; rowOff: number }
+export type DrawingPlace =
+  | { kind: "twoCell"; from: AnchorCorner; to: AnchorCorner }
+  | { kind: "oneCell"; from: AnchorCorner; ext: { cx: number; cy: number } }
+  | { kind: "absolute"; pos: { x: number; y: number }; ext: { cx: number; cy: number } };
 
 export interface Sheet {
   name: string;
@@ -306,17 +316,28 @@ function readDrawing(files: Record<string, Uint8Array>, drawingPart: string): Dr
     const spanC = tc === undefined && ext ? Math.max(0, Math.ceil(Number(ext[1]) / 9525 / 64) - 1) : 0;
     const spanR = tr === undefined && ext ? Math.max(0, Math.ceil(Number(ext[2]) / 9525 / 20) - 1) : 0;
     const anchor = fr !== undefined && fc !== undefined ? { r1: fr + 1, c1: fc + 1, r2: (tr ?? fr + spanR) + 1, c2: (tc ?? fc + spanC) + 1 } : undefined;
+    // the anchor's own children come before the drawn object; an ext or off inside the object (its xfrm) is not the anchor's
+    const head = a.slice(0, Math.max(0, a.search(/<(?:xdr:)?(?:graphicFrame|pic|sp|grpSp|cxnSp|contentPart)\b/)) || a.length);
+    const corner = (which: "from" | "to"): AnchorCorner | undefined => {
+      const c = num("col", which), r = num("row", which);
+      return c === undefined || r === undefined ? undefined : { col: c, row: r, colOff: num("colOff", which) ?? 0, rowOff: num("rowOff", which) ?? 0 };
+    };
+    const hx = /<(?:xdr:)?ext\b[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"/.exec(head), hp = /<(?:xdr:)?pos\b[^>]*\bx="(-?\d+)"[^>]*\by="(-?\d+)"/.exec(head);
+    const cf = corner("from"), ct = corner("to"), he = hx ? { cx: Number(hx[1]), cy: Number(hx[2]) } : undefined;
+    const place: DrawingPlace | undefined = m[1] === "twoCellAnchor" ? (cf && ct ? { kind: "twoCell", from: cf, to: ct } : undefined)
+      : m[1] === "oneCellAnchor" ? (cf && he ? { kind: "oneCell", from: cf, ext: he } : undefined)
+      : hp && he ? { kind: "absolute", pos: { x: Number(hp[1]), y: Number(hp[2]) }, ext: he } : undefined;
     const chartRid = /<(?:c:)?chart\b[^>]*\br:id="([^"]+)"/.exec(a)?.[1];
     const blipRid = /<(?:a:)?blip\b[^>]*\br:embed="([^"]+)"/.exec(a)?.[1];
     const nm = unesc(/<(?:xdr:)?cNvPr\b[^>]*\bname="([^"]*)"/.exec(a)?.[1] ?? "");
     if (chartRid) {
       const target = rels.get(chartRid)?.target;
       const cx = target && files[target] ? canonicalOrRaw(dec.decode(files[target]!), "ooxml", target) : "";
-      out.push({ kind: "chart", name: chartTitle(cx) || nm, ...(nm !== "" ? { objectName: nm } : {}), sha: sha(stripIds(cx)), xml: cx, ...(anchor ? { anchor } : {}), ...(anchor && (off.x !== 0 || off.y !== 0) ? { anchorOffset: off } : {}) });
+      out.push({ kind: "chart", name: chartTitle(cx) || nm, ...(nm !== "" ? { objectName: nm } : {}), sha: sha(stripIds(cx)), xml: cx, ...(anchor ? { anchor } : {}), ...(anchor && (off.x !== 0 || off.y !== 0) ? { anchorOffset: off } : {}), ...(place ? { place } : {}) });
     } else if (blipRid) {
       const target = rels.get(blipRid)?.target;
-      out.push({ kind: "image", name: nm, sha: target && files[target] ? sha(files[target]!) : sha(nm), ...(anchor ? { anchor } : {}) });
-    } else out.push({ kind: "shape", name: nm, sha: sha(stripIds(a)), ...(anchor ? { anchor } : {}) });
+      out.push({ kind: "image", name: nm, sha: target && files[target] ? sha(files[target]!) : sha(nm), ...(anchor ? { anchor } : {}), ...(place ? { place } : {}) });
+    } else out.push({ kind: "shape", name: nm, sha: sha(stripIds(a)), ...(anchor ? { anchor } : {}), ...(place ? { place } : {}) });
   }
   return out;
 }

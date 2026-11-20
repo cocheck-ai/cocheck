@@ -26,9 +26,9 @@ export interface OfficeApp {
 export const OFFICE_APPS: Record<OfficeAppKey, OfficeApp> = {
   excel: { key: "excel", id: "microsoft-excel", name: "Microsoft Excel", exts: [".xlsx", ".xlsm"], noun: "workbook", hangWhy: "Microsoft Excel stopped answering on this workbook and was stopped" },
   word: { key: "word", id: "microsoft-word", name: "Microsoft Word", exts: [".docx"], noun: "document", hangWhy: "Microsoft Word stopped answering on this document and was stopped" },
-  // A broken deck hangs PowerPoint behind a hidden repair prompt. (A prompt the screen route sees has its own words,
-  // `promptWhy`; this hang text is still used where no window list is read, the print route. Pinned by test/office-connector.test.ts.)
-  powerpoint: { key: "powerpoint", id: "microsoft-powerpoint", name: "Microsoft PowerPoint", exts: [".pptx", ".pptm", ".ppsx", ".ppsm"], noun: "presentation", hangWhy: "PowerPoint would ask to repair this file" },
+  // A broken deck can hang PowerPoint behind a hidden prompt. What the prompt says is never read, so the words say only that it may be a question. (A prompt the
+  // screen route sees has its own words, `promptWhy`; this hang text is still used where no window list is read, the print route. Pinned by test/office-connector.test.ts.)
+  powerpoint: { key: "powerpoint", id: "microsoft-powerpoint", name: "Microsoft PowerPoint", exts: [".pptx", ".pptm", ".ppsx", ".ppsm"], noun: "presentation", hangWhy: "Microsoft PowerPoint stopped answering on this presentation and was stopped; it may have stopped at a question (such as a repair, sign-in or update prompt), which CoCheck never answers" },
 };
 
 /**
@@ -38,7 +38,7 @@ export const OFFICE_APPS: Record<OfficeAppKey, OfficeApp> = {
  *   hangWhy:    a call ran its own full time with no answer (the field above).
  *   budgetWhy:  CoCheck's own time for pictures ran out before the app answered.
  */
-export const promptWhy = (app: Pick<OfficeApp, "name" | "noun">): string => `${app.name} showed a prompt instead of opening this ${app.noun} (CoCheck never answers such prompts), so it is not pictured`;
+export const promptWhy = (app: Pick<OfficeApp, "name" | "noun">): string => `${app.name} stopped at a question before opening this ${app.noun} (such as a repair, sign-in or update prompt); CoCheck never answers those, so it is not pictured`;
 export const refusedWhy = (app: Pick<OfficeApp, "name" | "noun">): string => `${app.name} did not open this ${app.noun}: it answered, but the ${app.noun} never appeared, so it is not pictured`;
 export const budgetWhy = (app: Pick<OfficeApp, "name" | "noun">): string => `CoCheck's time for pictures ran out before ${app.name} answered on this ${app.noun}`;
 

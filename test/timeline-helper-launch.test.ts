@@ -5,6 +5,7 @@ import { buildTimeline, type TimelineInput } from "../src/timeline/timeline.ts";
 import { MAIN_LANE } from "../src/timeline/attribution.ts";
 import { buildRailModel } from "../src/timeline/rail/model.ts";
 import { isLauncherTool, isWaitTool, launcherMayCredit } from "../src/credit-guard.ts";
+import { codexToolName } from "../src/hosts/codex.ts";
 import { translateTool } from "../src/timeline/describe.ts";
 import { state } from "./fixtures/timeline.ts";
 import type { RawOp, RawState } from "../src/timeline/runs.ts";
@@ -17,15 +18,19 @@ const input = (ops: RawOp[], fileStates: RawState[] = []): TimelineInput => ({ t
 const model = (ops: RawOp[], fileStates: RawState[] = []) => buildRailModel(buildTimeline(input(ops, fileStates)));
 
 describe("launcher predicate", () => {
-  it("accepts Agent, Task, task and every recorded form of spawn_agent", () => {
-    for (const t of ["Agent", "Task", "task", "spawn_agent", "collaborationspawn_agent", "collaboration.spawn_agent", "collaboration:spawn_agent", "collaboration/spawn_agent"]) assert.equal(isLauncherTool(t), true, t);
+  it("accepts Agent, Task, task and spawn_agent; every recorded Codex form of spawn_agent reaches it as spawn_agent", () => {
+    for (const t of ["Agent", "Task", "task", "spawn_agent"]) assert.equal(isLauncherTool(t), true, t);
+    for (const t of ["collaborationspawn_agent", "collaboration.spawn_agent", "collaboration:spawn_agent", "collaboration/spawn_agent"]) assert.equal(isLauncherTool(codexToolName(t)), true, t);
   });
   it("never accepts a wait, a read or a task-named non-launcher", () => {
-    for (const t of ["TaskCreate", "TaskUpdate", "TaskStop", "TaskOutput", "TodoWrite", "read_agent", "wait_agent", "collaborationwait_agent", "collaboration.wait_agent", "list_agents", "close_agent", "send_input", "SendMessage", "subtask", "task_complete", "spawn_agent_status", "Bash", "", null, undefined]) assert.equal(isLauncherTool(t), false, String(t));
-    assert.equal(isWaitTool("collaborationwait_agent"), true);
-    assert.equal(launcherMayCredit("collaborationwait_agent", true), true);
+    for (const t of ["TaskCreate", "TaskUpdate", "TaskStop", "TaskOutput", "TodoWrite", "read_agent", "wait_agent", "collaborationwait_agent", "collaboration.wait_agent", "list_agents", "close_agent", "send_input", "SendMessage", "subtask", "task_complete", "spawn_agent_status", "Bash", "", null, undefined]) {
+      assert.equal(isLauncherTool(t), false, String(t));
+      if (typeof t === "string") assert.equal(isLauncherTool(codexToolName(t)), false, `${t} (split)`);
+    }
+    assert.equal(isWaitTool(codexToolName("collaborationwait_agent")), true);
+    assert.equal(launcherMayCredit("wait_agent", true), true);
     assert.equal(launcherMayCredit("TaskCreate", true), true);
-    assert.equal(launcherMayCredit("collaborationspawn_agent", true), false);
+    assert.equal(launcherMayCredit(codexToolName("collaborationspawn_agent"), true), false);
   });
 });
 
@@ -75,8 +80,8 @@ describe("Codex spawn_agent launches", () => {
 describe("a launch's plain sentence comes from its own input", () => {
   it("names the description, task name or type of any launcher, and nothing else", () => {
     assert.equal(translateTool("task", { description: "Write stability memo", prompt: "p" }), "Started a helper agent: Write stability memo");
-    assert.equal(translateTool("collaborationspawn_agent", { task_name: "memo" }), "Started a helper agent: memo");
-    assert.equal(translateTool("collaborationspawn_agent", {}), "Started a helper agent");
+    assert.equal(translateTool("spawn_agent", { task_name: "memo" }), "Started a helper agent: memo");
+    assert.equal(translateTool("spawn_agent", {}), "Started a helper agent");
     assert.equal(translateTool("Agent", { subagent_type: "general-purpose" }), "Started a helper agent (general-purpose)");
   });
   it("a non-launcher whose name holds task or agent is not described as a launch", () => {

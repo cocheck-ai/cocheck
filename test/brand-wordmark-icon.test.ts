@@ -57,8 +57,8 @@ describe("brand", () => {
     assert.match(top, /<picture>/);
     assert.match(top, /<source media="\(prefers-color-scheme: dark\)" srcset="docs\/brand\/cocheck-wordmark-dark\.png">/);
     assert.match(top, /<img [^>]*src="docs\/brand\/cocheck-wordmark-light\.png"[^>]*alt="CoCheck"/);
-    assert.ok(top.includes("Keeping you in the driver's seat"));
-    assert.ok(!top.includes("Keeping you in the driver's seat."));
+    assert.ok(top.includes("CoCheck keeps you in the driver's seat"));
+    assert.ok(!top.includes("CoCheck keeps you in the driver's seat."));
     assert.ok(readme.includes("CoCheck shows what AI agents changed in your files"));
   });
 

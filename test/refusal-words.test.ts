@@ -17,7 +17,7 @@ describe("refusalWords", () => {
     assert.equal(w.status, undefined);
     assert.deepEqual(w.standIns, []);
     assert.equal(w.caveats.length, 1);
-    assert.match(w.caveats[0]!, /showed a prompt on every workbook CoCheck asked it to open/);
+    assert.match(w.caveats[0]!, /stopped at a question on every workbook CoCheck asked it to open/);
     assert.match(w.caveats[0]!, /may be Microsoft Excel's own/);
   });
   it("one side refused, the other pictured: the status rides on a stand-in picture for that side (spec v1.1), not on the document", () => {
