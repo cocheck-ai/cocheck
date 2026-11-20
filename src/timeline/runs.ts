@@ -22,7 +22,7 @@
 //  - That holds across turns: the Stop that cut the ledger's turn does not decide it. An agent's calls that run on after a
 //    Stop stay with the request that launched it, not the prompt that wakes the session later.
 import { pathKit } from "../paths.ts";
-import { reportsFailureEvents } from "../hosts/index.ts";
+import { reportsFailureEvents, toolNameOf } from "../hosts/index.ts";
 import type { ToolLabel, WithheldRecord } from "../tool-label.ts";
 import { isLauncherTool, type CallEvidence, type EvidenceKind } from "../credit-guard.ts";
 
@@ -500,11 +500,14 @@ export function readRecord(ops: RawOp[], fileStates: RawState[]): { calls: Map<s
       let command = String(o.intent ?? "").replace(NOTE, "").replace(NOTE, "");
       if (description && command.endsWith(" - " + description)) command = command.slice(0, -(description.length + 3));
       const label = readToolLabel(a.toolLabel);
+      // A record stored before its host's tool names were separated at ingest is read by the tool's own name too.
+      const reported = typeof a.tool_name === "string" ? a.tool_name : (o.tool ?? null);
+      const tool = reported === null ? null : toolNameOf(typeof a.host === "string" ? a.host : null, reported);
       c = {
         id,
         session,
         host: typeof a.host === "string" ? a.host : null,
-        tool: typeof a.tool_name === "string" ? a.tool_name : (o.tool ?? null),
+        tool,
         description,
         command,
         openedAt: num(a.openedAt),
@@ -512,7 +515,7 @@ export function readRecord(ops: RawOp[], fileStates: RawState[]): { calls: Map<s
         closedBy: typeof a.closedBy === "string" ? a.closedBy : null,
         error: a.closedBy === "failure" && typeof a.error === "string" && a.error !== "" ? a.error : null,
         errorInferred: a.closedBy === "failure" && a.errorInferred === true,
-        background: a.background === true || launchedInBackground(a.tool_name ?? o.tool, a.tool_input ?? a.toolInput ?? a.input),
+        background: a.background === true || launchedInBackground(tool, a.tool_input ?? a.toolInput ?? a.input),
         ...(a.waits === true ? { waits: true } : {}),
         ended: endedOf(a.ended),
         narration: (a.narration as Narration | undefined) ?? null,

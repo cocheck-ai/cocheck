@@ -1,5 +1,6 @@
-# CI is Windows-only on push and pull_request (Actions minutes are nearly out; macOS bills at 10x and the Mac suite runs locally before
-# every push). The macos and ubuntu jobs and the Windows full fast tier run only on workflow_dispatch (run them by hand).
+# CI runs Windows on every push and pull request. macOS also runs on push and pull request, but only in the public repository
+# (cocheck-ai/cocheck), where Actions minutes are free; elsewhere macOS runs only on workflow_dispatch. Ubuntu and the Windows full
+# fast tier run only on workflow_dispatch.
 # Run one job by hand: `gh workflow run ci.yml --ref <branch> -f jobs=macos` (jobs: all, ubuntu, windows, macos; default all).
 # CI: typecheck and the fast test tier. No secrets, no deploy, no release, no publish.
 name: ci
@@ -26,7 +27,7 @@ concurrency:
 # CI runs Node 26.x because `brew depends_on "node"` installs the latest Node today; the package floor stays at engines (22.18).
 jobs:
   macos:
-    if: github.event_name == 'workflow_dispatch' && (inputs.jobs == 'all' || inputs.jobs == 'macos')
+    if: (github.event_name == 'workflow_dispatch' && (inputs.jobs == 'all' || inputs.jobs == 'macos')) || (github.event_name != 'workflow_dispatch' && github.repository == 'cocheck-ai/cocheck')
     runs-on: macos-latest
     timeout-minutes: 30
     steps:

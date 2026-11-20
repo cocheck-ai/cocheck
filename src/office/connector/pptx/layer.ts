@@ -96,6 +96,8 @@ export function createPptxLayer(): FormatLayer {
           const noun = ({ chart: "Chart", table: "Table", group: "Group" } as Record<string, string>)[String(r.detail.shapeKind)] ?? "Shape";
           return `${noun} ${r.kind.slice("shape ".length)}`;
         }
+        case "chart changed":
+          return `${r.location}: chart ${(r.detail.changes as string[]).join("; ")}`;
         case "slide moved":
           return `${r.location}: moved from position ${String(r.before)} to ${String(r.after)}`;
         case "link broken":

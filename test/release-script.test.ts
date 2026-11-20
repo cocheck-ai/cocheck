@@ -10,6 +10,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
+// The deny list and the allow file are export-ignored (the deny list names the owner), so a public copy has neither and the gate cannot run.
+const NO_LISTS = existsSync(path.join(ROOT, "scripts", "public-denylist.txt")) && existsSync(path.join(ROOT, "scripts", "public-gate-allow.txt")) ? false : "the deny list and allow file are not in a public copy";
 const mac = process.platform === "darwin";
 const run = (cwd: string, cmd: string, args: string[], env: NodeJS.ProcessEnv = {}) => spawnSync(cmd, args, { cwd, encoding: "utf8", env: { ...process.env, ...env } });
 const git = (cwd: string, ...args: string[]) => {
@@ -98,7 +100,7 @@ const writeRecord = (dir: string, sha: string) => {
 };
 const tags = (dir: string) => git(dir, "tag", "-l");
 
-describe("release.sh and COCHECK_GATE_ALLOW", () => {
+describe("release.sh and COCHECK_GATE_ALLOW", { skip: NO_LISTS }, () => {
   it("a permissive allow file in the caller's environment cannot excuse a planted owner name in the tarball", () => {
     const name = ["To", "mas"].join("");
     const text = `// ${name} said so\n`;
@@ -220,6 +222,9 @@ describe("release.sh on a good release", () => {
     assert.match(text, /git -C .* push \S+ v1\.2\.3/);
     assert.match(text, /cocheck-ai\/homebrew-tap/);
     assert.match(text, /Formula\/cocheck\.rb/);
+    assert.match(text, /~\/code\/cocheck-ai\/homebrew-tap/);
+    assert.match(text, /gh pr create --repo cocheck-ai\/homebrew-tap/);
+    assert.doesNotMatch(text, /git clone|push origin HEAD/);
     assert.equal(run(s.dir, "git", ["remote"]).stdout.trim(), "");
   });
 });
@@ -294,7 +299,7 @@ describe("release.sh needs both native helpers as universal binaries", { skip: !
   }
 });
 
-describe("release.sh judges the whole history before anything runs", () => {
+describe("release.sh judges the whole history before anything runs", { skip: NO_LISTS }, () => {
   // The scratch gate is a wrapper over the real gate, so the real denylist decides. Planted words are built at run time to keep this file gate-clean.
   const realGate = (s: Scratch) => {
     writeFileSync(path.join(s.dir, "scripts", "public-gate.ts"), `import ${JSON.stringify(path.join(ROOT, "scripts", "public-gate.ts"))};\n`);

@@ -6,7 +6,7 @@ import { extname } from "node:path";
 import { diffRow, sha256Hex as hashOf, type FormatLayer, type LayerDiffRow } from "../../../formats/layer.ts";
 import { createFilesLayer as createCoreFilesLayer, diffSequence } from "../../../formats/files/layer.ts";
 import { alignSequences } from "../../../formats/files/align.ts";
-import { differingParts, docxOnlySavedDetailsDiffer } from "../shared/package-media.ts";
+import { differingParts, docxChartChanges, docxOnlySavedDetailsDiffer } from "../shared/package-media.ts";
 import { readDocxModel, readDocxParagraphs, type DocxParagraph } from "./reader.ts";
 
 const isDocx = (file: string): boolean => extname(file).toLowerCase() === ".docx";
@@ -147,6 +147,8 @@ function diffDocx(aBytes: Uint8Array, bBytes: Uint8Array): LayerDiffRow[] {
     entries.push({ pos: pos + 0.5, lists: new Set(), row: diffRow(`paragraph ${pos + 1}`, "paragraph formatting changed", null, null, { afterIndex: pos + 1, changes: [`List renumbered ${renumberedWords(moves)}`] }) });
   }
 
+  // Charts edited in place: what differs in each chart part, in words (a chart is not paragraph text, so the rows above never see it).
+  for (const c of docxChartChanges(aBytes, bBytes)) entries.push({ pos: c.index - 1 + 0.3, lists: new Set(), row: diffRow(`paragraph ${c.index}`, "chart changed", null, null, { afterIndex: c.index, changes: c.lines, ...(c.title !== null ? { title: c.title } : {}) }) });
   const rows = entries.sort((p, q) => p.pos - q.pos).map((e) => e.row);
   for (const [unit, was, now] of [["header", ma.headers, mb.headers], ["footer", ma.footers, mb.footers]] as const) {
     for (const n of [...new Set([...was.keys(), ...now.keys()])].sort((p, q) => p - q)) {
@@ -196,6 +198,11 @@ export function createFilesLayer(opts: { generic?: boolean; wholeOnly?: boolean 
       return [diffRow("file", "binary file changed", hashOf(a), hashOf(b), { bytesBefore: a.length, bytesAfter: b.length })];
     },
 
+    describe(r) {
+      if (r.kind !== "chart changed") return core.describe(r);
+      return `chart${typeof r.detail.title === "string" ? ` '${r.detail.title}'` : ""} changed: ${(r.detail.changes as string[]).join("; ")}`;
+    },
+
     async restate(snapshotPath, row) {
       if (snapshotPath === null || !isDocx(snapshotPath)) return core.restate(snapshotPath, row);
       const withAfter = (after: unknown): LayerDiffRow => ({ ...row, after });
@@ -205,7 +212,7 @@ export function createFilesLayer(opts: { generic?: boolean; wholeOnly?: boolean 
         return withAfter(hashOf(bytes));
       }
       try {
-        if (/^(paragraph formatting changed|picture resized|picture moved)$/.test(row.kind)) return withAfter(row.after);
+        if (/^(paragraph formatting changed|picture resized|picture moved|chart changed)$/.test(row.kind)) return withAfter(row.after);
         const hf = /^(header|footer) (\d+)$/.exec(row.location);
         if (hf) {
           const model = readDocxModel(bytes);

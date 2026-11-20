@@ -138,13 +138,15 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:var(
 .lg[aria-pressed=false] .ldot{background:transparent;box-shadow:inset 0 0 0 1.5px var(--c)}
 .lg:hover{border-color:var(--ink-2)}
 .scroller{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;margin-right:-6px;border-top:1px solid var(--hairline);scrollbar-width:thin;scrollbar-color:var(--before-wash) transparent}
-.tl{position:relative}
+/* the rail is its own layer: a row's hover and selection wash paints under the lane lines, so the railroad stays visible on the highlighted row */
+.tl{position:relative;isolation:isolate}
 svg.graph{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .graph path{fill:none;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
 .graph .faint{opacity:.3}
 .row{position:absolute;left:3px;right:3px;border-radius:var(--r);text-align:left}
 .row.muted .lbl,.row.muted .mark{opacity:.55}
-.row .lbl{position:absolute;left:var(--lbl);right:6px;top:0;bottom:0;display:flex;align-items:center;gap:5px;font-size:var(--fs-body);line-height:1;color:var(--ink);padding-left:2px;white-space:nowrap;min-width:0}
+.row .lbl{position:absolute;left:var(--lbl);right:6px;top:0;bottom:0;display:flex;align-items:center;gap:5px;font-size:var(--fs-body);line-height:var(--lh-body);color:var(--ink);padding-left:2px;white-space:nowrap;min-width:0}
+/* the trimmed parts clip to their line box, so the line box is a full line high: ascenders, accents and descenders never clip */
 /* the verb in secondary ink and never trimmed; the name in primary ink */
 .row .lbl .vb{flex:none;color:var(--ink-2);font-weight:var(--w-reg)}
 .row .lbl .tx{overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -157,7 +159,7 @@ svg.graph{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .chip{flex:none;width:17px;height:17px;border-radius:50%;font-size:var(--fs-cap);font-weight:var(--w-semi);line-height:17px;text-align:center;color:var(--ink);font-style:normal}
 .row:hover::before{background:var(--well)}
 .row[aria-current=true] .lbl .tx{font-weight:var(--w-semi)}
-.row::before{content:'';position:absolute;left:0;right:0;top:0;bottom:0;border-radius:var(--r);z-index:0}
+.row::before{content:'';position:absolute;left:0;right:0;top:0;bottom:0;border-radius:var(--r);z-index:-1}
 .row[aria-current=true]::before{background:var(--selection)}
 .row .mark,.row .lbl,.row .tick{z-index:1}
 /* the lane dot carries the actor; the current row's dot wears a ring */
@@ -170,10 +172,13 @@ svg.graph{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 /* Every row type has a slot of its own. A call header: chevron, name, and when closed "N files" and a dot with a ring */
 .row.hdr .lbl{font-size:var(--fs-cap);font-weight:var(--w-semi);color:var(--ink-2)}
 /* a request is the section header over its steps: its words on one line, caption size, secondary ink */
-.row.req .lbl{top:auto;height:28px;font-size:var(--fs-cap);color:var(--ink-2)}
+.row.req .lbl{top:auto;height:28px;font-size:var(--fs-cap);line-height:var(--lh-cap);color:var(--ink-2)}
 .row.req .rq{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .row.req[aria-current=true] .lbl{color:var(--ink);font-weight:var(--w-semi)}
 .row.req::before{top:auto;height:28px}
+/* a request's node: a hollow ring in secondary ink on the main lane, centred on its words; the current one wears the ring every current node wears */
+.row.req .mark{top:calc(100% - 14px);background:var(--sidebar);box-shadow:inset 0 0 0 2px var(--ink-2)}
+.row.req.now .mark{box-shadow:inset 0 0 0 2px var(--ink-2),0 0 0 2px var(--sidebar),0 0 0 3.5px var(--ink-2)}
 .row.hdr .chev{flex:none;display:block;width:12px;height:12px;margin:0 1px 0 -2px;transition:transform var(--dur-fast) ease-out}
 .row.hdr .chev path{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .row.hdr[aria-expanded=false] .chev{transform:rotate(-90deg)}

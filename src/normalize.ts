@@ -71,6 +71,9 @@ export function normalize(host: HookHost, raw: unknown, eventArg?: string): Norm
   // A helper's event under its own session id names the main session; that is the session the event belongs to.
   const parent = f.parentSession === undefined ? undefined : p[f.parentSession];
   const rawInput = profile.parseToolInput === undefined ? p[f.toolInput] : profile.parseToolInput(p[f.toolInput]);
+  // The tool's own name (a host that joins a namespace onto it has it taken off here, once); every consumer reads this form.
+  const reported = p[f.toolName];
+  const toolName = typeof reported === "string" && profile.toolName !== undefined ? profile.toolName(reported, p) : (reported as string | undefined);
   return {
     v: NORMALIZED_VERSION,
     host,
@@ -78,15 +81,15 @@ export function normalize(host: HookHost, raw: unknown, eventArg?: string): Norm
     eventName,
     session: (typeof parent === "string" && parent !== "" ? parent : p[f.session]) as string,
     cwd: p[f.cwd] as string | undefined,
-    toolName: p[f.toolName] as string | undefined,
+    toolName,
     // The raw input of a file-writing call (a patch is the new file contents) is scrubbed here, once; every consumer reads this form.
-    toolInput: scrubToolInput(p[f.toolName], rawInput),
+    toolInput: scrubToolInput(toolName, rawInput),
     toolResponse: f.toolResponse === undefined ? undefined : p[f.toolResponse],
     toolUseId: p[f.toolUseId] as string | undefined,
     agentId: p[f.agentId] as string | undefined,
     agentType: p[f.agentType] as string | undefined,
     ...(profile.capabilities.launchKey && typeof p.cocheckLaunchKey === "string" && p.cocheckLaunchKey !== "" ? { launchKey: p.cocheckLaunchKey } : {}),
-    failure: scrubbedFailure(profile.failureOf(kind, p), p[f.toolName], rawInput),
+    failure: scrubbedFailure(profile.failureOf(kind, p), toolName, rawInput),
     transcriptPath: p[f.transcriptPath] as string | undefined,
     ...helperTranscript(host, p),
     lastAssistantMessage: p[f.lastAssistantMessage] as string | undefined,

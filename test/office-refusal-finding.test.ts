@@ -98,7 +98,7 @@ const mkNode = (tag = "div"): N => new Proxy(new N(tag), { get: (t, k) => (k in 
 
 const RC = { key: "k1", file: "fred.xlsx", kind: "modified", note: "Changed fred.xlsx.", rowNotes: [], moreNote: null, viewUrl: "/timeline/7/view/k1", secret: false, secretLine: null, failed: null, ask: null, newFile: null };
 async function boot(status: unknown, pictures?: unknown[]): Promise<{ finding: N; caveats: N }> {
-  const view = { change: "k1", file: "fred.xlsx", engine: "", kind: "card", before: [], after: [], boxes: [], caveats: ["After: Microsoft Excel showed a prompt instead of opening this workbook (CoCheck never answers such prompts), so it is not pictured."], ...(status === undefined ? {} : { status }), ...(pictures === undefined ? {} : { pictures }) };
+  const view = { change: "k1", file: "fred.xlsx", engine: "", kind: "card", before: [], after: [], boxes: [], caveats: ["After: Microsoft Excel stopped at a question before opening this workbook (such as a repair, sign-in or update prompt); CoCheck never answers those, so it is not pictured."], ...(status === undefined ? {} : { status }), ...(pictures === undefined ? {} : { pictures }) };
   const model = { task: 7, folder: "work", actors: [{ id: "main", name: "Copilot", chip: "G", color: "#123456" }], stops: [{ id: "chg-k1", label: "fred.xlsx", lane: "main", head: "Copilot changed fred.xlsx", change: RC }] };
   const nodes = new Map<string, N>();
   const byId = (id: string): N => { if (!nodes.has(id)) { const n = mkNode(); n.attrs.id = id; nodes.set(id, n); } return nodes.get(id)!; };
@@ -115,7 +115,7 @@ async function boot(status: unknown, pictures?: unknown[]): Promise<{ finding: N
 }
 
 describe("the page: the app's refusal of the file is a finding on the change", () => {
-  const evidence = "After: Microsoft Excel showed a prompt instead of opening this workbook (CoCheck never answers such prompts), so it is not pictured.";
+  const evidence = "After: Microsoft Excel stopped at a question before opening this workbook (such as a repair, sign-in or update prompt); CoCheck never answers those, so it is not pictured.";
   it("status prompt: one plain line above the pictures, the connector's own words, outside About this view", async () => {
     const p = await boot({ kind: "prompt", evidence });
     assert.equal(p.finding.hidden, false);
@@ -146,11 +146,11 @@ describe("the page: the app's refusal of the file is a finding on the change", (
 
 describe("final pass: the pane of a side the app would not open never says the file is empty", () => {
   const VT = (() => { const g: Record<string, unknown> = {}; g.globalThis = g; vm.runInContext(readFileSync(new URL("../src/timeline/rail/assets/view-table.js", import.meta.url), "utf8"), vm.createContext(g)); return g.CoCheckViewTable as { sceneOf: (d: unknown) => unknown; emptyPaneText: (s: unknown, side: string) => string } })();
-  const evidence = "After: Microsoft Excel showed a prompt instead of opening this workbook (CoCheck never answers such prompts), so it is not pictured.";
+  const evidence = "After: Microsoft Excel stopped at a question before opening this workbook (such as a repair, sign-in or update prompt); CoCheck never answers those, so it is not pictured.";
   const doc = { kind: "grid", caveats: [evidence], pictures: [{ id: "before:g1:0", side: "before", type: "image", label: "Before - Charts!A1:O40", src: "cpic/" + "a".repeat(64), width: 10, height: 10 }, { id: "after:not-opened", side: "after", type: "image", label: "After: not opened", status: { kind: "prompt", evidence } }] };
   it("a prompt on the after side: its empty pane says it was not pictured because of the prompt, not 'There is nothing here'", () => {
     const s = VT.sceneOf(doc);
-    assert.equal(VT.emptyPaneText(s, "after"), "Not pictured: the app showed a prompt instead of opening this file.");
+    assert.equal(VT.emptyPaneText(s, "after"), "Not pictured: the app stopped at a question before opening this file (such as a repair, sign-in or update prompt); CoCheck never answers those.");
   });
   it("refused: the pane says the app did not open it", () => {
     const d = JSON.parse(JSON.stringify(doc)); d.pictures[1].status = { kind: "refused", evidence: "After: Microsoft Word did not open this document." };

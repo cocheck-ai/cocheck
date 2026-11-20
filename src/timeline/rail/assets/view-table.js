@@ -259,7 +259,7 @@
   /* The words in a pane with no picture: a side the app would not open says why; otherwise the file was not there (before) or is not there (after) */
   function emptyPaneText(scene, side) {
     var k = scene && scene.notOpened ? scene.notOpened[side] : undefined;
-    if (k === 'prompt') return 'Not pictured: the app showed a prompt instead of opening this file.';
+    if (k === 'prompt') return 'Not pictured: the app stopped at a question before opening this file (such as a repair, sign-in or update prompt); CoCheck never answers those.';
     if (k === 'refused') return 'Not pictured: the app did not open this file.';
     /* one word for a side that did not exist, not a sentence ("New" for any subject, not "new file") */
     return side === 'before' ? 'New' : 'Deleted';

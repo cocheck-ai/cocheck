@@ -26,6 +26,8 @@ import { structureIssues } from "../issues.ts";
 export const CROP_PAD_PT = 12;
 /** Pixels a PDF point: the helper's fixed scale. */
 export const PX_PER_PT = 2;
+/** The zoom the drivers set on the page (office-macos.ts, office-win.ps1): whole percent, 10 to 400, read back before the save. */
+export const printZoom = (z: number): number => Math.max(10, Math.min(400, Math.round(z)));
 /** The longest print-area text one target sets (Excel's own limit is 255 characters). */
 const MAX_AREA_TEXT = 240;
 
@@ -148,7 +150,7 @@ export async function regionPictures(side: "before" | "after", jobs: TargetJob[]
         ? m.area.boxes.map((b) => ({ change: b.change, why: "not marked: the picture could not be read" }))
         : !sameSize
         ? m.area.boxes.map((b) => ({ change: b.change, why: "not marked: the page text and the page picture disagree on the page's size" }))
-        : placePrintBoxes({ pixels: px, headings: h, region: m.area.rect, sheet: sheetOf(job.sheet), pages: m.more + 1, boxes: m.area.boxes });
+        : placePrintBoxes({ pixels: px, headings: h, region: m.area.rect, sheet: sheetOf(job.sheet), pages: m.more + 1, boxes: m.area.boxes, pxPerPt: PX_PER_PT * printZoom(job.target.zoom) / 100 });
       for (const p of placed) {
         if ("rect" in p) look.boxes.push({ change: p.change, picture: id, rect: p.rect, ...(p.clipped ? { clipped: true as const } : {}) });
         else look.unplaced.push({ change: p.change, side, why: p.why });

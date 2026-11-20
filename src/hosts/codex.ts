@@ -242,6 +242,27 @@ function codexFailure(kind: Parameters<typeof claudeShapeFailure>[0], p: Record<
   return lines.length > 0 && lines.every((l) => SHELL_ERROR_LINE.test(l)) ? { raw: lines.join("\n"), interrupted: false, inferred: true as const } : undefined;
 }
 
+/**
+ * Codex's own tool namespaces, as its session log names them (`"name":"send_message","namespace":"collaboration"`). Its hook payload has no
+ * namespace field and joins the two with no separator (`collaborationsend_message`), so a reported name that starts with one of these is split.
+ */
+const CODEX_TOOL_NAMESPACES = ["collaboration", "agent"] as const;
+
+/**
+ * A Codex tool's own name: the reported name with its namespace taken off. The namespace is the payload's own field when it has one
+ * (`tool_namespace` or `namespace`), else one of Codex's own namespaces; a separator after it (`.`, `:`, `/`) goes too. A name that is only a
+ * namespace, or has no own name after it, is left whole, as is every other name (MCP tools keep their `mcp__server__tool` form).
+ */
+export function codexToolName(reported: string, payload: Record<string, unknown> = {}): string {
+  const given = [payload.tool_namespace, payload.namespace].find((v): v is string => typeof v === "string" && v !== "");
+  for (const ns of given !== undefined ? [given] : CODEX_TOOL_NAMESPACES) {
+    if (!reported.startsWith(ns)) continue;
+    const own = reported.slice(ns.length).replace(/^[.:/]/, "");
+    if (/^[a-z][a-z0-9_]*$/.test(own)) return own;
+  }
+  return reported;
+}
+
 export const codex: HostProfile = {
   key: "codex",
   displayName: "Codex",
@@ -250,6 +271,7 @@ export const codex: HostProfile = {
   eventKinds: SHARED_EVENT_KINDS,
   capabilities: { failureEvent: false, argvTag: false, helperSessions: false, launchKey: false, readsForeignHooks: false },
   fields: { ...SHARED_FIELDS },
+  toolName: codexToolName,
   failureOf: codexFailure,
   displayText: codexDisplayText,
   extraOf: claudeShapeExtra,

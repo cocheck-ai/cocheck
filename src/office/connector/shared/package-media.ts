@@ -3,6 +3,7 @@ import { posix } from "node:path";
 import { unzipSync } from "fflate";
 import { matchByIdentity, matchDeckSlides } from "../pptx/diff.ts";
 import { readDeck } from "../pptx/reader.ts";
+import { chartDiff, noiseWords, parseChart, textOf as treeText, type ChartDiff, type ChartTree, type Skip } from "./chart-diff.ts";
 import { canonicalOrRaw, canonicalXml } from "./ooxml-names.ts";
 import { quietApp, quietCore } from "./docprops-noise.ts";
 
@@ -224,10 +225,12 @@ function seriesRanges(xml: string): string[] {
 const q = (s: string | null): string => (s === null ? "none" : `"${s}"`);
 
 /**
- * What differs between a chart's two XMLs, in words, from the parts a reader would name: its title, an axis title, the kind of plot, the
- * series. Undefined when nothing known differs. A writer that only renames prefixes or reorders attributes differs in none of these.
+ * What differs between a chart's two XMLs, in words. The curated sentences (title, axis titles, plot type, series ranges) come first; every
+ * other difference in the chart part comes from the structural diff (`chart-diff.ts`), so a change outside the curated set is still named.
+ * A part whose only differences are ignored content (cached values, ids) has no lines and says which in `noise`; prefixes, attribute order
+ * and whitespace are no difference at all.
  */
-export function xlsxChartDetail(was: string, now: string): string | undefined {
+export function chartChangeWords(was: string, now: string): ChartDiff {
   const bits: string[] = [];
   const [tw, tn] = [chartTitle(was), chartTitle(now)];
   if (tw !== tn) bits.push(`title ${q(tw)} \u2192 ${q(tn)}`);
@@ -240,16 +243,42 @@ export function xlsxChartDetail(was: string, now: string): string | undefined {
     }
   }
   const [kw, kn] = [plotKinds(was).join(" + "), plotKinds(now).join(" + ")];
-  if (kw !== kn) bits.push(`type ${kw || "none"} \u2192 ${kn || "none"}`);
+  const typed = kw !== kn;
+  if (typed) bits.push(`type ${kw || "none"} \u2192 ${kn || "none"}`);
   const [sw, sn] = [seriesRanges(was), seriesRanges(now)];
   const gone = sw.filter((r) => !sn.includes(r));
   const came = sn.filter((r) => !sw.includes(r));
+  const ranged = gone.length > 0 || came.length > 0;
   if (gone.length > 0 && came.length > 0 && sw.length === sn.length) bits.push(`series range ${gone.join(", ")} \u2192 ${came.join(", ")}`);
   else {
     if (came.length > 0) bits.push(`${came.length === 1 ? "series" : `${came.length} series`} added (${came.join(", ")})`);
     if (gone.length > 0) bits.push(`${gone.length === 1 ? "series" : `${gone.length} series`} removed (${gone.join(", ")})`);
   }
-  return bits.length === 0 ? undefined : bits.join("; ");
+  let a: ChartTree, b: ChartTree;
+  try {
+    [a, b] = [parseChart(was), parseChart(now)];
+  } catch {
+    // an unreadable chart part: the curated sentences, else a plain statement that it differs (never nothing)
+    return { lines: bits.length > 0 ? bits : was === now ? [] : ["its chart part changed (unreadable)"], noise: [] };
+  }
+  // what a curated sentence already said is not said twice
+  const skip: Skip = (el, path, pair) => {
+    const parent = path[path.length - 1];
+    if (el.name === "title" && (parent?.name === "chart" || /^(cat|val|date|ser)Ax$/.test(parent?.name ?? ""))) return pair.a === undefined || pair.b === undefined;
+    if (el.name === "tx" && parent?.name === "title") return treeText(pair.a) !== treeText(pair.b);
+    if (typed && parent?.name === "plotArea" && /Chart$/.test(el.name)) return true;
+    if (ranged && el.name === "ser") return pair.a === undefined || pair.b === undefined;
+    if (ranged && el.name === "f" && /^(val|yVal)$/.test(path[path.length - 2]?.name ?? "")) return true;
+    return false;
+  };
+  const d = chartDiff(a, b, skip);
+  return { lines: [...bits, ...d.lines], noise: bits.length > 0 ? [] : d.noise };
+}
+
+/** `chartChangeWords` as one detail string: the named differences, the ignored-only sentence, or undefined when the parts mean the same chart. */
+export function xlsxChartDetail(was: string, now: string): string | undefined {
+  const d = chartChangeWords(was, now);
+  return d.lines.length > 0 ? d.lines.join("; ") : d.noise.length > 0 ? noiseWords(d.noise) : undefined;
 }
 
 // ---- docx: pictures and charts, with the caption beside them ----
@@ -274,10 +303,30 @@ function docxItems(parts: Parts): Array<Item & { index: number }> {
       const next = paragraphs[i + 1];
       const nextIsCaption = next !== undefined && words[i + 1] !== "" && (/<w:pStyle\s[^>]*w:val="[^"]*caption/i.test(next) || CAPTION_TEXT.test(words[i + 1]!));
       const caption = words[i] !== "" ? words[i]! : nextIsCaption ? words[i + 1]! : null;
-      items.push({ kind: f.kind, hash: partHash(parts, target), title: caption, place: caption ?? "", index: i + 1 });
+      const xml = f.kind === "chart" ? text(parts, target) : null;
+      items.push({ kind: f.kind, hash: partHash(parts, target), title: caption, place: caption ?? "", index: i + 1, ...(xml !== null ? { xml } : {}) });
     }
   });
   return items;
+}
+
+/**
+ * Charts of a document edited in place, with what differs in words (the shared chart diff). Charts pair in document order when both sides
+ * hold the same number of them; a chart whose part differs only in ignored content (cached values, ids) has no entry. Empty for an unreadable package.
+ */
+export function docxChartChanges(a: Uint8Array, b: Uint8Array): Array<{ index: number; title: string | null; lines: string[] }> {
+  try {
+    const [x, y] = [docxItems(unpack(a)).filter((it) => it.kind === "chart"), docxItems(unpack(b)).filter((it) => it.kind === "chart")];
+    if (x.length !== y.length) return [];
+    return y.flatMap((now, k) => {
+      const was = x[k]!;
+      if (was.hash === now.hash || was.xml === undefined || now.xml === undefined) return [];
+      const { lines } = chartChangeWords(was.xml, now.xml);
+      return lines.length === 0 ? [] : [{ index: now.index, title: now.title, lines }];
+    });
+  } catch {
+    return [];
+  }
 }
 
 // ---- pptx: slides whose design or media changed ----
@@ -378,7 +427,7 @@ function unmatched(a: string[], b: string[]): number {
 const xmlName = (xml: string, tag: string): string | null => new RegExp(`<${tag}\\s[^>]*?name="([^"]*)"`).exec(xml)?.[1] ?? null;
 const inner = (xml: string, tag: string): string => new RegExp(`<${tag}[\\s>][\\s\\S]*?</${tag}>`).exec(xml)?.[0].replace(/\sname="[^"]*"/, "") ?? "";
 
-/** The precise sentence for one changed chart, from its two XMLs; "a chart changed" only when no known difference explains it. */
+/** The precise sentence for one changed chart, from its two XMLs: the named differences from the shared chart diff; "a chart changed" alone only when nothing it draws differs. */
 function chartSentence(was: string | null, now: string | null): string {
   if (was === null || now === null) return "a chart changed";
   const markers = (x: string): string[] => x.match(/<c:marker>[\s\S]*?<\/c:marker>/g) ?? [];
@@ -390,7 +439,8 @@ function chartSentence(was: string | null, now: string | null): string {
     const rest = mw.every((m, k) => m.replace(/<a:prstDash[^>]*\/>/g, "") === mn[k]!.replace(/<a:prstDash[^>]*\/>/g, ""));
     if (dashed.length > 0 && rest) return `line-marker outline dash: ${dashed[0]![0]} \u2192 ${dashed[0]![1]} (the line itself is unchanged)`;
   }
-  return "a chart changed";
+  const { lines } = chartChangeWords(was, now);
+  return lines.length > 0 ? `a chart changed: ${lines.join("; ")}` : "a chart changed";
 }
 
 /** The deck-level sentence for a changed theme: what differs between the two theme parts and which slides draw from it. */
@@ -475,9 +525,9 @@ export function mediaChanges(ext: string, a: Uint8Array | null, b: Uint8Array): 
       const where = (it: Item): string => `${it.place}!chart`;
       // A chart on the same sheet whose XML differs was edited in place (a writer may renumber its part; the part name is never compared). One that differs only in what this reader does not name (prefixes, ordering, cached values) has no row.
       const changed = paired.flatMap((p): MediaChange[] => {
-        const detail = xlsxChartDetail(p.from.xml ?? "", p.to.xml ?? "");
-        // No known difference: a rewrite's prefixes, ordering, or cached values that follow a cell edit. The cell rows carry those, so no chart row.
-        return detail === undefined ? [] : [{ location: where(p.to), kind: "chart changed", title: p.to.title, detail }];
+        const { lines } = chartChangeWords(p.from.xml ?? "", p.to.xml ?? "");
+        // Nothing the chart draws differs: a rewrite's prefixes, ordering, ids, or cached values that follow a cell edit. The cell rows carry those, so no chart row.
+        return lines.length === 0 ? [] : [{ location: where(p.to), kind: "chart changed", title: p.to.title, detail: lines.join("; ") }];
       });
       return [...rowsOf(removed, added, where), ...moved.map((m): MediaChange => ({ location: where(m.to), kind: "chart moved", title: m.to.title, from: m.from.place })), ...changed];
     }
@@ -590,13 +640,21 @@ function onlyAllowedDiffer(a: Uint8Array, b: Uint8Array, cap: number, allowed: (
 /** The core properties part and its app properties sibling, in the package's properties folder: what any plain re-save rewrites. */
 const PROPS_DIR = "docProps";
 /**
- * A properties part differs only in its per-save fields (modified time, last modified by, revision; app's TotalTime,
- * application and version, the parts lists): `quietCore` and `quietApp`, the one allow-list (docprops-noise.ts). A title, subject, author,
- * keywords or company change is content and is never set aside.
+ * The creation time, set aside only by the re-save check: a file written again from scratch with the same body (a script regenerating it)
+ * gets a fresh one, and when every other part is byte-identical that is still a re-save. It stays out of the shared noise list, because
+ * a reader that reports core properties (the Excel layer) still shows it.
+ */
+const CREATED = /<dcterms:created\b[^>]*?(?:\/>|>[\s\S]*?<\/dcterms:created\s*>)/g;
+const quietResaveCore = (text: string): string => quietCore(text).replace(CREATED, "<dcterms:created/>");
+
+/**
+ * A properties part differs only in its per-save fields (modified time, last modified by, revision, and for the re-save check the creation
+ * time; app's TotalTime, application and version, the parts lists): `quietCore` and `quietApp`, the one allow-list (docprops-noise.ts), plus
+ * `CREATED`. A title, subject, author, keywords or company change is content and is never set aside.
  */
 const onlySavedFieldsDiffer = (n: string, x: Uint8Array, y: Uint8Array): boolean => {
   const text = (u: Uint8Array): string => Buffer.from(u).toString("utf8");
-  if (n === `${PROPS_DIR}/core.xml`) return quietCore(text(x)) === quietCore(text(y));
+  if (n === `${PROPS_DIR}/core.xml`) return quietResaveCore(text(x)) === quietResaveCore(text(y));
   if (n === `${PROPS_DIR}/app.xml`) return quietApp(text(x)) === quietApp(text(y));
   return false;
 };

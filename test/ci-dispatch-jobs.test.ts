@@ -13,12 +13,12 @@ function jobIf(job: string): string | undefined {
   return m[1].match(/^    if: (.*)$/m)?.[1];
 }
 
-function runs(job: string, event: string, jobs: string | null): boolean {
+function runs(job: string, event: string, jobs: string | null, repo = "owner/private-repo"): boolean {
   const expr = jobIf(job);
   if (expr === undefined) return true; // no condition: always runs
-  assert.match(expr, /^[\w.\s'=!&|()]+$/, "expression stays in the subset this test evaluates");
-  const js = expr.replace(/github\.event_name/g, "ev").replace(/inputs\.jobs/g, "jb");
-  return Boolean(new Function("ev", "jb", `return (${js});`)(event, jobs));
+  assert.match(expr, /^[\w.\s'=!&|()\/-]+$/, "expression stays in the subset this test evaluates");
+  const js = expr.replace(/github\.event_name/g, "ev").replace(/inputs\.jobs/g, "jb").replace(/github\.repository/g, "rp");
+  return Boolean(new Function("ev", "jb", "rp", `return (${js});`)(event, jobs, repo));
 }
 
 test("workflow_dispatch declares the jobs choice input, default all", () => {
@@ -33,6 +33,10 @@ test("push and pull_request: windows runs, macos and ubuntu never do (must not: 
     assert.equal(runs("macos", ev, null), false, `macos on ${ev}`);
     assert.equal(runs("ubuntu", ev, null), false, `ubuntu on ${ev}`);
   }
+});
+
+test("on push and pull_request macos runs in the public repository only", () => {
+  for (const ev of ["push", "pull_request"]) assert.equal(runs("macos", ev, null, "cocheck-ai/cocheck"), true, `macos on ${ev} in the public repo`);
 });
 
 test("workflow_dispatch: each choice runs exactly the named job, all runs every job", () => {

@@ -114,7 +114,15 @@ describe("rail rows", () => {
     const under = (h: N, next: N | undefined) => p.rows().filter((r) => !has(r, "req") && top(r) > top(h) && (!next || top(r) < top(next))).map((r) => r.textContent);
     assert.deepEqual(under(heads[0]!, heads[1]).filter((t) => /Changed/.test(t)).length, 2, "the first request's two changes sit under its header");
     assert.ok(under(heads[1]!, undefined).some((t) => t.includes("for_the_board")), "the second request's change sits under its header");
-    assert.ok(!cls(heads[0]!, "mark"), "a header has no lane dot");
+    // a request header carries the request's own node on the rail: a hollow ring (`rqm`), decorative, on a lane, never a step's dot or a group ring
+    for (const h of heads) {
+      const node = cls(h, "mark");
+      assert.ok(node !== undefined, "a request header carries its node on the rail");
+      assert.ok(has(node!, "rqm"), "the node has the request style (a hollow ring)");
+      assert.ok(!has(node!, "fail") && !has(node!, "hring"), "never a failure dot or a group ring");
+      assert.equal(node!.attrs["aria-hidden"], "true", "the node is decorative");
+      assert.match(String(node!.style.left), /^\d+(\.\d+)?px$/, "the node sits on a lane");
+    }
     heads[1]!.click(); await p.settle();
     assert.equal(heads[1]!.attrs["aria-current"] ?? p.row("Request 2").attrs["aria-current"], "true", "a header is a stop that can be selected");
     assert.equal(p.rows().flatMap((r) => r.descendants()).filter((n) => has(n, "chip")).length, 0, "no letter chips on rows");

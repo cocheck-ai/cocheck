@@ -158,16 +158,19 @@ describe("picture tier", () => {
     assert.deepEqual([gone.tier, /no longer in the store/.test(gone.fingerprint!.note)], ["fingerprint", true]);
   });
 
-  it("a created file has no before; its content is the changed region", async () => {
+  // A one-sided picture draws plain, like a created text or PDF file: the whole file is new (or gone), so there is nothing to box; its own side gives the size.
+  it("a created file has no before; it draws plain, with no regions and its own size", async () => {
     const w = await world({ b: page([[30, 30, 40, 10]]) });
     const g = (await pictureTier(w.input(null, "b")))!;
-    assert.deepEqual(g.picture, { before: null, after: w.shas.b, width: 200, height: 120, regions: [{ x: 30, y: 30, w: 40, h: 10 }] });
+    assert.deepEqual(g.picture, { before: null, after: w.shas.b, width: 200, height: 120, regions: [] });
+    assert.equal(g.label, PICTURE_LABEL);
   });
 
-  it("a deleted file has no after; its content is the changed region", async () => {
+  it("a deleted file has no after; it draws plain, with no regions and its own size", async () => {
     const w = await world({ a: page([[30, 30, 40, 10]]) });
     const g = (await pictureTier(w.input("a", null)))!;
-    assert.deepEqual(g.picture, { before: w.shas.a, after: null, width: 200, height: 120, regions: [{ x: 30, y: 30, w: 40, h: 10 }] });
+    assert.deepEqual(g.picture, { before: w.shas.a, after: null, width: 200, height: 120, regions: [] });
+    assert.equal(g.label, PICTURE_LABEL);
   });
 
   it("a created fingerprint has a null before, a deleted one a null after", async () => {

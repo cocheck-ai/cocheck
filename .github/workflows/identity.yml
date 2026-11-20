@@ -1,0 +1,73 @@
+# Commit identity check for the public repository. Every commit a pull request brings (and every commit pushed to main) must not carry an
+# author or committer email from the deny list. The list lives only in the repository secret IDENTITY_DENY_EMAILS, never in the tree:
+# one entry per line (or comma-separated), each an exact email or `@domain` for a whole domain, compared case-insensitively.
+# Everyone else passes: GitHub noreply addresses, the export bot and outside contributors.
+# pull_request_target runs this file as it is on main, so a pull request cannot change its own check, and the secret is available for pull
+# requests from forks. Nothing from the pull request is checked out or run: the commits are read through the API.
+# The log names only the commit and the field that matched, never the email. An unset secret fails the check instead of passing it.
+# The job runs only in the public repository; elsewhere it is skipped, since the deny-list secret lives there.
+name: identity
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  emails:
+    if: github.repository == 'cocheck-ai/cocheck'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check commit emails against the deny list
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DENY: ${{ secrets.IDENTITY_DENY_EMAILS }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: |
+          set -euo pipefail
+          entries="$(printf '%s\n' "$DENY" | tr ',' '\n' | tr -d ' \t\r' | tr '[:upper:]' '[:lower:]' | grep -v '^$' || true)"
+          if [ -z "$entries" ]; then
+            echo "::error::the IDENTITY_DENY_EMAILS secret is not set or empty; the check refuses to pass unchecked"
+            exit 1
+          fi
+          while IFS= read -r e; do echo "::add-mask::$e"; done <<< "$entries"
+
+          zero=0000000000000000000000000000000000000000
+          list="$RUNNER_TEMP/commits.tsv"
+          fields='[.sha, (.commit.author.email // ""), (.commit.committer.email // "")] | @tsv'
+          if [ "$EVENT" = pull_request_target ]; then
+            gh api --paginate "repos/$REPO/pulls/$PR/commits" --jq ".[] | $fields" > "$list"
+            # The pull request commits endpoint lists at most 250 commits.
+            if [ "$(wc -l < "$list")" -ge 250 ]; then echo "::error::250 or more commits; split the pull request so every commit can be checked"; exit 1; fi
+          elif [ "$BEFORE" = "$zero" ]; then
+            gh api "repos/$REPO/commits/$AFTER" --jq "$fields" > "$list"
+          else
+            gh api "repos/$REPO/compare/$BEFORE...$AFTER" --jq ".commits[] | $fields" > "$list"
+            if [ "$(wc -l < "$list")" -ge 250 ]; then echo "::error::250 or more commits in one push; the compare endpoint lists no more"; exit 1; fi
+          fi
+
+          bad=0
+          while IFS=$'\t' read -r sha author committer; do
+            for field in author committer; do
+              email="$(printf '%s' "${!field}" | tr '[:upper:]' '[:lower:]')"
+              while IFS= read -r e; do
+                case "$e" in
+                  @*) [ "${email%"$e"}" != "$email" ] && hit=1 || hit=0 ;;
+                  *) [ "$email" = "$e" ] && hit=1 || hit=0 ;;
+                esac
+                if [ "$hit" = 1 ]; then echo "::error::commit $sha: the $field email is on the deny list"; bad=1; fi
+              done <<< "$entries"
+            done
+          done < "$list"
+          echo "checked $(wc -l < "$list") commit(s)"
+          exit "$bad"

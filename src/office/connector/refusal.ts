@@ -20,7 +20,7 @@ export interface RefusalWords {
 export function refusalWords(app: Pick<OfficeApp, "name" | "noun">, refused: ReadonlyMap<Side, Refusal>, sides: readonly Side[], pictured: boolean): RefusalWords {
   if (refused.size === 0) return { caveats: [], standIns: [] };
   const all = sides.length > 1 && sides.every((s) => refused.get(s)?.kind === "prompt");
-  if (all) return { caveats: [`${app.name} showed a prompt on every ${app.noun} CoCheck asked it to open (before and after), so neither is pictured. The prompt may be ${app.name}'s own (sign-in, licence, update), not a problem with these files.`], standIns: [] };
+  if (all) return { caveats: [`${app.name} stopped at a question on every ${app.noun} CoCheck asked it to open (before and after); CoCheck never answers those, so neither is pictured. The question may be ${app.name}'s own (such as a sign-in, licence or update prompt), not a problem with these files.`], standIns: [] };
   const said = [...refused].map(([side, r]) => ({ side, r, line: `${cap(side)}: ${r.why}.` }));
   const caveats = said.map((x) => x.line);
   if (!pictured) {

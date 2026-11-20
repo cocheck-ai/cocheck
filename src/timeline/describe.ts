@@ -309,6 +309,7 @@ export function translateTool(tool: unknown, input: unknown, named: string[] = [
     case "ExitPlanMode":
       return "Presented its plan";
     case "SendMessage":
+    case "send_message":
       return "Sent a message";
   }
   const mcp = /^mcp__([^_]+(?:_[^_]+)*)__(.+)$/.exec(t);
