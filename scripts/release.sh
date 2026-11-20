@@ -144,7 +144,10 @@ Release $tag is cut locally on $head. Nothing was pushed or published.
 Run these yourself, in this order (docs/release.md has the one-time setup first):
   git -C "$root" push $remote $tag
   npm publish $tarball
-  git clone git@github.com:cocheck-ai/homebrew-tap.git <tap-clone>
-  mkdir -p <tap-clone>/Formula && cp "$out/cocheck.rb" <tap-clone>/Formula/cocheck.rb
-  git -C <tap-clone> add Formula/cocheck.rb && git -C <tap-clone> commit -m "cocheck $version" && git -C <tap-clone> push origin HEAD
+  tap=~/code/cocheck-ai/homebrew-tap   # the existing checkout; its remote uses the github-cocheck SSH alias
+  git -C "\$tap" switch main && git -C "\$tap" pull --ff-only && git -C "\$tap" switch -c cocheck-$version
+  mkdir -p "\$tap/Formula" && cp "$out/cocheck.rb" "\$tap/Formula/cocheck.rb"
+  git -C "\$tap" add Formula/cocheck.rb && TZ=UTC git -C "\$tap" commit -m "cocheck $version"
+  git -C "\$tap" push -u origin cocheck-$version
+  GH_TOKEN=\$(gh auth token --user cocheckai) gh pr create --repo cocheck-ai/homebrew-tap --head cocheck-$version --base main --title "cocheck $version" --body "Formula for cocheck $version."
 DONE

@@ -149,7 +149,7 @@ for (const app of apps) {
   });
 }
 
-it("PowerPoint's hang is worded in the reviewer's terms", () => assert.equal(OFFICE_APPS.powerpoint.hangWhy, "PowerPoint would ask to repair this file"));
+it("PowerPoint's hang is worded in the reviewer's terms", () => assert.equal(OFFICE_APPS.powerpoint.hangWhy, "Microsoft PowerPoint stopped answering on this presentation and was stopped; it may have stopped at a question (such as a repair, sign-in or update prompt), which CoCheck never answers"));
 
 it("no driver on this OS: the change list with a caveat, never an empty picture", async () => {
   const s = setup();

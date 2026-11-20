@@ -274,13 +274,17 @@ export async function pictureTier(i: PictureInput): Promise<Generic | null> {
     return bytes === null ? null : decodePng(bytes);
   };
   const [b, a] = /\.png$/i.test(i.filePath) ? await Promise.all([decode(i.before), decode(i.after)]) : [null, null];
-  const d = b !== null && a !== null ? diffPixels(b, a) : null;
+  // A created or deleted picture draws plain, like a created text or PDF file: with one side missing the whole image is the change, so there is
+  // nothing to box and no pixel diff. Its own side is still decoded for its size.
+  const oneSided = i.before === null || i.after === null;
+  const own = oneSided ? (i.before === null ? a : b) : null;
+  const d = !oneSided && b !== null && a !== null ? diffPixels(b, a) : null;
   const regions = d === null || d.count === 0 ? [] : regionsOf(d);
   const identical = d !== null && d.count === 0;
   const out: Generic = {
     tier: "picture",
     label: identical ? `${PICTURE_LABEL}. ${NOT_VISIBLE}.` : PICTURE_LABEL,
-    picture: { before: i.before, after: i.after, width: d?.w ?? 0, height: d?.h ?? 0, regions, ...(identical ? { note: NOT_VISIBLE } : {}) },
+    picture: { before: i.before, after: i.after, width: d?.w ?? own?.w ?? 0, height: d?.h ?? own?.h ?? 0, regions, ...(identical ? { note: NOT_VISIBLE } : {}) },
   };
   if (memo.size >= MEMO_MAX) memo.delete(memo.keys().next().value!);
   memo.set(key, out);

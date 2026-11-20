@@ -41,6 +41,12 @@ export function profileOf(key: string): HostProfile {
   return p;
 }
 
+/** A stored tool name read the way the hook records it today: the host's own name for the tool (see `HostProfile.toolName`). */
+export function toolNameOf(host: string | null | undefined, reported: string): string {
+  const p = findProfile(host);
+  return p?.toolName === undefined ? reported : p.toolName(reported, {});
+}
+
 /** The host a task is assumed to run under when nothing says otherwise: the default main lane, and the folder variable the hook falls back to. */
 export const defaultProfile = (): HostProfile => claude;
 

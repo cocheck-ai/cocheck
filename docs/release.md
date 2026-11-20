@@ -25,7 +25,7 @@ A release is an npm package. `npm publish` puts the tarball on the npm registry 
 4. It prints three commands. Run them in this order:
    - push the tag: `git -C <checkout> push public vX.Y.Z`
    - publish that exact file: `npm publish <$out>/cocheck-X.Y.Z.tgz`. The formula's `sha256` is the hash of this file, so do not repack. A different file breaks every `brew install`.
-   - copy `$out/cocheck.rb` to `Formula/cocheck.rb` in a clone of the tap, commit and push it.
+   - update the tap through a pull request: in the existing checkout `~/code/cocheck-ai/homebrew-tap` (its remote uses the `github-cocheck` SSH alias), create a branch, copy `$out/cocheck.rb` to `Formula/cocheck.rb`, commit with `TZ=UTC`, push the branch, and open a PR with `GH_TOKEN=$(gh auth token --user cocheckai) gh pr create --repo cocheck-ai/homebrew-tap`. Merge it once the tap's checks pass; do not push to `main`.
 5. Check as a user would, on a machine with a clean PATH: `brew install cocheck-ai/tap/cocheck`, then `cocheck --version`.
 
 If a release is wrong before anything is published, delete the tag with `git tag -d vX.Y.Z`. After `npm publish`, cut a new version instead: npm never accepts the same version twice.

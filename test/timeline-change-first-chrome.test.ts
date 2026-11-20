@@ -89,8 +89,10 @@ describe("change-first focus measured in Chrome", { skip: CHROME ? false : "no C
     await send("Runtime.enable"); await send("Page.enable");
     await send("Page.addScriptToEvaluateOnNewDocument", { source: "window.__csp=[];document.addEventListener('securitypolicyviolation',e=>window.__csp.push(e.violatedDirective+' '+e.blockedURI.slice(0,40)))" });
     await send("Emulation.setDeviceMetricsOverride", { width: 1600, height: 1000, deviceScaleFactor: 1, mobile: false });
-    // the page follows prefers-color-scheme; the colours below are the light scheme's, whatever the machine is set to
-    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }] });
+    // the page follows prefers-color-scheme and prefers-reduced-motion; the colours below are the light scheme's and the motion is full motion's,
+    // whatever the machine is set to (a machine with Reduce Motion on, as a CI image may be, would otherwise turn every animation off).
+    // setEmulatedMedia replaces the whole list, so every call below names both.
+    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }, { name: "prefers-reduced-motion", value: "no-preference" }] });
     await send("Page.navigate", { url: base });
     let n = 0;
     for (let i = 0; i < 60 && !n; i++) { await wait(200); n = await ev(`document.querySelectorAll('.bx.cf').length`); }
@@ -246,10 +248,10 @@ describe("change-first focus measured in Chrome", { skip: CHROME ? false : "no C
     assert.deepEqual(clean, { bx: true, cm: 0, hl: true });
     assert.deepEqual(await ev("window.__csp"), [], "no CSP violation anywhere");
     // the same box checks under the dark scheme (last, so the scheme switch cannot touch the pixel comparisons above)
-    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] }); await wait(300);
+    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }, { name: "prefers-reduced-motion", value: "no-preference" }] }); await wait(300);
     boxChecks(await ev(`[...document.querySelectorAll('.bx.cf')].map(e=>{const cs=getComputedStyle(e);return {side:e.dataset.side,ol:cs.outlineStyle,ow:cs.outlineWidth,oc:cs.outlineColor,bg:cs.backgroundColor,bi:cs.backgroundImage,sh:cs.boxShadow}})`), "dark");
     // stepping to a change pulses its boxes
-    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }] }); await wait(200);
+    await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }, { name: "prefers-reduced-motion", value: "no-preference" }] }); await wait(200);
     await ev(`document.getElementById('cleanbtn').click()`); await wait(900);
     await ev(`window.CoCheckFocus.focusChange('c2')`);
     assert.deepEqual(await ev(`[...document.querySelectorAll('.bx.cf.cf-pulse')].map(e=>e.dataset.change+':'+getComputedStyle(e).animationName)`), ["c2:cfpulse"], "the stepped-to box pulses");

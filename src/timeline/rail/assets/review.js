@@ -608,7 +608,10 @@
         kids.push(el('span', { class: 'sent', role: 'img', title: SENT_TEXT, 'aria-label': SENT_TEXT }, plane));
       }
       var mark = null;
-      if (!s.request && (!s.hdr || !open)) {
+      if (s.request) {
+        /* a request is something the person did: a hollow node on the lane it led (the main lane when it names none), so the rail shows a stop there */
+        mark = el('span', { class: 'mark rqm', 'aria-hidden': 'true' }); mark.style.left = (a ? cx(a) : laneX(null)) + 'px';
+      } else if (!s.hdr || !open) {
         mark = el('span', { class: 'mark' + (s.hdr ? ' hring' : s.runs ? ' fail' : '') });
         mark.style.left = (a ? cx(a) : originX) + 'px'; mark.style.setProperty('--c', a ? a.color : 'var(--ink-3)');
       }

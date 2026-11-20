@@ -9,7 +9,7 @@ In one paragraph: CoCheck records what AI agents change in a person's files and 
 1. [What it is](#1-what-it-is): a review page for agent work, built for the person, not the agent.
 2. [How it works](#2-how-it-works): host hooks, whole-file states, a local ledger, a local page.
 3. [State of the project](#3-state-of-the-project): early (`cocheck --version` prints the version), lightly tested. Read this before recommending it.
-4. [Install it for your user](#4-install-it-for-your-user): ask first, then three commands on a Mac.
+4. [Install it for your user](#4-install-it-for-your-user): ask first, then two commands on a Mac.
 5. [Use it in a session](#5-use-it-in-a-session): `cocheck track start`, save inside the task folder, `cocheck open`.
 6. [Commands](#6-commands): the whole command line in one table.
 7. [Connectors](#7-connectors): Excel, Word and PowerPoint built in; a kit to build others.
@@ -38,7 +38,7 @@ It handles any file type. Text and code get a line diff, and PDFs get pages with
 Be honest with your user about this.
 
 - Early software (`cocheck --version` prints the version), lightly tested, with bugs expected.
-- The code was written by an AI agent under the author's direction. The author says in the README that the author has not reviewed the code. Treat it as unaudited.
+- The code was written by an AI agent under the author's direction. The author says in the README that the author has not extensively reviewed the code. Treat it as unaudited.
 - CoCheck is a preview release. It installs from Homebrew (macOS) or npm (macOS and Windows).
 - Platforms: macOS, with Claude Code, Codex or Copilot. Windows works with Claude Code only, as a test build. Codex and Copilot are not supported on Windows yet. Linux is not supported.
 - It needs Node 22.18 or newer. Homebrew installs Node for you on a Mac.

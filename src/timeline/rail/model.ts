@@ -270,6 +270,12 @@ const VERB: Record<Change["kind"], string> = { created: "created", modified: "ch
 /** the side text of a re-save the claiming connector vouches changed nothing. */
 export const SAVED_AGAIN_NOTHING_CHANGED = "saved again, nothing changed";
 const cap = (t: string): string => t.charAt(0).toUpperCase() + t.slice(1);
+/**
+ * The verb a change step's label starts with ("Changed", "Created", "Renamed"...), kept beside the stop while the model is built, so a
+ * later pass that renames the file in the label (`tellStopsApart`) rebuilds it as verb + name instead of editing the string, whatever name
+ * the label held (a bare file name, or the full path a structured diff shows).
+ */
+const labelVerb = new WeakMap<RailStop, string>();
 
 /** The note: {text, source: "rule"}. Absent falls back to the generic label. */
 const textOf = (note: unknown): string | null => {
@@ -1346,6 +1352,7 @@ function pushChange(stops: RailStop[], item: Placed, timeline: Timeline, all: Pl
       ...(resave && !ownLane && lane !== null ? { history: { lane } } : {}),
       change: rc,
     });
+    if (!secret) labelVerb.set(stops[stops.length - 1]!, cap(VERB[change.kind]));
 }
 
 /**
@@ -1395,6 +1402,7 @@ function pairMoves(stops: RailStop[], placed: readonly Placed[], failures: Map<s
     const who = m.stop.head.slice(0, m.stop.head.length - ` created ${m.file}`.length);
     const text = `${verb} ${g.file} to ${m.file}`;
     m.stop.label = `${verb} ${baseOf(m.file)}`;
+    labelVerb.set(m.stop, verb);
     m.stop.head = `${who} ${verb.toLowerCase()} ${g.file} to ${m.file}`;
     m.stop.title = text;
     m.stop.moved = { from: g.file, to: m.file, kind: rename ? "renamed" : "moved", fromStop: g.stop.id };
@@ -1429,9 +1437,9 @@ function tellStopsApart(stops: RailStop[]): void {
     paths.forEach((p, i) => { const where = label(dirs[i]!, k); shownAs.set(p, where === "" ? name : `${where}/${name}`); });
   }
   for (const s of shown) {
-    const as = shownAs.get(s.path!), name = baseOf(s.path!);
-    if (as === undefined || !s.label.endsWith(name)) continue;
-    s.label = s.label.slice(0, -name.length) + as;
+    const as = shownAs.get(s.path!), verb = labelVerb.get(s);
+    if (as === undefined || verb === undefined) continue;
+    s.label = `${verb} ${as}`;
     s.tail = as;
   }
 }

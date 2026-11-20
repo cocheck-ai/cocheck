@@ -60,6 +60,8 @@ export interface ChartData {
   /** Axis titles in document order, labelled by axis kind ("category axis", "value axis (2)"...). */
   axes: { label: string; title: string }[];
   series: ChartSeries[];
+  /** The chart part's element tree, so a change outside the modelled text and values (a number format, a colour) can still be named. */
+  tree?: El;
 }
 
 export interface Shape {
@@ -67,6 +69,8 @@ export interface Shape {
   id: string;
   name: string;
   kind: ShapeKind;
+  /** What the shape is, in plain words, for a shape with no name: its placeholder type ("Title", "Content"), else its kind ("Text box", "Picture", "Chart", "Group"...). */
+  role?: string;
   /** Enclosing groups, outermost first (ids and names). */
   scope: { id: string; name: string }[];
   /** `text`: the shape's paragraphs. */
@@ -440,7 +444,7 @@ function readChart(root: El): ChartData {
       values: cachePoints(child(ser, "val") ?? child(ser, "yVal")),
     });
   }
-  return { title: titleText(title), axes, series };
+  return { title: titleText(title), axes, series, tree: root };
 }
 
 const digest = (tokens: string[]): string | undefined =>
@@ -509,6 +513,31 @@ const gridColumns = (tbl: El): number[] => (child(tbl, "tblGrid")?.children ?? [
 /** Marks a group whose transform could not be read: every member inside it has no frame. */
 const NO_FRAME: Xfrm = { x: 0, y: 0, cx: 0, cy: 0, rot: 0, flipH: false, flipV: false };
 
+/** Placeholder types (`p:ph/@type`, ST_PlaceholderType) in plain words; a placeholder with no type is the schema default, `obj`. */
+const PLACEHOLDER_WORDS: Record<string, string> = {
+  title: "Title", ctrTitle: "Title", subTitle: "Subtitle", body: "Body", obj: "Content", chart: "Chart", tbl: "Table", clipArt: "Clip art",
+  dgm: "Diagram", media: "Media", pic: "Picture", sldImg: "Slide image", sldNum: "Slide number", dt: "Date", ftr: "Footer", hdr: "Header",
+};
+
+/** The element's kind in plain words, from its element name and what it holds. */
+function kindWord(c: El, kind: ShapeKind): string {
+  if (kind === "group") return "Group";
+  if (kind === "table") return "Table";
+  if (kind === "chart") return "Chart";
+  if (c.name === "pic") return "Picture";
+  if (c.name === "cxnSp") return "Connector";
+  if (c.name === "contentPart") return "Ink";
+  if (c.name === "graphicFrame") return find(c, "relIds") ? "Diagram" : "Object";
+  const nv = child(c, "nvSpPr");
+  return child(nv ?? c, "cNvSpPr")?.attrs["txBox"] === "1" ? "Text box" : "Shape";
+}
+
+/** A shape's role: its placeholder type in words when it is a placeholder of a known type, else its kind. */
+function roleOf(c: El, kind: ShapeKind): string {
+  const ph = placeholderOf(c);
+  return (ph && PLACEHOLDER_WORDS[ph.type ?? "obj"]) || kindWord(c, kind);
+}
+
 function readShapes(pkg: Package, slidePart: string, tree: El, frames?: { out: (Frame | undefined)[]; layout: El | undefined; master: El | undefined }): Shape[] {
   const out: Shape[] = [];
   const rels = pkg.rels(slidePart);
@@ -532,7 +561,7 @@ function readShapes(pkg: Package, slidePart: string, tree: El, frames?: { out: (
           const pr = cNvPr(c);
           const me = { id: pr?.attrs["id"] ?? "", name: pr?.attrs["name"] ?? "" };
           const links = shapeLinks(pkg, slidePart, c, true);
-          out.push({ ...me, kind: "group", scope, ...(links.length ? { links } : {}), unmodelled: digest(altText(pr)), ...ownXfrm(c) });
+          out.push({ ...me, kind: "group", role: roleOf(c, "group"), scope, ...(links.length ? { links } : {}), unmodelled: digest(altText(pr)), ...ownXfrm(c) });
           frames?.out.push(frameFor(c, groups));
           const gx = readXfrm(c);
           // a group without a usable transform: its members get no frame (never a guess)
@@ -548,7 +577,7 @@ function readShapes(pkg: Package, slidePart: string, tree: El, frames?: { out: (
           const tokens = altText(pr);
           const base = { id: pr?.attrs["id"] ?? "", name: pr?.attrs["name"] ?? "", scope };
           const links = shapeLinks(pkg, slidePart, c, false);
-          const done = (shape: Shape) => { out.push({ ...shape, ...(links.length ? { links } : {}), unmodelled: digest(tokens), ...ownXfrm(c) }); frames?.out.push(frameFor(c, groups)); };
+          const done = (shape: Shape) => { out.push({ ...shape, role: roleOf(c, shape.kind), ...(links.length ? { links } : {}), unmodelled: digest(tokens), ...ownXfrm(c) }); frames?.out.push(frameFor(c, groups)); };
           if (c.name === "sp" && child(c, "txBody")) {
             done({ ...base, kind: "text", paragraphs: bodyParagraphs(child(c, "txBody")), structure: bodyStructure(child(c, "txBody")) });
           } else if (c.name === "graphicFrame") {

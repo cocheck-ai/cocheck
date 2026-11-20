@@ -107,14 +107,14 @@ describe("P3: built-in connectors answer an empty list only when they compared e
     assert.match(doc.changes[0]!.text ?? "", /does not show/);
     assert.deepEqual(checkChanges(doc, 3), []);
   });
-  it("a re-save the connector can vouch for stays empty: identical parts (xlsx, docx); a regenerated deck whose created time moved does not", async () => {
+  it("a re-save the connector can vouch for stays empty: identical parts (xlsx, docx), and a regenerated deck whose created time moved", async () => {
     const xlsx = path.join(FIXTURES, "v1.xlsx");
     assert.deepEqual((await answerDiff(OFFICE_APPS.excel, xlsx, put("same.xlsx", repack(xlsx)), deps())).changes, []);
     assert.deepEqual((await answerDiff(OFFICE_APPS.word, "test/fixtures/memo-v1.docx", "test/fixtures/memo-v2.docx", deps())).changes, []);
-    // Only the per-save properties are set aside. This recorded pair is a regenerated deck whose dcterms:created moved
-    // (in core.xml and in the embedded workbook's): not a field a plain save rewrites, so it is one described change, never "nothing changed".
+    // This recorded pair is a regenerated deck whose dcterms:created moved (in core.xml and in the embedded workbook's) and whose body is
+    // byte-identical: the re-save check sets the creation time aside, so it is "nothing changed".
     const regenerated = (await answerDiff(OFFICE_APPS.powerpoint, "test/fixtures/long-html-deck-v2.pptx", "test/fixtures/long-html-deck-v3.pptx", deps())).changes;
-    assert.deepEqual(regenerated.map((c) => c.mark), ["described"]);
+    assert.deepEqual(regenerated, []);
   });
 });
 

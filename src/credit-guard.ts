@@ -91,6 +91,8 @@ const NO_CREDIT_TOOLS = new Set([
   "ListMcpResourcesTool", "ReadMcpResourceTool",
   // Copilot's read-only tools, as named in the recorded 1.0.103 run (platforms/copilot-cli/versions/1.0.103/hook-calls.jsonl)
   "glob", "rg", "view",
+  // Codex's helper bookkeeping, by the tools' own names (the Codex profile takes its namespace off): a message to a helper, the helper list.
+  "send_message", "list_agents",
 ]);
 const FILE_TOOLS = new Set(["Write", "Edit", "MultiEdit"]);
 
@@ -230,14 +232,14 @@ export function writeTargetsOf(tool: string | null | undefined, input: unknown):
 }
 
 /**
- * The one launcher predicate, by name only: Claude Code's `Agent` and `Task`, Copilot's `task`, and Codex's `spawn_agent` in any recorded form
- * (`collaborationspawn_agent`, or namespaced as `isWaitTool` matches `wait_agent`). A name that merely contains "task" or "agent" (`TaskCreate`,
- * `TodoWrite`, `read_agent`, `wait_agent`) is not a launch.
+ * The one launcher predicate, by the tool's own name (a host's namespace is taken off at ingest and on read, `HostProfile.toolName`): Claude
+ * Code's `Agent` and `Task`, Copilot's `task`, Codex's `spawn_agent`. A name that merely contains "task" or "agent" (`TaskCreate`, `TodoWrite`,
+ * `read_agent`, `wait_agent`) is not a launch.
  */
-export const isLauncherTool = (tool: string | null | undefined): boolean => tool != null && (tool === "Agent" || tool === "Task" || tool === "task" || /(^|[.:/]|collaboration)spawn_agent$/i.test(tool));
+export const isLauncherTool = (tool: string | null | undefined): boolean => tool === "Agent" || tool === "Task" || tool === "task" || tool === "spawn_agent";
 
-/** Codex's `wait_agent` (recorded as `collaborationwait_agent`): a call whose only work is waiting on helpers. */
-export const isWaitTool = (tool: string | null | undefined): boolean => tool != null && /(^|[.:/]|collaboration)wait_agent$/i.test(tool);
+/** Codex's `wait_agent`, by its own name: a call whose only work is waiting on helpers. */
+export const isWaitTool = (tool: string | null | undefined): boolean => tool === "wait_agent";
 
 /**
  * Whether a call waits on helpers and so writes nothing: Codex `wait_agent`, or Copilot's `read_agent` called with `wait: true`

@@ -8,13 +8,15 @@ import { OFFICE_APPS } from "../src/office/connector/apps.ts";
 import { checkChanges } from "../src/connector/changes-v1.ts";
 import { answerExcel, headingsOf, type Cropper, type PageReader } from "../src/office/connector/excel/answer.ts";
 import type { PlanBox } from "../src/office/connector/excel/diff.ts";
-import { placePrintBoxes, PRINT_BOX_PAD_PX, type PrintBox } from "../src/office/connector/excel/print-boxes.ts";
-import { rangeRect, readWorkbook, type Rect } from "../src/office/connector/excel/workbook.ts";
+import { placePrintBoxes, printGrid, PRINT_BOX_PAD_PX, type PictureHeadings, type PrintBox } from "../src/office/connector/excel/print-boxes.ts";
+import { rangeRect, readWorkbook, type Drawing, type Rect } from "../src/office/connector/excel/workbook.ts";
+import { previousPrintGrid } from "../src/office/connector/excel/print-grid-previous.ts";
 import type { PdfPage } from "../src/timeline/render/pdf-helper.ts";
 import { levelFor, type ProgramDeps } from "../src/office/connector/program.ts";
 import { fakePager, FIXTURES } from "./helpers/office-fake.ts";
 import { printRig } from "./helpers/print-rig.ts";
 import { drawPage, stubSheet, type DrawnPage } from "./helpers/print-page.ts";
+import { decodePng } from "../src/connector/png-pixels.ts";
 
 const REGION: Rect = { r1: 4, r2: 9, c1: 2, c2: 6 };
 const SHEET = { heights: { 6: 30 }, widths: { 2: 13, 4: 20, 6: 13 } };
@@ -61,10 +63,26 @@ describe("zoomed pages: the scale is read from the page's own lines", () => {
     assert.ok(Math.abs(rc.x - (left - PRINT_BOX_PAD_PX)) <= 1 && Math.abs(rc.x + rc.w - (right + PRINT_BOX_PAD_PX + 1)) <= 1.5, JSON.stringify(rc));
     assert.ok(Math.abs(rc.y - (top - PRINT_BOX_PAD_PX)) <= 1 && Math.abs(rc.y + rc.h - (bot + PRINT_BOX_PAD_PX + 1)) <= 1.5, JSON.stringify(rc));
   });
-  it("a row the page draws at a size the file and the page's scale do not give is refused", () => {
-    const page = drawPage(stubSheet({ ...SHEET, heights: { 6: 30 } }), REGION);
-    // the file says row 6 is 15 pt but the page drew it at 30 pt: lines and labels agree with each other, not with the file
-    refuses(place(page, [box("a", 5, 3), box("b", 8, 3)], { sheet: stubSheet({ widths: SHEET.widths }) }), /row 6|row \d/);
+  it("a row whose height the file sets, drawn at another size, is refused", () => {
+    // the file says row 6 is 30 pt but the page drew it at 15 pt: lines and labels agree with each other, not with the file
+    const page = drawPage(stubSheet({ widths: SHEET.widths }), REGION);
+    refuses(place(page, [box("a", 5, 3), box("b", 8, 3)], { sheet: stubSheet(SHEET) }), /row 6 is 28\.0 px but the file and the page's scale say 56\.0 px/);
+  });
+  it("a row whose height the file leaves unset may print taller (Excel fits it to a larger font), never shorter", () => {
+    // taller: a title row in a 16 pt bold font, which the file gives no height
+    const tall = drawPage(stubSheet(SHEET), REGION);
+    const rc = rectOf(place(tall, [box("a", 6, 3)], { sheet: stubSheet({ widths: SHEET.widths }) })[0]!);
+    assert.equal(rc.y + rc.h, tall.rows.get(6)![1] + PRINT_BOX_PAD_PX + 1);
+    // shorter: no font makes Excel print an unsized row at a third of the default
+    const short = drawPage(stubSheet({ heights: { 6: 5 }, widths: SHEET.widths }), REGION);
+    refuses(place(short, [box("a", 5, 3)], { sheet: stubSheet({ widths: SHEET.widths }) }), /row 6|shorter than its number|row 6 cannot be tied/);
+  });
+  it("rows and columns that each fit the file but at two different scales: this finder refuses (one zoom prints both)", () => {
+    // every row drawn at 15 pt while the file sets every row at 18 pt: the rows alone read as a page at 83%, the columns at 100%
+    const all18 = Object.fromEntries([4, 5, 6, 7, 8, 9].map((r) => [r, 18]));
+    const page = drawPage(stubSheet({ widths: SHEET.widths, heights: Object.fromEntries([4, 5, 6, 7, 8, 9].map((r) => [r, 15])) }), REGION);
+    const g = printGrid(page.pixels, page.headings, REGION, stubSheet({ widths: SHEET.widths, heights: all18 }));
+    assert.ok("why" in g && /the rows give the page a scale of 0\.833 and the columns 1\.000/.test(g.why), JSON.stringify("why" in g ? g.why : "fitted"));
   });
 });
 
@@ -154,10 +172,191 @@ describe("hidden rows or columns, a second page and charts are refused", () => {
     assert.match(whyOf(under!), /under a chart or picture/);
     rectOf(beside!);
   });
-  it("a chart's own change is not boxed on a print page", () => {
+});
+
+describe("the grid is found by contrast and by the heading structure, not by a fixed darkness", () => {
+  // every cell of the region lands on its own true lines, within `tol` pixels (a two-pixel grey line's centre is its half pixel)
+  const allCells = (page: DrawnPage, o: { sheet?: ReturnType<typeof stubSheet>; tol?: number } = {}): void => {
+    const tol = o.tol ?? 0;
+    for (let r = REGION.r1; r <= REGION.r2; r++) for (let c = REGION.c1; c <= REGION.c2; c++) {
+      const rc = rectOf(place(page, [box("x", r, c)], o.sheet ? { sheet: o.sheet } : {})[0]!);
+      assert.ok(Math.abs(rc.x - (page.cols.get(c)![0] - PRINT_BOX_PAD_PX)) <= tol + 0.5, `col ${c}: ${JSON.stringify(rc)}`);
+      assert.ok(Math.abs(rc.y - (page.rows.get(r)![0] - PRINT_BOX_PAD_PX)) <= tol + 0.5, `row ${r}: ${JSON.stringify(rc)}`);
+      assert.ok(Math.abs(rc.x + rc.w - (page.cols.get(c)![1] + PRINT_BOX_PAD_PX + 1)) <= tol + 1, `col ${c} right: ${JSON.stringify(rc)}`);
+      assert.ok(Math.abs(rc.y + rc.h - (page.rows.get(r)![1] + PRINT_BOX_PAD_PX + 1)) <= tol + 1, `row ${r} bottom: ${JSON.stringify(rc)}`);
+    }
+  };
+  it("grey frame and heading lines (lighter than half grey) are found", () => {
+    allCells(drawPage(stubSheet(SHEET), REGION, { heading: 170 }));
+  });
+  it("a light heading grey on a light-tinted theme (every cell filled) is found", () => {
+    allCells(drawPage(stubSheet(SHEET), REGION, { heading: 200, body: 190, fill: 228 }));
+  });
+  it("dark-filled cells in the first column do not hide the gutter's edge", () => {
+    allCells(drawPage(stubSheet(SHEET), REGION, { heading: 150, fill: { 2: 40 } }));
+  });
+  it("a chart over most of the rows and columns, with dark gridlines across it, does not move a line", () => {
+    const sheet = stubSheet(SHEET);
+    const page = drawPage(sheet, REGION, { heading: 170, covers: [{ cells: { r1: 5, r2: 9, c1: 2, c2: 6 } }] });
+    // rows 5 to 9 of 4 to 9 (over 70% of the rows), every column, starting on the gutter's edge
+    allCells(page);
+  });
+  it("a chart drawn from the gutter's edge across the whole body, past the last row, does not move a line", () => {
+    const sheet = stubSheet(SHEET);
+    const base = drawPage(sheet, REGION);
+    const x0 = base.cols.get(2)![0] + 1, y0 = base.rows.get(5)![0] + 2;
+    allCells(drawPage(sheet, REGION, { heading: 120, covers: [{ px: { x0, y0, x1: base.pixels.width - 1, y1: base.pixels.height - 1 } }] }));
+  });
+  for (const scale of [0.75, 1.5]) {
+    it(`a page at zoom ${scale * 100} with grey anti-aliased lines is boxed on its lines`, () => {
+      allCells(drawPage(stubSheet(SHEET), REGION, { scale, aa: true, heading: 120 }), { tol: 1 });
+      allCells(drawPage(stubSheet(SHEET), REGION, { scale }));
+    });
+  }
+  it("a page with no frame line left of the row numbers is boxed (the gutter's edge is the anchor, not the frame)", () => {
+    allCells(drawPage(stubSheet(SHEET), REGION, { noFrame: true, heading: 140 }));
+  });
+  it("fails closed: no line between the row numbers and the first column", () => {
+    refuses(place(drawPage(stubSheet(SHEET), REGION, { noGutterLine: true }), [box("a", 5, 3)]), /left of the first column letter|column band holds|not inside the row gutter|run down the page/);
+  });
+  it("fails closed: a stray line across the gutter through a row number", () => {
     const page = drawPage(stubSheet(SHEET), REGION);
-    const [r] = place(page, [{ change: "ch", cells: { r1: 5, r2: 7, c1: 3, c2: 4 }, drawing: "Chart 1" }]);
-    assert.match(whyOf(r!), /chart/);
+    const y = Math.round((page.rows.get(6)![0] + page.rows.get(6)![1]) / 2);
+    refuses(place(drawPage(stubSheet(SHEET), REGION, { strayGutter: [y] }), [box("a", 5, 3)]), /row 6.*line runs through/);
+  });
+  it("fails closed: a heading grey too faint to tell from the paper", () => {
+    refuses(place(drawPage(stubSheet(SHEET), REGION, { heading: 245, body: 245 }), [box("a", 5, 3)]), /not found|column band|row gutter|not between two lines/);
+  });
+});
+
+// A real Excel print page (Excel for Mac, headings on, zoom 66): Chart!A1:P50 of a workbook of public FRED series, with three charts over rows 4 to 50. Its line
+// between the row numbers and column A prints grey (one anti-aliased pixel), the case that once tied rows 4 and 5 to the same two lines and left every change
+// unplaced. The pictures are the stored ones; the page text (headings with per-character bounds) is from printing the same files again on the same Excel,
+// whose picture matched the stored one to within 11 grey levels per pixel.
+const FXP = path.join(import.meta.dirname, "fixtures", "excel-print");
+const realPage = (side: "before" | "after"): { pixels: NonNullable<ReturnType<typeof decodePng>>; headings: PictureHeadings; sheet: ReturnType<typeof readWorkbook>["sheets"][number] } => {
+  const { page, cut } = JSON.parse(readFileSync(path.join(FXP, `fred-charts-${side}.page.json`), "utf8")) as { page: PdfPage; cut: { x: number; y: number } };
+  const h = headingsOf(page);
+  const mv = (cs?: { c: string; x: number; y: number; w: number; h: number }[]) => (cs ? { chars: cs.map((c) => ({ ...c, x: c.x - cut.x, y: c.y - cut.y })) } : {});
+  const headings: PictureHeadings = { rows: h.rows.map((r) => ({ n: r.n, y: r.y - cut.y, h: r.h, ...mv(r.chars) })), ...(h.cols ? { cols: { ...h.cols, x: h.cols.x - cut.x, y: h.cols.y - cut.y, ...mv(h.cols.chars) } } : {}) };
+  const sheet = readWorkbook(readFileSync(path.join(FXP, `fred-charts-${side}.xlsx`))).sheets.find((s) => s.name === "Chart")!;
+  return { pixels: decodePng(readFileSync(path.join(FXP, `fred-charts-${side}.png`)))!, headings, sheet };
+};
+const A1P50: Rect = { r1: 1, r2: 50, c1: 1, c2: 16 };
+describe("a real Excel print page with charts over the grid and a grey gutter line", () => {
+  for (const side of ["before", "after"] as const) {
+    it(`${side}: every row 1-50 and column A-P is tied, on the lines the pixels show`, () => {
+      const { pixels, headings, sheet } = realPage(side);
+      const g = printGrid(pixels, headings, A1P50, sheet);
+      if ("why" in g) return assert.fail(g.why);
+      assert.equal(g.rowLines.size, 50);
+      assert.equal(g.colLines.size, 16);
+      // hand-read from the picture: the grey gutter line at x 55, black two-pixel lines at x 1034-1035 (O), 1104-1105 (P), 1174-1175 (the right frame);
+      // the band's bottom line at y 43, row 1's bottom at y 64-65 (a 16 pt title row the file leaves unsized), row 2's at y 83, the bottom frame at y 970
+      const near = (v: number, want: number, what: string): void => assert.ok(Math.abs(v - want) <= 1, `${what}: ${v} not near ${want}`);
+      near(g.colLines.get(1)![0], 55, "A left"); near(g.colLines.get(15)![0], 1034.5, "O left"); near(g.colLines.get(16)![0], 1104.5, "P left"); near(g.colLines.get(16)![1], 1174.5, "P right");
+      near(g.rowLines.get(1)![0], 43, "1 top"); near(g.rowLines.get(1)![1], 64.5, "1 bottom"); near(g.rowLines.get(2)![1], 83, "2 bottom"); near(g.rowLines.get(50)![1], 970, "50 bottom");
+      // every printed row number sits between its own two lines
+      for (const r of headings.rows) { const [a, b]: [number, number] = g.rowLines.get(r.n)!; assert.ok(a <= r.y + 2 && r.y + r.h - 2 <= b, `row ${r.n}`); }
+    });
+    it(`${side}: cells beside the charts are boxed on their lines; a cell change under a chart is refused`, () => {
+      const { pixels, headings, sheet } = realPage(side);
+      const [c2, p35, b10] = placePrintBoxes({ pixels, headings, region: A1P50, sheet, pages: 1, boxes: [box("c2", 2, 3), box("p35", 35, 16), box("b10", 10, 2)], pxPerPt: 1.32 });
+      const rc = rectOf(c2!);
+      assert.deepEqual([rc.x, rc.y], [193, 62]);
+      assert.ok(Math.abs(rc.x + rc.w - (265 + PRINT_BOX_PAD_PX + 1)) <= 1 && Math.abs(rc.y + rc.h - (83 + PRINT_BOX_PAD_PX + 1)) <= 1, JSON.stringify(rc));
+      rectOf(p35!);
+      assert.match(whyOf(b10!), /under a chart or picture/);
+    });
+    it(`${side}: each of the three charts' changes is boxed on its own frame (the last one cut at the printed range)`, () => {
+      const { pixels, headings, sheet } = realPage(side);
+      // the step's own boxes, as the plan gives them: each chart change carries the chart's object name and its anchor range
+      const boxes = [1, 2, 3].map((i): PlanBox => ({ change: `c${i}`, cells: sheet.drawings[i - 1]!.anchor!, drawing: `Chart ${i}` }));
+      const got = placePrintBoxes({ pixels, headings, region: A1P50, sheet, pages: 1, boxes, pxPerPt: 2 * 66 / 100 });
+      // the frames hand-read from the picture (each chart's grey border): left x 55, right x 1027.3; tops y 100.7, 396.3, 692; bottoms y 381.3, 677,
+      // and the third runs past row 50, so it is cut at the bottom frame (y 970)
+      const frames = [{ t: 100.7, b: 381.3 }, { t: 396.3, b: 677 }, { t: 692, b: 970 }];
+      got.forEach((r, i) => {
+        const rc = rectOf(r);
+        const f = { l: 55, r: 1027.3, ...frames[i]! };
+        const edges = [rc.x, rc.y, rc.x + rc.w - 1, rc.y + rc.h - 1], want = [f.l, f.t, f.r, f.b];
+        // the box holds the whole border and sits no more than 5 px outside it on any side
+        assert.ok(edges[0]! <= f.l && edges[1]! <= f.t && edges[2]! >= f.r && edges[3]! >= f.b, `chart ${i + 1}: ${JSON.stringify(rc)}`);
+        for (let e = 0; e < 4; e++) assert.ok(Math.abs(edges[e]! - want[e]!) <= 5, `chart ${i + 1} edge ${e}: ${edges[e]} vs ${want[e]}`);
+        assert.equal("clipped" in r && r.clipped, i === 2 ? true : false, `chart ${i + 1} clipped`);
+      });
+      // no box reaches the next chart's border
+      assert.ok(rectOf(got[0]!).y + rectOf(got[0]!).h <= 396 && rectOf(got[1]!).y + rectOf(got[1]!).h <= 692);
+    });
+  }
+  it("a chart is not boxed when the zoom the page was printed at disagrees with its lines, or is unknown", () => {
+    const { pixels, headings, sheet } = realPage("after");
+    const b: PlanBox = { change: "c1", cells: sheet.drawings[0]!.anchor!, drawing: "Chart 1" };
+    assert.match(whyOf(placePrintBoxes({ pixels, headings, region: A1P50, sheet, pages: 1, boxes: [b], pxPerPt: 2 })[0]!), /lines show 1\.3\d\d px a point but its zoom gives 2\.000/);
+    assert.match(whyOf(placePrintBoxes({ pixels, headings, region: A1P50, sheet, pages: 1, boxes: [b] })[0]!), /zoom the page was printed at is not known/);
+  });
+});
+
+describe("drawings are boxed on their frames, from their anchors", () => {
+  const EMU = 12700; // a point
+  const corner = (col: number, row: number, colOffPt = 0, rowOffPt = 0) => ({ col, row, colOff: colOffPt * EMU, rowOff: rowOffPt * EMU });
+  const chart = (name: string, place: Drawing["place"], anchor: Rect): Drawing => ({ kind: "chart", name, objectName: name, sha: name, anchor, ...(place ? { place } : {}) });
+  // the frame at the page's scale (1 = 100%, 2 px a point): drawn on the page, and the box it must get
+  const run = (d: Drawing, o: { region?: Rect; scale?: number; frame: (p: DrawnPage) => { x0: number; y0: number; x1: number; y1: number } }) => {
+    const region = o.region ?? REGION, scale = o.scale ?? 1;
+    const sheet = stubSheet({ ...SHEET, drawings: [d] });
+    const plain = drawPage(sheet, region, { scale });
+    const f = o.frame(plain);
+    const page = drawPage(sheet, region, { scale, covers: [{ px: { x0: Math.round(f.x0), y0: Math.round(f.y0), x1: Math.round(f.x1), y1: Math.round(f.y1) } }] });
+    const r = placePrintBoxes({ pixels: page.pixels, headings: page.headings, region, sheet, pages: 1, boxes: [{ change: "d", cells: d.anchor!, drawing: d.objectName! }], pxPerPt: 2 * scale })[0]!;
+    return { r, f, page };
+  };
+  const exact = (r: PrintBox, f: { x0: number; y0: number; x1: number; y1: number }, clipped = false): void => {
+    const rc = rectOf(r);
+    assert.deepEqual(rc, { x: Math.floor(f.x0 - PRINT_BOX_PAD_PX), y: Math.floor(f.y0 - PRINT_BOX_PAD_PX), w: Math.ceil(f.x1 + PRINT_BOX_PAD_PX + 1) - Math.floor(f.x0 - PRINT_BOX_PAD_PX), h: Math.ceil(f.y1 + PRINT_BOX_PAD_PX + 1) - Math.floor(f.y0 - PRINT_BOX_PAD_PX) });
+    assert.equal("clipped" in r && r.clipped === true, clipped);
+  };
+  it("a two-cell anchor: each corner on its cell's lines plus its offset", () => {
+    // from C5 + (10 pt, 3 pt) to E8 + (5 pt, 0)
+    const d = chart("Chart 1", { kind: "twoCell", from: corner(2, 4, 10, 3), to: corner(4, 7, 5, 0) }, { r1: 5, c1: 3, r2: 8, c2: 5 });
+    const { r, f } = run(d, { frame: (p) => ({ x0: p.cols.get(3)![0] + 20, y0: p.rows.get(5)![0] + 6, x1: p.cols.get(5)![0] + 10, y1: p.rows.get(8)![0] }) });
+    exact(r, f);
+  });
+  it("a one-cell anchor: its corner on the cell's lines, its size in EMU at the page's zoom (here 75%)", () => {
+    const d = chart("Chart 1", { kind: "oneCell", from: corner(2, 4), ext: { cx: 100 * EMU, cy: 40 * EMU } }, { r1: 5, c1: 3, r2: 7, c2: 4 });
+    const { r, f } = run(d, { scale: 0.75, frame: (p) => ({ x0: p.cols.get(3)![0], y0: p.rows.get(5)![0], x1: p.cols.get(3)![0] + 150, y1: p.rows.get(5)![0] + 60 }) });
+    exact(r, f);
+  });
+  it("an absolute anchor: measured from A1's corner when the picture prints from A1, refused otherwise", () => {
+    const A1: Rect = { r1: 1, r2: 6, c1: 1, c2: 5 };
+    const d = chart("Pic", { kind: "absolute", pos: { x: 50 * EMU, y: 20 * EMU }, ext: { cx: 60 * EMU, cy: 30 * EMU } }, { r1: 2, c1: 2, r2: 4, c2: 3 });
+    const { r, f } = run(d, { region: A1, frame: (p) => ({ x0: p.cols.get(1)![0] + 100, y0: p.rows.get(1)![0] + 40, x1: p.cols.get(1)![0] + 220, y1: p.rows.get(1)![0] + 100 }) });
+    exact(r, f);
+    const { r: r2 } = run(d, { frame: (p) => ({ x0: p.cols.get(2)![0] + 10, y0: p.rows.get(4)![0] + 10, x1: p.cols.get(3)![0], y1: p.rows.get(5)![1] }) });
+    assert.match(whyOf(r2), /measured from cell A1/);
+  });
+  it("pictures and shapes take the same path", () => {
+    const pic: Drawing = { kind: "image", name: "Picture 2", sha: "p", anchor: { r1: 5, c1: 3, r2: 6, c2: 4 }, place: { kind: "twoCell", from: corner(2, 4), to: corner(3, 5) } };
+    const { r, f } = run({ ...pic, objectName: "Picture 2" }, { frame: (p) => ({ x0: p.cols.get(3)![0], y0: p.rows.get(5)![0], x1: p.cols.get(4)![0], y1: p.rows.get(6)![0] }) });
+    exact(r, f);
+  });
+  it("a frame that runs past the printed range is cut at its edge and marked clipped; one that starts before it is cut there too", () => {
+    const past = chart("Chart 1", { kind: "twoCell", from: corner(3, 6, 4, 2), to: corner(9, 13) }, { r1: 7, c1: 4, r2: 14, c2: 10 });
+    const a = run(past, { frame: (p) => ({ x0: p.cols.get(4)![0] + 8, y0: p.rows.get(7)![0] + 4, x1: p.cols.get(6)![1], y1: p.rows.get(9)![1] }) });
+    exact(a.r, a.f, true);
+    const before = chart("Chart 1", { kind: "twoCell", from: corner(0, 0), to: corner(3, 5, 6, 0) }, { r1: 1, c1: 1, r2: 6, c2: 4 });
+    const b = run(before, { frame: (p) => ({ x0: p.cols.get(2)![0], y0: p.rows.get(4)![0], x1: p.cols.get(4)![0] + 12, y1: p.rows.get(6)![0] }) });
+    exact(b.r, b.f, true);
+  });
+  it("fails closed: a one-cell frame that starts outside the picture, a frame with no readable anchor, two drawings of one name", () => {
+    const d = chart("Chart 1", { kind: "oneCell", from: corner(0, 0), ext: { cx: 400 * EMU, cy: 200 * EMU } }, { r1: 1, c1: 1, r2: 8, c2: 5 });
+    assert.match(whyOf(run(d, { frame: (p) => ({ x0: p.cols.get(2)![0], y0: p.rows.get(4)![0], x1: p.cols.get(4)![0], y1: p.rows.get(6)![0] }) }).r), /starts outside the printed cells/);
+    const none = chart("Chart 1", undefined, { r1: 5, c1: 3, r2: 6, c2: 4 });
+    assert.match(whyOf(run(none, { frame: (p) => ({ x0: p.cols.get(3)![0], y0: p.rows.get(5)![0], x1: p.cols.get(4)![0], y1: p.rows.get(6)![0] }) }).r), /anchor in the file could not be read/);
+    const one = chart("Chart 1", { kind: "twoCell", from: corner(2, 4), to: corner(3, 5) }, { r1: 5, c1: 3, r2: 6, c2: 4 });
+    const sheet = stubSheet({ ...SHEET, drawings: [one, { ...one, sha: "y" }] });
+    const page = drawPage(sheet, REGION);
+    assert.match(whyOf(placePrintBoxes({ pixels: page.pixels, headings: page.headings, region: REGION, sheet, pages: 1, boxes: [{ change: "d", cells: one.anchor!, drawing: "Chart 1" }], pxPerPt: 2 })[0]!), /two drawings on the sheet have its name/);
   });
 });
 
@@ -250,5 +449,43 @@ describe("the print answer carries boxes (level 3)", () => {
       if (!boxed.has(p.id)) assert.ok(said, `${p.label} has no box and must say so`);
       else if (!unplaced) assert.ok(!said, `${p.label} is fully boxed and must not say it is unmarked: ${JSON.stringify(doc.caveats)}`);
     }
+  });
+});
+
+// Safety net, to be removed with print-grid-previous.ts once the contrast finder is verified on real Windows print pictures: when the contrast finder
+// refuses a page, the earlier finder is asked; its grid places cell boxes if it fits under its own checks. Drawings are never boxed from it.
+describe("when this finder refuses a page, the earlier finder is the fallback for cell boxes", () => {
+  const all18 = Object.fromEntries([4, 5, 6, 7, 8, 9].map((r) => [r, 18]));
+  const page = () => drawPage(stubSheet({ widths: SHEET.widths, heights: Object.fromEntries([4, 5, 6, 7, 8, 9].map((r) => [r, 15])) }), REGION);
+  const sheet = () => stubSheet({ widths: SHEET.widths, heights: all18 });
+  it("the contrast finder refuses and the earlier one fits: the cell is boxed where the earlier finder places it", () => {
+    const p = page();
+    assert.ok("why" in printGrid(p.pixels, p.headings, REGION, sheet()));
+    const prev = previousPrintGrid(p.pixels, p.headings, REGION, sheet());
+    assert.ok(!("why" in prev), JSON.stringify(prev));
+    const rc = rectOf(place(p, [box("a", 5, 3)], { sheet: sheet() })[0]!);
+    const R = prev.rowLines.get(5)!, C = prev.colLines.get(3)!;
+    assert.deepEqual(rc, { x: Math.floor(C[0] - PRINT_BOX_PAD_PX), y: Math.floor(R[0] - PRINT_BOX_PAD_PX), w: Math.ceil(C[1] + PRINT_BOX_PAD_PX + 1) - Math.floor(C[0] - PRINT_BOX_PAD_PX), h: Math.ceil(R[1] + PRINT_BOX_PAD_PX + 1) - Math.floor(R[0] - PRINT_BOX_PAD_PX) });
+    // and that is the page's own cell: within a pixel of the lines it was drawn on
+    assert.ok(Math.abs(rc.x - (p.cols.get(3)![0] - PRINT_BOX_PAD_PX)) <= 1 && Math.abs(rc.y - (p.rows.get(5)![0] - PRINT_BOX_PAD_PX)) <= 1, JSON.stringify(rc));
+  });
+  it("on the earlier finder's grid a drawing is not boxed: its words are the contrast finder's refusal", () => {
+    const d: Drawing = { kind: "chart", name: "Chart 1", objectName: "Chart 1", sha: "c", anchor: { r1: 8, c1: 5, r2: 9, c2: 6 } };
+    const s = stubSheet({ widths: SHEET.widths, heights: all18, drawings: [d] });
+    const p = drawPage(stubSheet({ widths: SHEET.widths, heights: Object.fromEntries([4, 5, 6, 7, 8, 9].map((r) => [r, 15])), drawings: [d] }), REGION);
+    const [chartBox, cellBox] = placePrintBoxes({ pixels: p.pixels, headings: p.headings, region: REGION, sheet: s, pages: 1, boxes: [{ change: "d", cells: d.anchor!, drawing: "Chart 1" }, box("a", 5, 3)], pxPerPt: 2 });
+    assert.match(whyOf(chartBox!), /not marked: the rows give the page a scale/);
+    rectOf(cellBox!);
+  });
+  it("both refuse: every change on the picture is unplaced, with the contrast finder's words", () => {
+    const s = stubSheet({ ...SHEET, hiddenRows: [7] });
+    const p = drawPage(s, REGION, { skipRows: [7] });
+    assert.ok("why" in printGrid(p.pixels, p.headings, REGION, s));
+    assert.ok("why" in previousPrintGrid(p.pixels, p.headings, REGION, s));
+    refuses(place(p, [box("a", 5, 3), box("b", 8, 3)], { sheet: s }), /row 7 is hidden/);
+    // a page whose labels stop short of the region: both refuse it too
+    const short = drawPage(stubSheet(SHEET), { ...REGION, r2: 7 });
+    assert.ok("why" in previousPrintGrid(short.pixels, short.headings, REGION, stubSheet(SHEET)));
+    refuses(place(short, [box("a", 5, 3)]), /labels rows 4 to 7 but the file's region is rows 4 to 9/);
   });
 });

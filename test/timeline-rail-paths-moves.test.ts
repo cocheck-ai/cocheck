@@ -87,6 +87,18 @@ describe("step titles carry the path relative to the watched folder", () => {
     assert.match(txh, /flex:0 1000 auto/, "the start gives way before the kept tail does");
     assert.doesNotMatch(css, /\.row[^{]*\.now[^{]*\.txh\{[^}]*min-width:0/, "no row state takes that room away");
   });
+  it("steps whose label already holds the path (a connector's structured diff) are told apart without doubling the folder", () => {
+    const { t } = build([["t05/.pptx-build/candidate.pptx", "a"], ["t05/candidate.pptx", "b"]], [
+      { file: "t05/.pptx-build/candidate.pptx", kind: "edit", sha: "c", prev: "a", by: "c1" },
+      { file: "t05/candidate.pptx", kind: "edit", sha: "d", prev: "b", by: "c2" },
+    ]);
+    const all = [...t.unplaced, ...t.requests.flatMap((q) => q.runs.flatMap((r) => r.calls.flatMap((c) => c.changes)))];
+    for (const c of all) (c as { diff?: unknown }).diff = { connector: "office", subject: c.file, changes: [] };
+    const m = buildRailModel(t);
+    const labels = changes(m).map((s) => s.label);
+    assert.deepEqual(new Set(labels), new Set(["Changed .pptx-build/candidate.pptx", "Changed t05/candidate.pptx"]));
+    for (const s of changes(m)) assert.ok(s.label.endsWith(s.tail!), `${s.label} keeps its tail ${s.tail}`);
+  });
   it("a name that appears once keeps the bare label", () => {
     const { m } = build([], [{ file: "t05/sub/only.txt", kind: "new", sha: "a", by: "c1" }]);
     assert.equal(changes(m)[0]!.label, "Created only.txt");

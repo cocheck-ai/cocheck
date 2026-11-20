@@ -31,9 +31,8 @@ const TOOL_LABEL_TABLE: Readonly<Record<string, Readonly<Record<string, LabelKin
   // The brief a main agent gave a helper is the work's own record (what it asked for), so the prompt is read, masked and cut with its ending kept.
   task: { subagent_type: "text", description: "text", prompt: "brief" },
   agent: { subagent_type: "text", description: "text", prompt: "brief" },
-  // Codex's spawn_agent (recorded bare, or with its namespace as `collaborationspawn_agent`): the helper's name, type and brief.
+  // Codex's spawn_agent (by its own name; the Codex profile takes the namespace off): the helper's name, type and brief.
   spawn_agent: { task_name: "text", agent_type: "text", message: "brief" },
-  collaborationspawn_agent: { task_name: "text", agent_type: "text", message: "brief" },
   // A message between Claude and a helper is the work's own record (who asked whom for what), so its text is read, masked and cut longer.
   sendmessage: { to: "text", summary: "text", message: "words", content: "words" },
 };
