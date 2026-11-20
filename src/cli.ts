@@ -8,7 +8,8 @@
  *   cocheck --version         print the package version and, when the build is stamped, when it was built
  *   cocheck uninstall         remove CoCheck's hook entries, stop the review process, say what stays
  *
- * `open` and `status` read ~/.config/cocheck/install.json, so no COCHECK_HOME is needed. `$COCHECK_OPEN_CMD` replaces the macOS `open` command.
+ * `open` and `status` read ~/.config/cocheck/install.json, so no COCHECK_HOME is needed.
+ * The `connector` commands use the same recorded home unless COCHECK_HOME is set (connectorHome). `$COCHECK_OPEN_CMD` replaces the macOS `open` command.
  */
 import { HOME_REFUSAL, isUnsafeTaskFolder, platform } from "./platform/index.ts";
 import { readFileSync } from "node:fs";
@@ -136,6 +137,19 @@ export function runTrack(args: string[], userHome: string, interactive = false, 
   return { exitCode: 0, stdout: `${lines}Tracking is per session; a session records only after \`cocheck track start\` ran in it.\n`, stderr: "" };
 }
 
+/**
+ * The data folder the `connector` commands act on: `$COCHECK_HOME`, else the one `cocheck install --home` recorded (the folder the hooks and the
+ * review process read connectors and connector-types.json from), else ~/.cocheck. The installer refuses ~/.cocheck as a home, so without the
+ * record step these commands managed a folder nothing reads.
+ */
+export async function connectorHome(userHome: string, env: NodeJS.ProcessEnv = process.env): Promise<string> {
+  if (env.COCHECK_HOME !== undefined && env.COCHECK_HOME.length > 0) return env.COCHECK_HOME;
+  const recorded = readInstallRecord(userHome)?.home;
+  if (recorded !== undefined) return recorded;
+  const { resolveCoCheckHome } = await import("./ledger.ts");
+  return resolveCoCheckHome();
+}
+
 export async function main(argv: string[]): Promise<CliResult> {
   const [command, ...rest] = argv;
   if (command === "--help" || command === "-h" || command === "help") return { exitCode: 0, stdout: `${USAGE}\n`, stderr: "" };
@@ -164,13 +178,11 @@ export async function main(argv: string[]): Promise<CliResult> {
   if (command === "track") return runTrack(rest, userHome, process.stdin.isTTY === true && process.stdout.isTTY === true);
   if (command === "connector" && rest[0] === "test") {
     const { runConnectorTest } = await import("./connector-test-cli.ts");
-    const { resolveCoCheckHome } = await import("./ledger.ts");
-    return runConnectorTest(rest.slice(1), { home: resolveCoCheckHome() });
+    return runConnectorTest(rest.slice(1), { home: await connectorHome(userHome) });
   }
   if (command === "connector" && rest[0] === "auth") {
     const { runConnectorAuth, readStdinValue } = await import("./connector-auth.ts");
-    const { resolveCoCheckHome } = await import("./ledger.ts");
-    return runConnectorAuth(rest.slice(1), { home: resolveCoCheckHome(), store: platform().secretStore, readValue: () => readStdinValue() });
+    return runConnectorAuth(rest.slice(1), { home: await connectorHome(userHome), store: platform().secretStore, readValue: () => readStdinValue() });
   }
   if (command === "connector" && rest[0] === "create") {
     const { runConnectorCreate } = await import("./connector-create.ts");
@@ -178,13 +190,12 @@ export async function main(argv: string[]): Promise<CliResult> {
   }
   if (command === "connector" && rest[0] === "doctor") {
     const { runConnectorDoctor } = await import("./connector-doctor.ts");
-    const { resolveCoCheckHome } = await import("./ledger.ts");
-    return runConnectorDoctor(rest.slice(1), { home: resolveCoCheckHome(), store: platform().secretStore });
+    return runConnectorDoctor(rest.slice(1), { home: await connectorHome(userHome), store: platform().secretStore });
   }
   if (command === "connector" && (rest[0] === "list" || rest[0] === "enable" || rest[0] === "disable")) {
     const { runConnectorList, runConnectorSwitch } = await import("./connector-types-cli.ts");
-    const { resolveCoCheckHome } = await import("./ledger.ts");
-    return rest[0] === "list" ? runConnectorList(rest.slice(1), { home: resolveCoCheckHome() }) : runConnectorSwitch(rest, { home: resolveCoCheckHome() });
+    const home = await connectorHome(userHome);
+    return rest[0] === "list" ? runConnectorList(rest.slice(1), { home }) : runConnectorSwitch(rest, { home });
   }
   if (command === "install" || command === "uninstall") {
     return runInstall({ argv: ["node", "install.ts", ...(command === "uninstall" ? ["--uninstall"] : []), ...rest], env: process.env, cwd: process.cwd() });

@@ -1,6 +1,5 @@
 // One registry behind defaultLayers() and the renderer table. Lookup order: plugins, installed connectors, built-ins, fallback.
-// Built-ins are plain RegistryEntry values, so the open-core refactor can hand the pdf renderer and Quick Look
-// to a pro plugin by id. An installed connector (<home>/connectors/<id>/cocheck-connector.json) is only ever reported by forSubject:
+// Built-ins are plain RegistryEntry values, so a plugin can replace one by id. An installed connector (<home>/connectors/<id>/cocheck-connector.json) is only ever reported by forSubject:
 // it has no renderer or layer of its own. A file whose ending any known manifest claims is drawn by no core renderer (rendererFor answers
 // the claimed card), so an installed manifest does take a claimed type's view away; layers() and the extension table are unchanged by it.
 // forSubject decides only for URI subjects; the rail never calls it, and tells a connector row from a file row by the ledger's `connector` column.

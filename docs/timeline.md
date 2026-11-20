@@ -129,7 +129,7 @@ ChangeInfo = { id: string, file: string, kind: "created" | "modified" | "deleted
 View = {
   change: string,                         // the change key (Change.id)
   file: string,
-  engine: string,                         // who drew it, named on screen: "drawn by macOS PDFKit" | "drawn by CoCheck from the lines of the file" | "macOS Quick Look, first page only"
+  engine: string,                         // who drew it, named on screen: "drawn by macOS PDFKit" | "drawn by CoCheck from the lines of the file" | "your browser, from the stored file"
   kind: "grid" | "pages" | "card",
   before: Pane[], after: Pane[],          // one pane per sheet (grid) or per picture (pages); empty for a card
   boxes: Box[],
@@ -145,7 +145,7 @@ Box = { side: "before" | "after", pane: string, cell?: string, line?: number, re
 
 Rules. Boxes come from the data change; a pixel diff is only a cross-check. Confidence `exact` is a box from a line comparison (the text renderer); `pixel` is a box from a picture diff; `none` never carries a box: it is an honest card with a caveat. A box is never placed on a line that did not change. The picture and the data disagreeing is said in a caveat: data changed but the picture did not, or the picture changed but the data did not ("the picture moved and we can't say why").
 
-Registry. Keyed by lower-case extension. `rendererFor(file, generic?)` returns the registered renderer; with no entry for the extension, a change whose generic tier is `text` (decided by content) gets the text renderer, else the fallback. Registered today: pdf, when the macOS page drawer was built (below). A state a connector reads (the Excel, Word and PowerPoint built-ins and any installed connector, by ending or by shared bytes) gets the claimed card whatever else is registered: kind `card`, no pane, and the sentence "A connector reads this type of file, so CoCheck draws no view of it" (`src/timeline/render/claimed.ts`, `src/connector/registry.ts`). The page draws that file from the connector's document instead. The fallback wraps the Quick Look picture tier as kind `pages`, confidence `pixel`, engine "macOS Quick Look, first page only"; with no picture it is kind `card`. No core renderer makes a `grid` pane (the `grid` shape stays in the contract because `view-v1.ts` and connector pictures use it).
+Registry. Keyed by lower-case extension. `rendererFor(file, generic?)` returns the registered renderer; with no entry for the extension, a change whose generic tier is `text` (decided by content) gets the text renderer, else the fallback. Registered today: pdf, when the macOS page drawer was built (below). A state a connector reads (the Excel, Word and PowerPoint built-ins and any installed connector, by ending or by shared bytes) gets the claimed card whatever else is registered: kind `card`, no pane, and the sentence "A connector reads this type of file, so CoCheck draws no view of it" (`src/timeline/render/claimed.ts`, `src/connector/registry.ts`). The page draws that file from the connector's document instead. The fallback wraps the picture tier (an image the browser draws from the stored bytes) as kind `pages`, confidence `pixel`, engine "your browser, from the stored file"; with no picture it is kind `card`. No core renderer makes a `grid` pane (the `grid` shape stays in the contract because `view-v1.ts` and connector pictures use it).
 
 ### Route
 
@@ -248,7 +248,7 @@ One rule for every note and caveat: "can't read inside it" appears only when CoC
 - A file a connector reads (Excel, Word, PowerPoint, or an installed connector's types): never the picture wording, because CoCheck draws no picture of it. The note is the connector's own: its changes in its words ("Claude changed <label> from <before> to <after>"), or "Claude saved <file> again: nothing changed." when its document vouches that (see "Saved again" above), or the fingerprint wording below when the connector gave no document.
 - Everything else (fingerprint tier, one side missing, no format reading) keeps "the file changed; CoCheck can't read inside it".
 
-Declared limits: a PDF whose text a renderer read with no difference gets no "text did not change" note, because notes are built from the record (format layer and picture tier) and the renderer's text comparison happens only when the view is opened. Such a file reads as the "picture of both versions" note when it has pictures. The Quick Look engine name on a picture file is "macOS Quick Look" (a picture has one page); documents keep "first page only".
+Declared limits: a PDF whose text a renderer read with no difference gets no "text did not change" note, because notes are built from the record (format layer and picture tier) and the renderer's text comparison happens only when the view is opened. Such a file reads as the "picture of both versions" note when it has pictures.
 ## Subagent lanes for older runs
 
 Definition. At read time, a call op with no `agent_id` is matched by its `tool_use_id` against the tool_use ids in its own session's subagent transcripts. A match gives the op that agent's lane, placed by the subagent-lane rule: the request owning the launching call (the agent's `.meta.json` `toolUseId`), else the lane head. This brings back the lanes of runs recorded before CoCheck began stamping `agent_id` on call ops (forward-only).

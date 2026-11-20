@@ -48,7 +48,7 @@ Say "show me the review", or run `cocheck open`. The page opens in your browser 
 - attribution: which agent call made each change, or that several overlapping calls share it, or that it was a hand edit;
 - a pass or fail on each step, so you can send the failed ones back to the agent or sign off.
 
-What the page shows for a file depends on its type. Text and code get a line diff, PDFs get pages with the changes boxed, and png, jpg, gif, webp and svg images are shown by your browser from the stored file, on every OS (two PNGs also get a pixel comparison). Excel, Word and PowerPoint files are read by three built-in connectors, on the same standard as any connector you build: they list what changed and, when the Office app is installed, show the app's own printed pages. CoCheck itself does not read or draw Office files. A file with no reader gets a fingerprint.
+What the page shows for a file depends on its type. Text and code get a line diff, PDFs get pages with the changes boxed, and png, jpg, gif, webp and svg images are shown by your browser from the stored file, on every OS (two PNGs also get a pixel comparison). Excel, Word and PowerPoint files are read by three built-in connectors, on the same standard as any connector you build ([public-kit/GUIDE.md](public-kit/GUIDE.md) shows how to build one): they list what changed and, when the Office app is installed, show the app's own printed pages. CoCheck itself does not read or draw Office files. A file with no reader gets a fingerprint.
 
 The page is local, and the record stays on your device in the data folder you choose at install.
 
@@ -76,6 +76,8 @@ npm install -g cocheck
 cocheck install --home ~/CoCheckData
 ```
 
+`--home` must be an absolute path. On Windows, cmd and Windows PowerShell pass `~` through unexpanded, so use `cocheck install --home "$env:USERPROFILE\CoCheckData" --for claude` in PowerShell (see the Windows part of [docs/install.md](docs/install.md)).
+
 Run `cocheck install` from the folder you want CoCheck to watch, or pass `--folder <dir>`. Then restart your agent, start a session, say "start tracking", do some work, and say "show me the review". [docs/install.md](docs/install.md) has the whole path, including other agents (`--for codex`, `--for copilot`, `--for all`), checking that CoCheck is recording, and uninstalling.
 
 ## Platforms
@@ -85,6 +87,7 @@ CoCheck runs on a Mac, or on Windows with Claude Code (Node 22.18 or newer; see 
 ## Docs
 
 - [docs/install.md](docs/install.md): install, start and stop tracking, the review page, uninstall, troubleshooting.
+- [public-kit/GUIDE.md](public-kit/GUIDE.md): build a connector for another file type or app.
 - [docs/hooks.md](docs/hooks.md): how the hook adapter records and attributes changes.
 - [docs/attribution-tag.md](docs/attribution-tag.md): how a change is tied to the call that made it.
 - [docs/timeline.md](docs/timeline.md): how the review page's timeline is built.

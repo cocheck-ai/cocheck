@@ -12,7 +12,7 @@ const timeline = (calls: unknown[]): Timeline => ({ schema: "cocheck.timeline/1"
   id: "r0", index: 0, session: "s", texts: [{ text: "Do it", source: "user", label: "what you typed" }], at: null, placement: { kind: "recorded", note: "" }, closing: null, missing: [],
   runs: [{ id: "run", rule: "x", files: [], callCount: calls.length, failedCount: 0, changedFiles: [], changedAtCall: 1, endedBy: "change", missing: [], calls }] }] } as unknown as Timeline);
 
-// headings and rail labels match the mock (docs/design/review-page-v2.md): a heading is a plain verb and a file name (the path on
+// headings and rail labels match the mock (the review page v2 design): a heading is a plain verb and a file name (the path on
 // hover) under the actor's chip; helper names carry no agent type; a finish says "finished" once; a failure group reads "N runs failed";
 // a rail label is a verb and a file; skill loads, tool lookups and runner names are in plain words.
 

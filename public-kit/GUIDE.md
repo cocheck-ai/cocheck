@@ -178,10 +178,10 @@ The test cannot see your product's history, so you supply samples. Put a `sample
 
 ## 5. Install it
 
-Copy the folder (the one with `cocheck-connector.json` at its top) to `connectors/<id>/` under the CoCheck home folder (`$COCHECK_HOME`, else `~/.cocheck`):
+Copy the folder (the one with `cocheck-connector.json` at its top) to `connectors/<id>/` inside the data folder you chose when you installed CoCheck (its `--home` folder), for example `~/CoCheckData/connectors/my-connector`:
 
 ```sh
-cp -r my-connector ~/.cocheck/connectors/my-connector
+cp -r my-connector ~/CoCheckData/connectors/my-connector
 ```
 
 From then on a file the agent writes with your ending, or an MCP call your template covers, is captured and the answer is kept with the step: upgrading or removing your connector later does not change how an old step draws. For a file, the agent's hook only records the write; CoCheck's own background process asks your connector right after (or, if it was not running, when the step is first opened), so a slow connector never holds the agent up. A connector that hangs or fails gets a step that says why. A connector with a file ending is given the file's bytes and is never sent `snapshot` for a file. `spec/README.md` has the rest (credentials, which connector wins when two overlap).

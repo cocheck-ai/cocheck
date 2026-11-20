@@ -1,6 +1,6 @@
 # Installing CoCheck (Claude Code, Codex and Copilot)
 
-CoCheck records what Claude Code, Codex and Copilot change in your files, and shows you every change on a review page. Sessions start untracked: CoCheck records nothing until you start tracking (see "Start tracking" below). You need a Mac with one of those agents, or Windows with Claude Code (a test build; see "Install with npm" below). Contributors who build CoCheck on a Mac also need the Xcode command-line tools (`xcode-select --install`), which provide `swiftc` for the native helpers. Microsoft Excel and PowerPoint are optional for recording.
+CoCheck records what Claude Code, Codex and Copilot change in your files, and shows you every change on a review page. Sessions start untracked: CoCheck records nothing until you start tracking (see "Start tracking" below). You need a Mac with one of those agents, or Windows with Claude Code (a test build; see "Install with npm" below). Contributors who build CoCheck on a Mac also need the Xcode command-line tools (`xcode-select --install`), which provide `swiftc` for the native helpers. Microsoft Excel, Word and PowerPoint are optional for recording.
 
 ## Install with Homebrew (macOS)
 
@@ -11,7 +11,7 @@ brew install cocheck-ai/tap/cocheck
 cocheck install --home ~/CoCheckData
 ```
 
-`cocheck install` runs from the folder you want CoCheck to watch (or pass `--folder <dir>`). `--home` is where CoCheck keeps its data; there is no default. Step 2 of the source install below lists exactly what the installer does; it is the same installer. Add `--for codex`, `--for copilot`, a comma list such as `--for claude,codex`, or `--for all` to install the hooks for other agents; with no flag it is Claude Code only (see "Choosing the host"). Check the install with `cocheck --version`.
+`cocheck install` runs from the folder you want CoCheck to watch (or pass `--folder <dir>`). `--home` is where CoCheck keeps its data; there is no default. Step 2 of the source install below lists exactly what the installer does; it is the same installer. Add `--for codex`, `--for copilot`, a comma list such as `--for claude,codex`, or `--for all` to choose the agents; with no flag it installs for every supported agent present on this machine (see "Which hosts `cocheck install` sets up"). Check the install with `cocheck --version`.
 
 To upgrade: `brew update && brew upgrade cocheck`. The hook keeps working across upgrades, because it points at Homebrew's stable `opt` paths for CoCheck and Node.
 
@@ -103,7 +103,7 @@ Calls after it are not recorded. What was already recorded stays, and you can st
 
 ## Install from a source checkout (fallback)
 
-Use this when you cannot use Homebrew or npm. It needs Node 22.18 or newer, the CoCheck folder you were given, and the steps below. In the commands further down, `cocheck <command>` means `node /path/to/cocheck/scripts/cocheck.ts <command>`, and the installer is `node /path/to/cocheck/scripts/install.ts`.
+Use this when you cannot use Homebrew or npm. It needs Node 22.18 or newer, a clone of the CoCheck repository (`git clone https://github.com/cocheck-ai/cocheck`), and the steps below. In the commands further down, `cocheck <command>` means `node /path/to/cocheck/scripts/cocheck.ts <command>`, and the installer is `node /path/to/cocheck/scripts/install.ts`.
 
 ### 1. Install Node
 
@@ -117,7 +117,7 @@ It should print `v22.18.0` or higher.
 
 ### 2. Install CoCheck
 
-In Terminal, go to the CoCheck folder you were given (the one with `package.json` in it), then run `npm install` once. Then, from the folder you want CoCheck to watch, run the installer with a place for CoCheck's data. There is no default: you choose it.
+In Terminal, go to your CoCheck clone (the folder with `package.json` in it), then run `npm install` once. Then, from the folder you want CoCheck to watch, run the installer with a place for CoCheck's data. There is no default: you choose it.
 
 ```
 node /path/to/cocheck/scripts/install.ts --home ~/CoCheckData --folder .
@@ -128,7 +128,7 @@ node /path/to/cocheck/scripts/install.ts --home ~/CoCheckData --folder .
 The command:
 
 - checks Node, and builds CoCheck if it has not been built;
-- adds CoCheck's hooks to your Claude Code user settings (or Codex's, see `--for` below) (`~/.claude/settings.json`, or `$CLAUDE_CONFIG_DIR/settings.json`). The hook command names no Node path: a small launcher (`scripts/hook-launch.sh`) finds Node each time the hook fires, so upgrading Node does not stop recording; (On Windows the hook command starts `node` directly on `scripts/hook-launch.mjs`, the same launcher contract without a shell. If the host cannot start `node` at all, the launcher never runs and cannot write `not-recording.txt`; that case shows up as a stale last-recorded time.) Your other settings, hooks and permissions are kept. The first time, it saves the original as `settings.json.cocheck-backup` next to it, and never overwrites that backup;
+- adds CoCheck's hooks to the config of each host it installs for (see `--for` below); for Claude Code that is your user settings (`~/.claude/settings.json`, or `$CLAUDE_CONFIG_DIR/settings.json`). The hook command names no Node path: a small launcher (`scripts/hook-launch.sh`) finds Node each time the hook fires, so upgrading Node does not stop recording; (On Windows the hook command starts `node` directly on `scripts/hook-launch.mjs`, the same launcher contract without a shell. If the host cannot start `node` at all, the launcher never runs and cannot write `not-recording.txt`; that case shows up as a stale last-recorded time.) Your other settings, hooks and permissions are kept. The first time, it saves the original as `settings.json.cocheck-backup` next to it, and never overwrites that backup;
 - fires the hook once as a check through that same launcher. If the check fails, `settings.json` is put back to exactly its bytes from before the install (an `cocheck-backup` made by this run is removed too), nothing is registered, and the command exits with the reason;
 - only then registers the folder in `<home>/watched.json`, remembers the home in `~/.config/cocheck/install.json`, and prints `CoCheck is watching <folder>`, how to open the page, and the notes below.
 
@@ -138,7 +138,7 @@ What to know before you rely on it:
 - **Codex and Copilot: Mac only.** They are not supported on Windows yet.
 - **In a tracked session, CoCheck tells Claude where to save and how to open the page.** At the start of each request in a tracked session, it tells the agent (Claude Code, Codex or Copilot) to save its work inside the task folder and to run the open command when you ask to see the review. An untracked session gets no such text and nothing is recorded.
 - **Disk use** is up to 1 GB per task, for the saved before-and-after copies of your files, inside `--home`.
-- **Hook timing.** Every tool call of the host you installed for (Claude Code, Codex or Copilot) runs CoCheck's hook twice, before and after it. Together that is held under 1 second per call (median: 457 ms, measured with `scripts/hook-timing.ts`).
+- **Hook timing.** Every tool call of the host you installed for (Claude Code, Codex or Copilot) runs CoCheck's hook twice, before and after it. Together that is held under 1 second per call (`scripts/hook-timing.ts` measures it on your machine).
 - **Copilot (CLI and VS Code agent mode).** `--for copilot` writes one file, `~/.copilot/hooks/cocheck.json` (or `$COPILOT_HOME/hooks/`); uninstall removes it and leaves the rest of `~/.copilot` as it was. Copilot gives a hook no way to hand words to the agent at a prompt, so the "save inside the task folder" text reaches Copilot only through the `cocheck` skill (`~/.copilot/skills`). Calls a helper (subagent) makes are credited to that helper. VS Code sends no helper id on them, so CoCheck links them to the main session by the task's prompt, else holds them for up to 15 minutes until the main session's `subagentStop` names the helper; a helper of an untracked session is never recorded. A shell command that fails is read from the exit code in Copilot's result text. If you turn on Copilot's sandbox, its hooks stop working until `sandbox.userPolicy.filesystem.readwritePaths` in `~/.copilot/settings.json` lists the CoCheck folder and your data folder (`cocheck install` and `cocheck status` print both); CoCheck never edits that file. The Copilot cloud coding agent is not supported: it runs on GitHub's machines, outside the Mac and outside user-level hooks.
 
 If the settings file is not valid JSON, the command stops with a message and changes nothing. A symlinked settings file is edited in place.
@@ -151,9 +151,9 @@ CoCheck's hooks run for every session of the host on the machine, but they do no
 
 ### Choosing the host: `--for`
 
-`--for <claude|codex|copilot|both|all|none>` (or a comma list such as `claude,copilot`) picks which agent gets CoCheck's hooks; `both` is `claude,codex` and `all` is every host with an installer. With no flag the installer does what it always did: Claude Code only.
+`--for <claude|codex|copilot|both|all|none>` (or a comma list such as `claude,copilot`) picks which agent gets CoCheck's hooks; `both` is `claude,codex` and `all` is every host with an installer. With no flag the installer sets up every host that is present (see "Which hosts `cocheck install` sets up" above).
 
-- `claude` is the default described above.
+- `claude` installs for Claude Code, as described above.
 - `codex` adds the hooks to Codex's config, `$CODEX_HOME/config.toml` (`~/.codex/config.toml` when `CODEX_HOME` is unset). CoCheck appends `[[hooks.X]]` entries for `PreToolUse`, `PostToolUse`, `Stop` and `UserPromptSubmit`, each line ending in `# cocheck`, and does not touch `[features]`: Codex's docs say hooks are on by default, and no source names a version where that changed, so there is no version check. An install by an older CoCheck that wrote `hooks = true` is cleaned up on reinstall or uninstall; a `hooks = false` of yours stays and keeps Codex from running any hook. `--for codex` reuses `--home` and `--folder` from the last install when you leave them out. Your own lines stay as they are, byte for byte. The Codex hook has no `--folder`: Codex tells the hook which folder it is working in (the payload's `cwd`), and the hook records only when that folder is inside a watched one.
 - `both` does the two together. If either host's check fails, both configs are put back to their bytes from before the install.
 - `none` sets up the data folder, the watched folder and the review page, and puts no hooks in any host.
@@ -162,7 +162,7 @@ CoCheck's hooks run for every session of the host on the machine, but they do no
 
 Codex refuses a config that defines hooks twice, so the installer stops, and changes nothing for any host, when `config.toml` already has a `[hooks]` or `[hooks.X]` table, or top-level `hooks.X = [...]` keys. Move your hooks to `[[hooks.X]]` tables and run it again.
 
-Each config CoCheck touches is saved first as `<file>.cocheck-backup` (the first backup is never overwritten). Uninstall takes the same flag: `cocheck uninstall --for codex` removes only CoCheck's entries (the lines ending in `# cocheck`) from the Codex config and leaves Claude Code installed; with no flag it removes the Claude Code entries only, as before. The review process stops and the install record goes only when no host is left. `cocheck status` lists each host as installed or not installed.
+Each config CoCheck touches is saved first as `<file>.cocheck-backup` (the first backup is never overwritten). Uninstall takes the same flag: `cocheck uninstall --for codex` removes only CoCheck's entries (the lines ending in `# cocheck`) from the Codex config and leaves Claude Code installed; with no flag it removes the entries of every host the install recorded. The review process stops and the install record goes only when no host is left. `cocheck status` lists each host as installed or not installed.
 
 ### 3. Start tracking
 
