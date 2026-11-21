@@ -3521,7 +3521,7 @@ function opKeyOf(argsJson: string): string | undefined {
 }
 
 /**
- * The named-file miss rate for a task (criterion 3 of the probe): of the calls that changed a workbook
+ * The named-file miss rate for a task (criterion 3 of the probe): of the calls that changed a file
  * themselves, how many changed one their input did not name. Overlap-attributed changes belong to no call
  * alone and are left out. Not a gate; it sizes how much rests on the diff rather than on the call's own words.
  */

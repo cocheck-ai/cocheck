@@ -10,7 +10,7 @@
 # file), and the formula copy into a tap checkout.
 #
 # Before anything else runs (only `npm ci`, which the gate needs for its zip reader), the whole history reachable from HEAD goes through the gate
-# (`public-gate.ts --git-history`); a hit refuses the release.
+# (`public-gate.ts --git-history`); a hit refuses the release, and a gate that cannot run stops it with its own message.
 #
 # The suite record: a full, clean, green `npm test` writes `<git dir>/cocheck-test-pass/<HEAD sha>` (scripts/lib/test-pass-record.ts). A HEAD with a record
 # skips the suite here ("release: suite already passed on <sha>"); typecheck always runs. COCHECK_RELEASE_CHECKS replaces the checks entirely
@@ -71,16 +71,25 @@ check_unchanged() {
 }
 
 # The gate's file scan reads zip files with fflate, and node resolves that import as the gate loads, even for --git-history. Without the
-# dependencies installed a fresh clone would fail here with an error read as "the history holds commits the gate refuses", so npm ci comes first.
+# dependencies installed a fresh clone would fail here (reported as a gate that could not run), so npm ci comes first.
 npm ci
 
 # The first real check, before the build and the suite: a tag push publishes every commit reachable from HEAD, and that cannot be undone. The private
 # repository's history names its owner and its internal work, so the gate's denylist judges every commit's author, committer and message here.
 [ -f "$root/scripts/public-gate.ts" ] || fail "scripts/public-gate.ts is missing; the release cannot be checked for public safety"
-history=$(node "$root/scripts/public-gate.ts" --git-history "$root") || {
-  echo "$history" | head -n 10 >&2
-  fail "the history holds commits the public gate refuses (first hits above: <sha> <field>: <rule id>); run the release from the public checkout, not the private repo. Nothing was tagged."
-}
+# Exit 1 with hit lines is a verdict on the commits. Anything else is the gate failing to run: its own exit 2, or node's exit 1 on an uncaught
+# error (a missing import), which prints no hit line. Only the first is reported as refused commits.
+history_rc=0
+history=$(node "$root/scripts/public-gate.ts" --git-history "$root") || history_rc=$?
+if [ "$history_rc" -ne 0 ]; then
+  hit_re='^[0-9a-f]{8} (author-name|author-email|committer-name|committer-email|message): '
+  if [ "$history_rc" -eq 1 ] && printf '%s\n' "$history" | grep -E "$hit_re" >/dev/null; then
+    printf '%s\n' "$history" | head -n 10 >&2
+    fail "the history holds commits the public gate refuses (first hits above: <sha> <field>: <rule id>); run the release from the public checkout, not the private repo. Nothing was tagged."
+  fi
+  [ -z "$history" ] || printf '%s\n' "$history" | head -n 10 >&2
+  fail "the public gate could not run on the history (exit $history_rc; its error is above); this is not a verdict on the commits. Fix the gate and release again. Nothing was tagged."
+fi
 
 npm run build
 if [ -n "${COCHECK_RELEASE_CHECKS:-}" ]; then

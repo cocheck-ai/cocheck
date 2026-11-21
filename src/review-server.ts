@@ -507,9 +507,9 @@ async function handleView(ledger: Ledger, home: string, deps: TimelineDeps, res:
   const rows = change.format?.rows ?? [];
   const changeSentence = rows.length === 0 ? undefined : `${rows.slice(0, 3).map((r) => (r.text.startsWith(r.location) ? r.text : `${r.location}: ${r.text.replace(/^[a-z ]+: /, "")}`)).join("; ")}${rows.length > 3 ? ` (and ${rows.length - 3} more)` : ""}.`;
   const view = await renderer.view(before, after, { ...(whole === undefined ? {} : { whole }), ...(changeSentence === undefined ? {} : { changeSentence }), id: change.id, file: change.file, kind: change.kind, generic: change.generic as ChangeInfo["generic"], missing: [...missing, ...(change.generic.readerCaveats ?? [])], signal: goneSignal(res) });
-  // The words of each card come from the rail model's own card and row-note path (the one that scrubs paths and secrets); a secret file's model change has none.
+  // The words of each change come from the rail model's own row notes (the path that scrubs paths and secrets); a secret file's model change has none.
   const railChange = buildRailModel(timeline, { connectorFor: connectorMatcherFor(home) }).stops.flatMap((st) => (st.change !== undefined && st.change.key === change.id ? [st.change] : []))[0];
-  const words: CardWords = { cards: [...(railChange?.cards ?? []), ...(railChange?.extraCards ?? [])], rowNotes: railChange?.rowNotes ?? [] };
+  const words: CardWords = { rowNotes: railChange?.rowNotes ?? [] };
   return send(res, 200, JSON.stringify(viewToV1(view, words)), "application/json; charset=utf-8", { "cache-control": "private, no-store" });
 }
 

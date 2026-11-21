@@ -1,15 +1,12 @@
 // the one adapter from a renderer's View (src/timeline/render/types.ts) to a cocheck.changes/1 level-3 document, at the serve boundary
 // (src/review-server.ts handleView). The page reads only the document. Envelope allow-list, exactly: engine, file, kind, pending, banner, caveats
 // (plus the document's own spec, changes, pictures, and `source`, which carries the level). Product-only data (grids, text panes and the page's
-// own drawing hints) lives only in `private`: pictures[].private and changes[].private. The words of a change come from the model's own cards and
-// row notes (the path that already scrubs paths and secrets), never from the View. No `system`, no document `level`, no `box.side` (a box's side is its picture's).
+// own drawing hints) lives only in `private`: pictures[].private and changes[].private. The words of a change come from the model's own row notes
+// (the path that already scrubs paths and secrets) or the View change's label, never from other View text. No `system`, no document `level`, no `box.side` (a box's side is its picture's).
 import { checkChanges, CHANGES_SPEC } from "../../connector/changes-v1.ts";
-import type { RowCard } from "../notes.ts";
 import type { Box, ChangeBox, Pane, View, ViewChange } from "./types.ts";
 
 export interface CardWords {
-  /** The model's cards of the change (`cards` then `extraCards`). */
-  cards: RowCard[];
   /** The model's row notes of the change. */
   rowNotes: Array<{ location: string; text: string }>;
 }
@@ -26,7 +23,6 @@ export interface V1Doc { spec: string; level?: number; source?: V1Source; change
 const SHA = /^[0-9a-f]{64}$/;
 const CELL = /^[A-Za-z]{1,3}[1-9]\d*(?::[A-Za-z]{1,3}[1-9]\d*)?$/;
 const NOT_MARKED = "not marked";
-const flat = (t: string | null | undefined): string => (t == null ? "" : t.replace(/\s+/g, " ").trim());
 const num = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 const rectOk = (r: unknown): r is { x: number; y: number; w: number; h: number } => typeof r === "object" && r !== null && num((r as { x: unknown }).x) && num((r as { y: unknown }).y) && num((r as { w: unknown }).w) && num((r as { h: unknown }).h);
 const paneKey = (id: string): string => id.replace(/^(before|after):/, "");
@@ -81,18 +77,8 @@ function anchorOf(byId: Map<string, V1Picture>, idOf: Map<string, string>, side:
 // ---- words -----------------------------------------------------------------------------------------------------------------------------
 
 type Words = Pick<V1Change, "label" | "mark" | "before" | "after" | "text">;
-const textOf = (s: string | null | undefined): { text?: string } => (typeof s === "string" && s.trim() !== "" ? { text: s.trim() } : {});
-
-/** A card as one change's words: the full old and new words (the page clips them for the notes column), the verb as the mark, the card's own sentence as `text`. */
-function cardWords(c: RowCard): Words {
-  const before = flat(c.full ? c.full.before : c.before), after = flat(c.full ? c.full.after : c.after);
-  const mark = c.verb === "Added" ? "added" : c.verb === "Removed" ? "removed" : before !== "" && after !== "" ? "changed" : before === "" && after === "" ? "described" : "changed";
-  return { label: c.place !== "" ? c.place : (c.loc ?? "Change"), mark, ...(before !== "" ? { before } : {}), ...(after !== "" ? { after } : {}), ...textOf(c.text) };
-}
 
 function wordsFor(vc: Pick<ViewChange, "loc" | "label">, w: CardWords): Words {
-  const card = vc.loc === null ? undefined : w.cards.find((c) => c.loc === vc.loc);
-  if (card !== undefined) return cardWords(card);
   const note = vc.loc === null ? undefined : w.rowNotes.find((r) => r.location === vc.loc);
   if (note !== undefined) return { label: vc.loc!, mark: "changed", text: String(note.text) };
   return { label: "Change", mark: "described", text: vc.label !== undefined && vc.label !== "" ? vc.label : "Changed" };

@@ -12,6 +12,6 @@ export function exportDocOf(connector: string, subject: string, before: string |
   const renderer = createRegistry().rendererFor("export.txt", { tier: "text" } as ChangeInfo["generic"]);
   const view = renderer.view(before === null ? null : Buffer.from(before, "utf8"), after === null ? null : Buffer.from(after, "utf8"), { id: "export", file: subject.split(/[\\/]/).pop() || subject, kind });
   if (view instanceof Promise) throw new Error("the text renderer is synchronous");
-  const doc = viewToV1(view, { cards: [], rowNotes: [] });
+  const doc = viewToV1(view, { rowNotes: [] });
   return { ...doc, source: { by: "cocheck", name: connector, level: doc.source?.level ?? 3 } };
 }

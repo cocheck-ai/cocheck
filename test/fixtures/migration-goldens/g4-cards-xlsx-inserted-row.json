@@ -1,10 +1,8 @@
 {
  "changes": [
   {
-   "cards": [],
    "file": "model.xlsx",
    "kind": "modified",
-   "moreCards": 0,
    "note": "Something, during agent calls, made several changes inside model.xlsx",
    "rowNotes": [],
    "viewUrl": "/timeline/1/view/c2"

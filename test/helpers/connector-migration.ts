@@ -286,7 +286,7 @@ export async function pageOf(model: unknown, views: (change: string, file: strin
   return out;
 }
 
-/** G4: what the page (review.js) draws for each change of the snapshot: pane tabs, note-card text and the open-in-app buttons, plus the model's own card data. */
+/** G4: what the page (review.js) draws for each change of the snapshot: pane tabs, note-card text and the open-in-app buttons, plus the model's change fields. */
 export async function captureG4(name: string, patch?: (file: string, source: string) => string): Promise<unknown> {
   const snap = readSnapshot(name);
   const { model, diffOf } = await replay(snap);
@@ -298,8 +298,6 @@ export async function captureG4(name: string, patch?: (file: string, source: str
     page,
     changes: model.stops.flatMap((s) => (s.change === undefined ? [] : [s.change])).map((c) => ({
       file: c.file, kind: c.kind, note: c.note,
-      cards: (c.cards ?? []).map((k) => ({ place: k.place, text: k.text, verb: k.verb, loc: k.loc, full: k.full })),
-      moreCards: c.moreCards ?? 0,
       rowNotes: c.rowNotes.map((r) => r.location),
       viewUrl: c.viewUrl,
     })),

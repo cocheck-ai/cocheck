@@ -2,7 +2,7 @@ import { pathKit } from "../../paths.ts";
 import { defaultProfile } from "../../hosts/index.ts";
 import { isSecretPath, secretLine } from "../../secret-files.ts";
 import { HELPER_LANE, MAIN_LANE, OUTSIDE_LANE_ACTOR, UNSURE_LANE, UNSURE_LANE_ACTOR, byOf, hostName, laneKeyOf, laneOf, railActor, sideText, speakAs, type By } from "../attribution.ts";
-import { SAME_CONTENT_AS, moreText, type RowCard } from "../notes.ts";
+import { SAME_CONTENT_AS, moreText } from "../notes.ts";
 import type { Change, Timeline, TimelineCall, TimelineRequest, TimelineWake } from "../timeline.ts";
 import { NOTICE_LABEL } from "../timeline.ts";
 import { isLauncherTool, isReadOnlyMcpTool } from "../../credit-guard.ts";
@@ -74,14 +74,6 @@ export interface RailChange {
   rowNotes: RailRowNote[];
   /** When the format layer's list was capped, one sentence on how many changes have no note and where they are; null otherwise. */
   moreNote: string | null;
-  /**
-   * Always absent: no row carries a card, so the model no longer builds `cards`, `moreCards` or `extraCards`.
-   * They stay typed only for view-v1's card words path, which review-server and about 15 page tests still feed, and a helper that is not to change.
-   * They are to be removed together with that path.
-   */
-  cards?: RowCard[];
-  moreCards?: number;
-  extraCards?: RowCard[];
   /** A change too big to read cell by cell (`REWRITE_AT` places or more): the page draws one card, `note`, and no cell notes. */
   rewrite?: true;
   viewUrl: string | null;

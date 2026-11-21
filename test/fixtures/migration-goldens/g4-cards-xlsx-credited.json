@@ -1,46 +1,36 @@
 {
  "changes": [
   {
-   "cards": [],
    "file": "model.xlsx",
    "kind": "modified",
-   "moreCards": 0,
    "note": "Helper 1 changed Sheet1!D5 from =SUM(D2:D4) to =AVERAGE(D2:D4)",
    "rowNotes": [],
    "viewUrl": "/timeline/1/view/c2"
   },
   {
-   "cards": [],
    "file": "book.xlsx",
    "kind": "created",
-   "moreCards": 0,
    "note": "Sheet Sheet1 created: 5 rows by 4 columns, 18 cells (4 formulas)",
    "rowNotes": [],
    "viewUrl": "/timeline/1/view/c3"
   },
   {
-   "cards": [],
    "file": "book.xlsx",
    "kind": "modified",
-   "moreCards": 0,
    "note": "Something outside the agents made several changes inside book.xlsx",
    "rowNotes": [],
    "viewUrl": "/timeline/1/view/c4"
   },
   {
-   "cards": [],
    "file": "plan.xlsx",
    "kind": "created",
-   "moreCards": 0,
    "note": "Sheet Sheet1 created: 5 rows by 4 columns, 18 cells (4 formulas)",
    "rowNotes": [],
    "viewUrl": "/timeline/1/view/c5"
   },
   {
-   "cards": [],
    "file": "plan.xlsx",
    "kind": "modified",
-   "moreCards": 0,
    "note": "Claude or Helper 1 made several changes inside plan.xlsx",
    "rowNotes": [],
    "viewUrl": "/timeline/1/view/c6"
