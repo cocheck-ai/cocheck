@@ -1,10 +1,8 @@
 {
  "changes": [
   {
-   "cards": [],
    "file": "memo.docx",
    "kind": "modified",
-   "moreCards": 0,
    "note": "Something, during agent calls, made several changes inside memo.docx",
    "rowNotes": [],
    "viewUrl": "/timeline/1/view/c2"

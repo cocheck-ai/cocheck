@@ -29,13 +29,20 @@ after(async () => {
 });
 
 describe("writeFileAtomicSync over a busy target", () => {
-  it("Windows: a target another process holds open for half a second is replaced once it lets go", { skip: !WIN }, async () => {
+  it("Windows: a target another process holds open is replaced once it lets go, 300 ms into the write", { skip: !WIN }, async () => {
     const dir = newDir();
     const file = path.join(dir, "review-server.json");
     writeFileSync(file, "old");
+    const q = (p: string): string => p.replace(/'/g, "''");
     // Opened without share-delete, as a scanner or another reader may: Windows refuses any rename over it while it is open.
+    // The hold ends 300 ms after the write's own temp file appears, so it is timed against the write's retry window, not against the clock
+    // since PowerShell printed 'open'. Only .NET calls after 'open': a cmdlet such as Start-Sleep can autoload its module on first use. The old
+    // hold (Start-Sleep 700 ms after 'open') once outlasted the 2 s retry window on a loaded runner, where PowerShell took twice its usual start.
+    const tmp = `${file}.${process.pid}.tmp`;
     const ps = spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command",
-      `$f = [IO.File]::Open('${file.replace(/'/g, "''")}', 'Open', 'Read', 'Read'); [Console]::Out.WriteLine('open'); [Console]::Out.Flush(); Start-Sleep -Milliseconds 700; $f.Close()`], { stdio: ["ignore", "pipe", "inherit"] });
+      `$f = [IO.File]::Open('${q(file)}', 'Open', 'Read', 'Read'); [Console]::Out.WriteLine('open'); [Console]::Out.Flush(); ` +
+      `$w = [Diagnostics.Stopwatch]::StartNew(); while (-not [IO.File]::Exists('${q(tmp)}') -and $w.ElapsedMilliseconds -lt 30000) { [Threading.Thread]::Sleep(5) }; ` +
+      `[Threading.Thread]::Sleep(300); $f.Close()`], { stdio: ["ignore", "pipe", "inherit"] });
     const exited = new Promise((r) => ps.once("exit", r));
     await new Promise<void>((resolve, reject) => {
       ps.stdout.on("data", (d: Buffer) => d.toString().includes("open") && resolve());

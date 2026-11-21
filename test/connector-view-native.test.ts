@@ -100,7 +100,7 @@ describe("model: the connector change is drawn from the DiffObject, credited lik
     const c = connStop(model).change!;
     assert.match(c.viewUrl!, /\/view\//);
     assert.equal("openExcel" in c, false);
-    assert.equal(c.cards, undefined);
+    assert.equal("cards" in c, false);
     assert.equal(c.secret, false);
     assert.ok(fileStop(model).change!.viewUrl !== null, "the file row keeps its view");
   });

@@ -349,6 +349,30 @@ describe("release.sh judges the whole history before anything runs", { skip: NO_
     refused(s, "message");
   });
 
+  // A gate that cannot run says nothing about the commits. Node exits 1 on an uncaught error (a missing import, a bad file), the same code
+  // the gate uses for hits, so only hit lines on stdout may make it a verdict on the history.
+  const crashed = (gate: string) => {
+    const s = scratch();
+    writeFileSync(path.join(s.dir, "scripts", "public-gate.ts"), gate);
+    git(s.dir, "commit", "-aqm", "a gate that cannot run");
+    const { r, text, marks } = release(s);
+    assert.notEqual(r.status, 0, text);
+    assert.equal(/history holds commits/.test(text), false, `a crash is not reported as refused commits:\n${text}`);
+    assert.match(text, /the public gate could not run on the history \(exit [12];/);
+    assert.match(text, /not a verdict on the commits/);
+    assert.deepEqual(marks, [], "stopped before typecheck, the suite or the build");
+    assert.equal(tags(s.dir), "");
+    assert.equal(existsSync(s.out), false, "stopped before packing");
+  };
+
+  it("a gate that throws as it loads (node's exit 1, no hit lines) is reported as a crash, not as refused commits", () => {
+    crashed(`throw new Error("Cannot find package 'fflate'");\n`);
+  });
+
+  it("a gate that says it cannot run (exit 2) is reported as a crash", () => {
+    crashed(`console.error("public-gate: cannot run: denylist has no patterns"); process.exit(2);\n`);
+  });
+
   it("a bot-only history passes the check and the release is cut", () => {
     const s = scratch();
     realGate(s);

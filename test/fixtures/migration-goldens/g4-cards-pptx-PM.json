@@ -1,10 +1,8 @@
 {
  "changes": [
   {
-   "cards": [],
    "file": "deck.pptx",
    "kind": "modified",
-   "moreCards": 0,
    "note": "Something, during agent calls, changed Slide 2 / Text 14 from at 6.9, 2.5 in to at 7.87, 2.5 in",
    "rowNotes": [],
    "viewUrl": "/timeline/1/view/c2"

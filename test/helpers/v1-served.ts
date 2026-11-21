@@ -1,17 +1,47 @@
 // What the serve boundary sends the page. The page reads only the v1 document, so every test that boots review.js feeds it this.
 import { viewToV1, type CardWords, type V1Doc } from "../../src/timeline/render/view-v1.ts";
+import type { RowCard } from "../../src/timeline/notes.ts";
 import type { View } from "../../src/timeline/render/types.ts";
 
-/** The model's change as the page's tests build it (cards, extraCards, rowNotes), as the card words the server uses. */
-export const wordsOf = (c?: { cards?: unknown[]; extraCards?: unknown[]; rowNotes?: unknown[] } | null): CardWords => ({
-  cards: [...((c?.cards ?? []) as CardWords["cards"]), ...((c?.extraCards ?? []) as CardWords["cards"])],
-  rowNotes: (c?.rowNotes ?? []) as CardWords["rowNotes"],
-});
+/** A test's change: the model's row notes, plus `cards`/`extraCards` that hand a change its old and new words (see withCardWords). */
+type TestChange = { cards?: unknown[]; extraCards?: unknown[]; rowNotes?: unknown[] } | null | undefined;
+
+/** The model's change as the page's tests build it, as the words the server uses (its row notes). */
+export const wordsOf = (c?: TestChange): CardWords => ({ rowNotes: (c?.rowNotes ?? []) as CardWords["rowNotes"] });
+
+const flat = (t: string | null | undefined): string => (t == null ? "" : t.replace(/\s+/g, " ").trim());
+
+/**
+ * The server builds a change's words from row notes and labels only; old and new words reach the page in a document whose producer wrote
+ * them (a connector's change list). The page tests hand those words as cards matched to a View change by `loc`, and this writes them onto
+ * the served change the way such a document carries them: the place as the label, the verb as the mark, before, after and the sentence.
+ */
+function withCardWords(doc: V1Doc, view: View, c: TestChange): V1Doc {
+  const cards = [...((c?.cards ?? []) as RowCard[]), ...((c?.extraCards ?? []) as RowCard[])];
+  if (cards.length === 0) return doc;
+  const byId = new Map<string, RowCard>();
+  for (const vc of view.changes ?? []) {
+    const card = vc.loc === null ? undefined : cards.find((k) => k.loc === vc.loc);
+    if (card !== undefined) byId.set(vc.id, card);
+  }
+  return {
+    ...doc,
+    changes: doc.changes.map((ch) => {
+      const k = byId.get(ch.id);
+      if (k === undefined) return ch;
+      const before = flat(k.full ? k.full.before : k.before), after = flat(k.full ? k.full.after : k.after);
+      const mark = k.verb === "Added" ? "added" : k.verb === "Removed" ? "removed" : before === "" && after === "" ? "described" : "changed";
+      const { id, label: _l, mark: _m, before: _b, after: _a, text: _t, ...rest } = ch;
+      const text = typeof k.text === "string" && k.text.trim() !== "" ? { text: k.text.trim() } : {};
+      return { id, label: k.place !== "" ? k.place : (k.loc ?? "Change"), mark, ...(before !== "" ? { before } : {}), ...(after !== "" ? { after } : {}), ...text, ...rest };
+    }),
+  };
+}
 
 /** A test's hand-built View (any field may be left out) as the document the server would send for it. */
-export function served(view: Record<string, unknown>, change?: { cards?: unknown[]; extraCards?: unknown[]; rowNotes?: unknown[] } | null): V1Doc {
+export function served(view: Record<string, unknown>, change?: TestChange): V1Doc {
   const v = { change: "c1", file: "book.xlsx", engine: "", kind: "grid", before: [], after: [], boxes: [], caveats: [], ...view } as unknown as View;
-  return viewToV1(v, wordsOf(change));
+  return withCardWords(viewToV1(v, wordsOf(change)), v, change);
 }
 
 /** The document for a view request url: the model's own change for the key in the url supplies the card words, as at the serve boundary. */
