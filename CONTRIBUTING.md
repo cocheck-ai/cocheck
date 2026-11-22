@@ -53,8 +53,27 @@ This follows one hook event from the agent's host to the review page. [docs/hook
 
 **Hosts and operating systems.**
 
-- Everything specific to one host is a profile in `src/hosts/` (`claude.ts`, `codex.ts`, `copilot.ts`). `src/hosts/index.ts` lists them, and the core asks a profile rather than comparing host names.
+- Everything specific to one host is a profile: a manifest under `harnesses/` (Claude Code, Codex and Copilot), compiled in `src/hosts/`, with first-party extras in `claude.ts`, `codex.ts` and `copilot.ts`. `src/hosts/index.ts` lists them, and the core asks a profile rather than comparing host names.
 - Operating system code goes behind `platform()` in `src/platform/`, which returns the implementation for the running OS. A few older OS branches still sit outside that folder; do not add more.
+
+## Add a harness by PR
+
+A harness is an AI agent that CoCheck reads through its hooks. Adding one is a data change: no file under `src/` should change, and a diff that touches `src/` for a new harness means the manifest is missing a field the spec should have. The full guide is [public-kit/harness/GUIDE.md](public-kit/harness/GUIDE.md); the specification is `public-kit/harness/spec/v1.md`.
+
+1. Record a real session: `cocheck harness record <key> --manifest <manifest> --out <dir> -- <command that starts the agent>`. It writes `payloads.jsonl`, scrubs emails and your home path, and fails rather than write a token-shaped string.
+2. Write the manifest, `cocheck-harness.json`, from the recording. `cocheck harness create <key>` gives you a starter.
+3. Write cases: a recorded run plus what CoCheck must make of it.
+4. Run them: `cocheck harness test --cases <cases dir> --manifest <manifest folder>`. Every case must pass. Run `npm run test:fast` too.
+5. Open the pull request with `git diff --stat -- src` empty.
+
+Where the files go:
+
+- Manifest: `harnesses/<key>/cocheck-harness.json` for a harness that ships built in. The folder name is the key.
+- Cases: `public-kit/harness/cases/<key>/`.
+- Recording and a short README saying how it was made: beside the cases.
+- A harness the maintainers do not ship built in goes under `public-kit/harness/harnesses/<key>/` instead (manifest, `recordings/`, `cases/`, README), as `cursor` and `antigravity` do.
+- If the agent has a platform record, add `platforms/<key>/` as `platforms/README.md` describes.
+- Run `node scripts/readme-agents.ts --write` so the README's Supported agents table lists it (a fast test fails when the table is out of date).
 
 ## Changes
 

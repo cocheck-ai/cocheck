@@ -1,0 +1,177 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "codex",
+  "description": "Codex 0.169: apply_patch adds notes.txt and updates data.csv between two shell reads. The whole recording; the rollout is left out.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "SessionStart",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"cwd\":\"<folder>\",\"hook_event_name\":\"SessionStart\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"source\":\"startup\"}",
+      "argv": []
+    },
+    {
+      "event": "UserPromptSubmit",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"UserPromptSubmit\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"prompt\":\"Step 1: run cat data.csv. Step 2: use apply_patch to create notes.txt with three lines (alpha, beta, gamma). Step 3: use apply_patch to modify data.csv, changing its second row to 9,9,9. Do not use shell commands to write files.\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"cat data.csv\"},\"tool_use_id\":\"exec-442ba401-74d8-4ae9-8691-65e73adc62e8\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"cat data.csv\"},\"tool_response\":\"a,b,c\\n1,2,3\\n4,5,6\\n7,8,9\\n\",\"tool_use_id\":\"exec-442ba401-74d8-4ae9-8691-65e73adc62e8\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"apply_patch\",\"tool_input\":{\"command\":\"*** Begin Patch\\n*** Add File: notes.txt\\n+alpha\\n+beta\\n+gamma\\n*** End Patch\"},\"tool_use_id\":\"exec-6363ae33-dbd3-4c24-8f44-d1917e827215\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"apply_patch\",\"tool_input\":{\"command\":\"*** Begin Patch\\n*** Add File: notes.txt\\n+alpha\\n+beta\\n+gamma\\n*** End Patch\"},\"tool_response\":\"Exit code: 0\\nWall time: 0 seconds\\nOutput:\\nSuccess. Updated the following files:\\nA notes.txt\\n\",\"tool_use_id\":\"exec-6363ae33-dbd3-4c24-8f44-d1917e827215\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"apply_patch\",\"tool_input\":{\"command\":\"*** Begin Patch\\n*** Update File: data.csv\\n@@\\n a,b,c\\n-1,2,3\\n+9,9,9\\n 4,5,6\\n*** End Patch\"},\"tool_use_id\":\"exec-e2ee313b-8c0c-444d-bc4a-db9a11e4b94f\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"apply_patch\",\"tool_input\":{\"command\":\"*** Begin Patch\\n*** Update File: data.csv\\n@@\\n a,b,c\\n-1,2,3\\n+9,9,9\\n 4,5,6\\n*** End Patch\"},\"tool_response\":\"Exit code: 0\\nWall time: 0 seconds\\nOutput:\\nSuccess. Updated the following files:\\nM data.csv\\n\",\"tool_use_id\":\"exec-e2ee313b-8c0c-444d-bc4a-db9a11e4b94f\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"cat notes.txt data.csv\"},\"tool_use_id\":\"exec-4157878e-bfa3-4be2-9991-54107363af10\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"cat notes.txt data.csv\"},\"tool_response\":\"alpha\\nbeta\\ngamma\\na,b,c\\n9,9,9\\n4,5,6\\n7,8,9\\n\",\"tool_use_id\":\"exec-4157878e-bfa3-4be2-9991-54107363af10\"}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"turn_id\":\"01a20087-e9d8-7bb3-a62f-ff538e0a4123\",\"cwd\":\"<folder>\",\"hook_event_name\":\"Stop\",\"model\":\"gpt-6.2-sol\",\"permission_mode\":\"bypassPermissions\",\"stop_hook_active\":false,\"last_assistant_message\":\"Created [notes.txt](<folder>/notes.txt) with `alpha`, `beta`, and `gamma` on separate lines. Changed the second row of [data.csv](<folder>/data.csv:2) from `1,2,3` to `9,9,9`.\\n\\nUsed `apply_patch` for both edits and verified both files with `cat`.\"}",
+      "argv": []
+    },
+    {
+      "event": "SessionEnd",
+      "stdin": "{\"session_id\":\"01a20087-e556-72d1-87a6-98775c29fdbd\",\"cwd\":\"<folder>\",\"hook_event_name\":\"SessionEnd\",\"reason\":\"other\"}",
+      "argv": []
+    }
+  ],
+  "files": {
+    "before": {
+      "data.csv": "a,b,c\n1,2,3\n4,5,6\n"
+    },
+    "writes": [
+      {
+        "afterEvent": 5,
+        "path": "notes.txt",
+        "content": "alpha\nbeta\ngamma\n"
+      },
+      {
+        "afterEvent": 7,
+        "path": "data.csv",
+        "content": "a,b,c\n9,9,9\n4,5,6\n"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "other",
+        "eventName": "SessionStart",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd"
+      },
+      {
+        "kind": "prompt",
+        "eventName": "UserPromptSubmit",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "prompt": "Step 1: run cat data.csv. Step 2: use apply_patch to create notes.txt with three lines (alpha, beta, gamma). Step 3: use apply_patch to modify data.csv, changing its second row to 9,9,9. Do not use shell commands to write files."
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "toolName": "Bash",
+        "callId": "exec-442ba401-74d8-4ae9-8691-65e73adc62e8"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "toolName": "Bash",
+        "callId": "exec-442ba401-74d8-4ae9-8691-65e73adc62e8"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "toolName": "apply_patch",
+        "callId": "exec-6363ae33-dbd3-4c24-8f44-d1917e827215"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "toolName": "apply_patch",
+        "callId": "exec-6363ae33-dbd3-4c24-8f44-d1917e827215"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "toolName": "apply_patch",
+        "callId": "exec-e2ee313b-8c0c-444d-bc4a-db9a11e4b94f"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "toolName": "apply_patch",
+        "callId": "exec-e2ee313b-8c0c-444d-bc4a-db9a11e4b94f"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "toolName": "Bash",
+        "callId": "exec-4157878e-bfa3-4be2-9991-54107363af10"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "toolName": "Bash",
+        "callId": "exec-4157878e-bfa3-4be2-9991-54107363af10"
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd",
+        "lastAssistantMessage": "Created [notes.txt](<folder>/notes.txt) with `alpha`, `beta`, and `gamma` on separate lines. Changed the second row of [data.csv](<folder>/data.csv:2) from `1,2,3` to `9,9,9`.\n\nUsed `apply_patch` for both edits and verified both files with `cat`."
+      },
+      {
+        "kind": "other",
+        "eventName": "SessionEnd",
+        "session": "01a20087-e556-72d1-87a6-98775c29fdbd"
+      }
+    ],
+    "credit": {
+      "notes.txt": {
+        "creditedTo": "call:exec-6363ae33-dbd3-4c24-8f44-d1917e827215",
+        "basis": "host-reported-edit"
+      },
+      "data.csv": {
+        "creditedTo": "call:exec-e2ee313b-8c0c-444d-bc4a-db9a11e4b94f",
+        "basis": "host-reported-edit"
+      }
+    }
+  }
+}

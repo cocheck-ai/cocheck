@@ -154,7 +154,7 @@ const STATE = [
   "",
 ].join("\n");
 describe("hooks.state trust tables", async () => {
-  const { codex } = await import("../src/hosts/codex.ts");
+  const codex = (await import("../src/hosts/index.ts")).profileOf("codex");
   const add = (t: string) => codex.install!.addHooks!(t, "config.toml", { dataHome: "/h", launcher: "/l.sh", hookPath: "/hook.js", host: "codex" });
 
   it("accepts a config whose only hooks tables are hooks.state, and keeps them byte for byte", () => {

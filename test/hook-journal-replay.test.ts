@@ -9,7 +9,7 @@ import { runCorpus } from "./hook-corpus.ts";
 const golden = (host: string) => readFile(path.join(import.meta.dirname, "fixtures", "hook-goldens", `golden-${host}.json`), "utf8").then((t) => JSON.parse(t));
 
 describe("corpus replay equals the pre-change golden ledger", () => {
-  for (const host of ["claude", "codex"] as const) {
+  for (const host of ["claude", "codex", "copilot"] as const) {
     it(`${host}: every op the old code wrote is written identically`, { timeout: 120_000 }, async () => {
       const want = await golden(host);
       // there is no cell-level credit: no round diff, so the round records no review row;

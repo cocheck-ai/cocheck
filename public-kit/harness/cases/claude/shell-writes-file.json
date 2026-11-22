@@ -1,0 +1,120 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "claude",
+  "description": "Claude Code 2.1.302: a prompt, a shell call that reads data.csv, a shell call whose awk writes totals.csv, then the stop. The whole recording; the session transcript is left out, so no call words are read.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "SessionStart",
+      "stdin": "{\"session_id\":\"b0f5204b-5694-452a-b345-e478329f2f19\",\"cwd\":\"<folder>\",\"hook_event_name\":\"SessionStart\",\"source\":\"startup\"}",
+      "argv": []
+    },
+    {
+      "event": "UserPromptSubmit",
+      "stdin": "{\"session_id\":\"b0f5204b-5694-452a-b345-e478329f2f19\",\"cwd\":\"<folder>\",\"prompt_id\":\"d1bf2aeb-3945-471b-81c7-b6d7123b4d9e\",\"permission_mode\":\"bypassPermissions\",\"hook_event_name\":\"UserPromptSubmit\",\"prompt\":\"Before each shell command, write one sentence saying what you are about to do. Step 1: run cat data.csv. Step 2: write totals.csv containing column sums (header a,b,c) using a shell command.\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"b0f5204b-5694-452a-b345-e478329f2f19\",\"cwd\":\"<folder>\",\"prompt_id\":\"d1bf2aeb-3945-471b-81c7-b6d7123b4d9e\",\"permission_mode\":\"bypassPermissions\",\"effort\":{\"level\":\"medium\"},\"hook_event_name\":\"PreToolUse\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"cat data.csv\",\"description\":\"Show contents of data.csv\"},\"tool_use_id\":\"toolu_01Dm7osWGJgTmLryibkJFRaM\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"b0f5204b-5694-452a-b345-e478329f2f19\",\"cwd\":\"<folder>\",\"prompt_id\":\"d1bf2aeb-3945-471b-81c7-b6d7123b4d9e\",\"permission_mode\":\"bypassPermissions\",\"effort\":{\"level\":\"medium\"},\"hook_event_name\":\"PostToolUse\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"cat data.csv\",\"description\":\"Show contents of data.csv\"},\"tool_response\":{\"stdout\":\"a,b,c\\n1,2,3\\n4,5,6\\n7,8,9\",\"stderr\":\"\",\"interrupted\":false,\"isImage\":false,\"noOutputExpected\":false},\"tool_use_id\":\"toolu_01Dm7osWGJgTmLryibkJFRaM\",\"duration_ms\":61}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"b0f5204b-5694-452a-b345-e478329f2f19\",\"cwd\":\"<folder>\",\"prompt_id\":\"d1bf2aeb-3945-471b-81c7-b6d7123b4d9e\",\"permission_mode\":\"bypassPermissions\",\"effort\":{\"level\":\"medium\"},\"hook_event_name\":\"PreToolUse\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"awk -F, 'NR>1{a+=$1;b+=$2;c+=$3} END{print \\\"a,b,c\\\"; print a\\\",\\\"b\\\",\\\"c}' data.csv > totals.csv && cat totals.csv\",\"description\":\"Sum columns into totals.csv and show it\"},\"tool_use_id\":\"toolu_01ETFzqqLkCPkAoHJsF7gBuA\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"b0f5204b-5694-452a-b345-e478329f2f19\",\"cwd\":\"<folder>\",\"prompt_id\":\"d1bf2aeb-3945-471b-81c7-b6d7123b4d9e\",\"permission_mode\":\"bypassPermissions\",\"effort\":{\"level\":\"medium\"},\"hook_event_name\":\"PostToolUse\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"awk -F, 'NR>1{a+=$1;b+=$2;c+=$3} END{print \\\"a,b,c\\\"; print a\\\",\\\"b\\\",\\\"c}' data.csv > totals.csv && cat totals.csv\",\"description\":\"Sum columns into totals.csv and show it\"},\"tool_response\":{\"stdout\":\"a,b,c\\n12,15,18\",\"stderr\":\"\",\"interrupted\":false,\"isImage\":false,\"noOutputExpected\":false},\"tool_use_id\":\"toolu_01ETFzqqLkCPkAoHJsF7gBuA\",\"duration_ms\":11}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"session_id\":\"b0f5204b-5694-452a-b345-e478329f2f19\",\"cwd\":\"<folder>\",\"prompt_id\":\"d1bf2aeb-3945-471b-81c7-b6d7123b4d9e\",\"permission_mode\":\"bypassPermissions\",\"effort\":{\"level\":\"medium\"},\"hook_event_name\":\"Stop\",\"stop_hook_active\":false,\"last_assistant_message\":\"I read `data.csv`, which has a header `a,b,c` and three data rows, then wrote `totals.csv` with the sum of each column:\\n\\n```\\na,b,c\\n12,15,18\\n```\",\"background_tasks\":[],\"session_crons\":[]}",
+      "argv": []
+    },
+    {
+      "event": "SessionEnd",
+      "stdin": "{\"session_id\":\"b0f5204b-5694-452a-b345-e478329f2f19\",\"cwd\":\"<folder>\",\"prompt_id\":\"d1bf2aeb-3945-471b-81c7-b6d7123b4d9e\",\"hook_event_name\":\"SessionEnd\",\"reason\":\"other\"}",
+      "argv": []
+    }
+  ],
+  "files": {
+    "before": {
+      "data.csv": "a,b,c\n1,2,3\n4,5,6\n"
+    },
+    "writes": [
+      {
+        "afterEvent": 5,
+        "path": "totals.csv",
+        "content": "a,b,c\n5,7,9\n"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "other",
+        "eventName": "SessionStart",
+        "session": "b0f5204b-5694-452a-b345-e478329f2f19"
+      },
+      {
+        "kind": "prompt",
+        "eventName": "UserPromptSubmit",
+        "session": "b0f5204b-5694-452a-b345-e478329f2f19",
+        "prompt": "Before each shell command, write one sentence saying what you are about to do. Step 1: run cat data.csv. Step 2: write totals.csv containing column sums (header a,b,c) using a shell command."
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "b0f5204b-5694-452a-b345-e478329f2f19",
+        "toolName": "Bash",
+        "callId": "toolu_01Dm7osWGJgTmLryibkJFRaM"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "b0f5204b-5694-452a-b345-e478329f2f19",
+        "toolName": "Bash",
+        "callId": "toolu_01Dm7osWGJgTmLryibkJFRaM"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "b0f5204b-5694-452a-b345-e478329f2f19",
+        "toolName": "Bash",
+        "callId": "toolu_01ETFzqqLkCPkAoHJsF7gBuA"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "b0f5204b-5694-452a-b345-e478329f2f19",
+        "toolName": "Bash",
+        "callId": "toolu_01ETFzqqLkCPkAoHJsF7gBuA"
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "b0f5204b-5694-452a-b345-e478329f2f19",
+        "lastAssistantMessage": "I read `data.csv`, which has a header `a,b,c` and three data rows, then wrote `totals.csv` with the sum of each column:\n\n```\na,b,c\n12,15,18\n```"
+      },
+      {
+        "kind": "other",
+        "eventName": "SessionEnd",
+        "session": "b0f5204b-5694-452a-b345-e478329f2f19"
+      }
+    ],
+    "credit": {
+      "totals.csv": {
+        "creditedTo": "call:toolu_01ETFzqqLkCPkAoHJsF7gBuA",
+        "basis": "inferred"
+      }
+    }
+  }
+}

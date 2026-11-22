@@ -1,6 +1,14 @@
 // What Claude Code and Codex share and a new host need not: their payload keys for a failed call and for the fields CoCheck keeps but does not act on.
 // Moved out of normalize.ts so that file names no payload key of any host.
-import type { EventKind, ExtraFields, FailureRead } from "./types.ts";
+import { createHash } from "node:crypto";
+import type { EventKind, ExtraFields, FailureRead, PayloadFingerprint } from "./types.ts";
+
+/** True when the payload is an object that has every `present` key, carries every `strings` key as text, and has none of the `absent` keys. */
+export function matchesFingerprint(fp: PayloadFingerprint, payload: unknown): boolean {
+  if (payload === null || typeof payload !== "object") return false;
+  const p = payload as Record<string, unknown>;
+  return fp.present.every((k) => p[k] !== undefined) && fp.strings.every((k) => typeof p[k] === "string") && fp.absent.every((k) => p[k] === undefined);
+}
 
 /** The failure a post-like event reports in the Claude/Codex payload shape: a failure event, or a post whose `tool_response` carries `is_error` / `isError`. */
 export function claudeShapeFailure(kind: EventKind, p: Record<string, unknown>): FailureRead {
@@ -26,3 +34,15 @@ export function claudeShapeExtra(p: Record<string, unknown>): ExtraFields {
   if (typeof p.stop_hook_active === "boolean") extra.stopHookActive = p.stop_hook_active;
   return extra;
 }
+
+/** The arguments with keys sorted at every level, so equal arguments make equal text whatever order a host listed them in. */
+function stable(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stable);
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(Object.keys(value as object).sort().map((k) => [k, stable((value as Record<string, unknown>)[k])]));
+  }
+  return value;
+}
+
+/** The text two calls with equal arguments share: how a host that sends no call id is matched to its own session file's request. */
+export const argsKey = (toolInput: unknown): string => createHash("sha256").update(JSON.stringify(stable(toolInput ?? null))).digest("hex").slice(0, 16);

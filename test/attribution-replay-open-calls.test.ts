@@ -412,7 +412,7 @@ describe("a refused Codex command is settled as never ran", async () => {
     const rollout = path.join(day, `rollout-2026-10-25T12-00-00-${SESSION}.jsonl`);
     writeFileSync(rollout, "");
     const hook = (o: Record<string, unknown>) =>
-      handleHook({ session_id: SESSION, cwd: folder, model: "gpt-6.1-sol", permission_mode: "bypassPermissions", ...o } as unknown as HookPayload, { host: "codex", home, claimed: trackedClaims, folder, perSession: false, now: () => (clock += 1000), codexSessions: sessions });
+      handleHook({ session_id: SESSION, cwd: folder, model: "gpt-6.1-sol", permission_mode: "bypassPermissions", ...o } as unknown as HookPayload, { host: "codex", home, claimed: trackedClaims, folder, perSession: false, now: () => (clock += 1000), sessionsDir: sessions });
     const pre = (id: string, command: string) => hook({ hook_event_name: "PreToolUse", tool_use_id: id, tool_name: "Bash", tool_input: { command } });
     const post = (id: string, command: string) => hook({ hook_event_name: "PostToolUse", tool_use_id: id, tool_name: "Bash", tool_input: { command }, tool_response: "" });
     const note = (line: string) => appendFile(rollout, line + "\n");

@@ -1846,7 +1846,7 @@
   function paintBrief(b, reveal, stop) {
     var lines = b.lines || [];
     var card = el('div', { class: 'mcard' });
-    var who = b.by || 'Claude';
+    var who = b.by || 'The agent';
     if (b.encrypted) card.append(el('p', {}, who + ' keeps the brief it gives a helper encrypted, so CoCheck can\'t show it.'));
     else if (!lines.length) card.append(el('p', {}, b.withheld ? 'The brief was withheld because it looked like it held a secret.' : 'No brief was recorded for this helper.'));
     else {

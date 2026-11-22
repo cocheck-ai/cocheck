@@ -6,7 +6,7 @@ import path from "node:path";
 import { runHookTracked as runHook } from "./helpers/track.ts";
 import { handleEvent, handleHook, type HookPayload } from "../src/hook-adapter.ts";
 import { assertNormalized, normalize } from "../src/normalize.ts";
-import { book, dumpLedger, goldenView, journalRecords, makeRig, sessionFor, sessionNoId, type CorpusEvent, type Rig } from "./hook-corpus.ts";
+import { book, dumpLedger, eventArgs, goldenView, journalRecords, makeRig, sessionFor, sessionNoId, type CorpusEvent, type Rig } from "./hook-corpus.ts";
 import { workbookClaims } from "./helpers/claims.ts";
 import { PRODUCTION_BUILTIN_CONNECTORS, setBuiltinConnectorsForTest } from "../src/connector/builtins.ts";
 
@@ -27,21 +27,21 @@ const rig = async () => {
 };
 const golden = async (name: string) => JSON.parse(await readFile(path.join(import.meta.dirname, "fixtures", "hook-goldens", name), "utf8"));
 const bytes = (o: unknown) => Buffer.from(JSON.stringify(o));
-const cli = (r: Rig, host: string, payload: unknown, extra: { now?: () => number; journalNow?: () => number; fault?: (s: string) => void } = {}) =>
-  runHook({ argv: ["node", "hook.ts", "--host", host, "--folder", r.folder], env: { COCHECK_HOME: r.home }, stdin: (async function* () { yield Buffer.isBuffer(payload) ? payload : bytes(payload); })(), ...extra });
+const cli = (r: Rig, host: string, payload: unknown, extra: { now?: () => number; journalNow?: () => number; fault?: (s: string) => void; event?: string } = {}) =>
+  runHook({ argv: ["node", "hook.ts", "--host", host, ...eventArgs(extra), "--folder", r.folder], env: { COCHECK_HOME: r.home }, stdin: (async function* () { yield Buffer.isBuffer(payload) ? payload : bytes(payload); })(), ...extra });
 
-async function replayViaCli(r: Rig, host: "claude" | "codex", events: CorpusEvent[]) {
+async function replayViaCli(r: Rig, host: "claude" | "codex" | "copilot", events: CorpusEvent[]) {
   let clock = 1_700_000_000_000;
   for (const ev of events) {
     if (ev.write) await writeFile(path.join(r.folder, "model.xlsx"), book(ev.write));
-    const res = await cli(r, host, ev.payload, { now: () => (clock += 1000) });
+    const res = await cli(r, host, ev.payload, { now: () => (clock += 1000), event: ev.event });
     assert.equal(res.exitCode, 0, res.stderr);
   }
   return goldenView(dumpLedger(r.home, r.folder));
 }
 
 describe("the CLI path writes what the pre-change code wrote", () => {
-  for (const [host, name, make] of [["claude", "golden-claude.json", sessionFor], ["codex", "golden-codex.json", sessionFor], ["claude", "golden-claude-noid.json", sessionNoId]] as const) {
+  for (const [host, name, make] of [["claude", "golden-claude.json", sessionFor], ["codex", "golden-codex.json", sessionFor], ["copilot", "golden-copilot.json", sessionFor], ["claude", "golden-claude-noid.json", sessionNoId]] as const) {
     it(`${name}: journal healthy`, async () => {
       const r = await rig();
       assert.deepEqual(await replayViaCli(r, host, make(host, r.folder)), await golden(name));

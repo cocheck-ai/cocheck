@@ -1,0 +1,302 @@
+{
+  "schema": 1,
+  "platform": "antigravity",
+  "name": "Antigravity CLI",
+  "vendor": "Google",
+  "surfaces": [
+    "agy command-line agent (print mode recorded)"
+  ],
+  "checked_on": "2026-11-22",
+  "versions_seen": [
+    {
+      "version": "1.5.14",
+      "where": "agy -p runs on macOS in a scratch git folder (probe:versions/1.5.14/hook-calls-print.jsonl)",
+      "date": "2026-11-22"
+    }
+  ],
+  "cocheck_relevance": "Calls arrive as PreToolUse and PostToolUse with a call id, and a failed edit shows in PostToolUse's error field. CoCheck reads Antigravity through a manifest only (public-kit/harness/harnesses/antigravity/), so its credit basis is inferred. Gaps: a failing shell command looks like a success, a denied call has no Post, and a helper's calls cannot be tied to the main session.",
+  "install": [
+    {
+      "claim": "The command is agy; the recording was made with 1.5.14 on macOS.",
+      "kind": "observed",
+      "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+      "date": "2026-11-22",
+      "verified_on": "1.5.14",
+      "status": "confirmed"
+    }
+  ],
+  "processes_and_paths": [],
+  "auth": [],
+  "hooks": {
+    "available": {
+      "claim": "agy 1.5.14 ran command hooks from a workspace file, <folder>/.agents/hooks.json, in print mode with the folder trusted.",
+      "kind": "observed",
+      "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+      "date": "2026-11-22",
+      "verified_on": "1.5.14",
+      "status": "confirmed"
+    },
+    "config": [
+      {
+        "claim": "Hooks live in a hooks.json that maps a hook name to its events. PreToolUse and PostToolUse take groups (matcher plus hooks); SessionStart, PreInvocation, PostInvocation and Stop take handler objects directly. A single entry carrying both shapes was read once per event, by the shape that event takes.",
+        "kind": "observed",
+        "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+        "date": "2026-11-22",
+        "verified_on": "1.5.14",
+        "status": "confirmed"
+      },
+      {
+        "claim": "The global hooks file is ~/.gemini/config/hooks.json. This path is read from Antigravity's documentation and no recording has exercised it; the workspace file takes the same entries.",
+        "kind": "documented",
+        "source": "local:public-kit/harness/harnesses/antigravity/README.md",
+        "date": "2026-11-22",
+        "verified_on": "1.5.14",
+        "status": "unverified",
+        "note": "The documentation page was not re-fetched for this entry."
+      }
+    ],
+    "trust_or_approval": [
+      {
+        "claim": "The recording trusted the scratch folder through --settings (session only). A call the headless permission check denies gets a PreToolUse and nothing after it: no PostToolUse and no Stop.",
+        "kind": "observed",
+        "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+        "date": "2026-11-22",
+        "verified_on": "1.5.14",
+        "status": "confirmed"
+      }
+    ],
+    "events": [
+      {
+        "name": "SessionStart",
+        "when": "a conversation starts",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": null,
+        "matcher": null,
+        "payload_fields": [
+          "artifactDirectoryPath",
+          "conversationId",
+          "cwd",
+          "hookEventName",
+          "lastUserInput",
+          "modelName",
+          "transcriptPath",
+          "workspacePaths"
+        ],
+        "fact": {
+          "claim": "SessionStart fired once per conversation in the 1.5.14 recording.",
+          "kind": "observed",
+          "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+          "date": "2026-11-22",
+          "verified_on": "1.5.14",
+          "status": "confirmed",
+          "note": "can_block and can_rewrite are false because the schema wants a boolean here; whether Antigravity lets this hook block or rewrite is not known (see open_questions)."
+        }
+      },
+      {
+        "name": "PreInvocation",
+        "when": "before each model call",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": null,
+        "matcher": null,
+        "payload_fields": [
+          "artifactDirectoryPath",
+          "conversationId",
+          "cwd",
+          "hookEventName",
+          "initialNumSteps",
+          "invocationNum",
+          "lastUserInput",
+          "modelName",
+          "transcriptPath",
+          "workspacePaths"
+        ],
+        "fact": {
+          "claim": "PreInvocation fired before every model call with invocationNum and initialNumSteps (numbers).",
+          "kind": "observed",
+          "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+          "date": "2026-11-22",
+          "verified_on": "1.5.14",
+          "status": "confirmed",
+          "note": "can_block and can_rewrite are false because the schema wants a boolean here; whether Antigravity lets this hook block or rewrite is not known (see open_questions)."
+        }
+      },
+      {
+        "name": "PostInvocation",
+        "when": "after each model call",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": null,
+        "matcher": null,
+        "payload_fields": [
+          "artifactDirectoryPath",
+          "conversationId",
+          "cwd",
+          "hookEventName",
+          "initialNumSteps",
+          "invocationNum",
+          "lastUserInput",
+          "modelName",
+          "transcriptPath",
+          "workspacePaths"
+        ],
+        "fact": {
+          "claim": "PostInvocation fired after every model call.",
+          "kind": "observed",
+          "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+          "date": "2026-11-22",
+          "verified_on": "1.5.14",
+          "status": "confirmed",
+          "note": "can_block and can_rewrite are false because the schema wants a boolean here; whether Antigravity lets this hook block or rewrite is not known (see open_questions)."
+        }
+      },
+      {
+        "name": "PreToolUse",
+        "when": "before each tool call",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": null,
+        "matcher": "tool name",
+        "payload_fields": [
+          "artifactDirectoryPath",
+          "conversationId",
+          "cwd",
+          "hookEventName",
+          "lastUserInput",
+          "modelName",
+          "stepIdx",
+          "toolCall",
+          "transcriptPath",
+          "workspacePaths"
+        ],
+        "fact": {
+          "claim": "PreToolUse carries toolCall (id, name, args) and stepIdx.",
+          "kind": "observed",
+          "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+          "date": "2026-11-22",
+          "verified_on": "1.5.14",
+          "status": "confirmed",
+          "note": "can_block and can_rewrite are false because the schema wants a boolean here; whether Antigravity lets this hook block or rewrite is not known (see open_questions)."
+        }
+      },
+      {
+        "name": "PostToolUse",
+        "when": "after each tool call",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": null,
+        "matcher": "tool name",
+        "payload_fields": [
+          "artifactDirectoryPath",
+          "conversationId",
+          "cwd",
+          "error",
+          "hookEventName",
+          "lastUserInput",
+          "modelName",
+          "stepIdx",
+          "toolCall",
+          "transcriptPath",
+          "workspacePaths"
+        ],
+        "fact": {
+          "claim": "PostToolUse carries the same toolCall.id as its Pre, and error: empty, or the tool's own words when the tool failed. No result.",
+          "kind": "observed",
+          "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+          "date": "2026-11-22",
+          "verified_on": "1.5.14",
+          "status": "confirmed",
+          "note": "can_block and can_rewrite are false because the schema wants a boolean here; whether Antigravity lets this hook block or rewrite is not known (see open_questions)."
+        }
+      },
+      {
+        "name": "Stop",
+        "when": "a turn ends",
+        "can_block": false,
+        "can_rewrite": false,
+        "timeout_sec": null,
+        "matcher": null,
+        "payload_fields": [
+          "artifactDirectoryPath",
+          "continuationActive",
+          "conversationId",
+          "cwd",
+          "error",
+          "executionNum",
+          "fullyIdle",
+          "hookEventName",
+          "lastUserInput",
+          "modelName",
+          "terminationReason",
+          "transcriptPath",
+          "workspacePaths"
+        ],
+        "fact": {
+          "claim": "Stop carries terminationReason, fullyIdle, continuationActive, executionNum and error. No closing message.",
+          "kind": "observed",
+          "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+          "date": "2026-11-22",
+          "verified_on": "1.5.14",
+          "status": "confirmed",
+          "note": "can_block and can_rewrite are false because the schema wants a boolean here; whether Antigravity lets this hook block or rewrite is not known (see open_questions)."
+        }
+      }
+    ],
+    "missing_events": [],
+    "absent_events": [],
+    "config_paths": [],
+    "surfaces": [],
+    "skill_and_plugin_paths": [],
+    "sandbox_and_network": []
+  },
+  "other_observation_channels": [],
+  "call_ids": [
+    {
+      "claim": "toolCall.id is sent on both PreToolUse and PostToolUse of a call.",
+      "kind": "observed",
+      "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+      "date": "2026-11-22",
+      "verified_on": "1.5.14",
+      "status": "confirmed"
+    }
+  ],
+  "narration_sources": [],
+  "session_files": [
+    {
+      "claim": "Every payload carries transcriptPath and artifactDirectoryPath. CoCheck does not read the transcript.",
+      "kind": "observed",
+      "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+      "date": "2026-11-22",
+      "verified_on": "1.5.14",
+      "status": "confirmed"
+    }
+  ],
+  "helpers_or_subagents": [
+    {
+      "claim": "A helper started by invoke_subagent runs under its own conversationId with an empty lastUserInput and no field naming its parent; the only link is the Recipient of the helper's send_message. invoke_subagent returns before the helper runs, and the main conversation's Stop can come before the helper's writes.",
+      "kind": "observed",
+      "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+      "date": "2026-11-22",
+      "verified_on": "1.5.14",
+      "status": "confirmed"
+    }
+  ],
+  "limits_and_timeouts": [
+    {
+      "claim": "A shell command that exits non-zero has an empty error and no output or exit code on PostToolUse, so it reads as a call that worked.",
+      "kind": "observed",
+      "source": "probe:versions/1.5.14/hook-calls-print.jsonl",
+      "date": "2026-11-22",
+      "verified_on": "1.5.14",
+      "status": "confirmed"
+    }
+  ],
+  "update_channel": [],
+  "open_questions": [
+    "Does the global ~/.gemini/config/hooks.json take the split entries (a group for tool events, a plain handler for the rest) as the workspace file does?",
+    "Does any event mark a new turn, so the prompt can be recorded once per turn?",
+    "Does a headless-denied call have any hook that fires after it?",
+    "Can any Antigravity hook block a step or rewrite its input? The recording sent no hook answers."
+  ]
+}

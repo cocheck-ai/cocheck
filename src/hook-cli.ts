@@ -2,25 +2,24 @@
 // the raw stdin bytes go to the hook journal (hook-journal.ts) before the host argument, the folder or the JSON are checked, and any later
 // failure writes a marker linked to that record. The contract toward the host: exit 0, or exit 1 on any failure (never 2: exit 2 would
 // block the host's tool call); stdout stays empty except for the context text on a recorded UserPromptSubmit (see promptContext)
-// and, on a recorded Claude Code Bash PreToolUse, the tag (see tagOutput and src/attribution/tag.ts). A journal failure is one line on stderr and changes nothing else.
+// and, on a recorded shell PreToolUse of a host with an argv tag, the tag (see tagOutput and src/attribution/tag.ts). A journal failure is one line on stderr and changes nothing else.
 import { scrubPayloadBytes } from "./patch-secrets.ts";
-import { appendFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { HOME_REFUSAL, isUnsafeTaskFolder, userHomeDir } from "./platform/index.ts";
 import { handleEvent, hookClientName, markTrackingStopped, parkedOpsOf, parseOutsideWatching, resolveAdapterHome } from "./hook-adapter.ts";
 import { beforeSideOfCall, callTimesOfCall, JOURNAL_STEM, journalBeforeSide, journalDone, journalEvent, journalFailure, noteDegraded, sessionKeyOfBytes, type JournalRef } from "./hook-journal.ts";
 import { markNotChecked, reconcileSession } from "./coverage.ts";
-import { allProfiles, defaultProfile, findProfile, hasCapability, isHostKey } from "./hosts/index.ts";
+import { allProfiles, findProfile, hasCapability, isHostKey, loadOutsiderHarnesses, outsiderHarnessDir, profileWithExtra, runsOtherHostsHook } from "./hosts/index.ts";
 import { openLedger } from "./ledger.ts";
 import { normalize, type HookHost } from "./normalize.ts";
 import { readRegistry, RegistryError, resolveFolder } from "./registry.ts";
 import { writeOpenRecord } from "./open-pick.ts";
-import { SHELL_TOOLS } from "./credit-guard.ts";
+import { isShellTool } from "./credit-guard.ts";
 import { isOpenCommand, setTracking, trackCommand, trackingOf, type Tracking } from "./tracking.ts";
 import { cliCommand, sessionContextText } from "./session-context.ts";
-import { helperGate, pruneHelperState } from "./copilot-helpers.ts";
-import { copilotRunsOtherHostsHook } from "./hosts/copilot.ts";
+import { helperGate, pruneHelperState } from "./helper-linker.ts";
 import { AFTER_SNAPSHOT_ACCEPT_MS, AfterNotTaken, httpLocalProcess, type AfterNotTakenReason, type LocalProcess } from "./connector/local-process.ts";
 import { recordNoSubject, recordNotTaken } from "./connector/after-gap.ts";
 import { answerIsError, beforeReadMsFor, loadCallTemplates, loadSubjectTemplates, MAX_CALL_ANSWER_BYTES, renderSubject } from "./connector/subjects.ts";
@@ -28,19 +27,24 @@ import { DEFAULT_BEFORE_READ_MS } from "./connector/schema.ts";
 import { callShell, markSessionTagged, sessionReady, parseTagSetting, prepareSession, stripTag, tagCommand, tagsInMode, type TagSetting } from "./attribution/tag.ts";
 
 /**
- * The PreToolUse output that tags a Claude Code Bash call (`hookSpecificOutput.updatedInput`, the whole input with the command
+ * The Pre hook output that tags a shell call of a host with an argv tag (`argvTag.preOutput`: the whole input with the command
  * tagged), or "" when the call is not tagged. No permission decision is returned: the call goes through the permission flow as it would.
  */
-function tagOutput(raw: any, setting: TagSetting, env: NodeJS.ProcessEnv): string {
-  if (raw === null || typeof raw !== "object" || raw.hook_event_name !== "PreToolUse" || raw.tool_name !== "Bash") return "";
-  if (!tagsInMode(setting, raw.permission_mode)) return "";
-  const input = raw.tool_input;
+function tagOutput(raw: any, host: string, permissionMode: unknown, setting: TagSetting, env: NodeJS.ProcessEnv): string {
+  const profile = findProfile(host);
+  const tag = profile?.argvTag;
+  if (profile === undefined || tag === undefined || raw === null || typeof raw !== "object") return "";
+  const f = profile.fields;
+  const eventName = raw[f.eventName];
+  if (typeof eventName !== "string" || profile.eventKinds[eventName] !== "tool-pre" || raw[f.toolName] !== tag.tool) return "";
+  if (!tagsInMode(setting, permissionMode)) return "";
+  const input = raw[f.toolInput];
   if (input === null || typeof input !== "object" || Array.isArray(input)) return "";
-  const shell = callShell(env);
+  const shell = callShell(env, tag.shellEnv);
   if (shell === undefined) return "";
-  const tagged = tagCommand(input.command, raw.tool_use_id, raw.agent_id, shell);
+  const tagged = tagCommand(input.command, raw[f.toolUseId], raw[f.agentId], shell);
   if (tagged === null) return "";
-  return JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", updatedInput: { ...input, command: tagged } } }) + "\n";
+  return tag.preOutput(eventName, { ...input, command: tagged });
 }
 
 const shellCommandOf = (input: unknown): unknown => {
@@ -49,12 +53,15 @@ const shellCommandOf = (input: unknown): unknown => {
   return o.command ?? o.cmd;
 };
 
-/** A Post or failure payload carries the tagged command; the record keeps the command the agent wrote. */
-function untag(raw: any): any {
-  const cmd = raw?.tool_input?.command;
+/** A Post or failure payload carries the tagged command; the record keeps the command the agent wrote. Only a host with an argv tag has a tagged command. */
+function untag(raw: any, host: string): any {
+  const profile = findProfile(host);
+  if (profile?.argvTag === undefined) return raw;
+  const key = profile.fields.toolInput;
+  const cmd = raw?.[key]?.command;
   if (typeof cmd !== "string") return raw;
   const plain = stripTag(cmd);
-  return plain === cmd ? raw : { ...raw, tool_input: { ...raw.tool_input, command: plain } };
+  return plain === cmd ? raw : { ...raw, [key]: { ...raw[key], command: plain } };
 }
 
 /**
@@ -66,7 +73,7 @@ function taskFolder(argv: string[], env: NodeJS.ProcessEnv, hostArg: string | un
   if (folderIdx >= 0) return argv[folderIdx + 1];
   // `cocheck track start` made the session's cwd its task folder.
   if (started?.folder !== undefined) return started.folder;
-  const install = (findProfile(hostArg) ?? defaultProfile()).install;
+  const install = (findProfile(hostArg) ?? profileWithExtra("install-default")).install;
   const fromEnv = install?.projectDirEnv === undefined ? undefined : env[install.projectDirEnv];
   if (fromEnv) return fromEnv;
   if (install?.folderFromPayloadCwd !== true) return undefined;
@@ -77,6 +84,12 @@ function taskFolder(argv: string[], env: NodeJS.ProcessEnv, hostArg: string | un
     return undefined;
   }
 }
+
+/** The `--event` argument of a hook command line (a host whose payload names no event is told it there). */
+const eventArgOf = (argv: string[]): string | undefined => {
+  const i = argv.indexOf("--event");
+  return i >= 0 ? argv[i + 1] : undefined;
+};
 
 export interface HookRun {
   argv: string[];
@@ -270,6 +283,20 @@ const safeJson = (bytes: Buffer): unknown => {
 /** Class-level wording for a marker: a JSON error's own message quotes the payload, so it is replaced. */
 const markerText = (error: unknown): string => (error instanceof SyntaxError ? "payload is not valid JSON" : error instanceof Error ? error.message : String(error));
 
+/** The skipped-manifest lines for `cocheck status`, kept in the data home beside the other notes; the file is emptied when nothing is skipped. */
+function noteSkippedHarnesses(home: string | undefined, skipped: readonly string[]): void {
+  if (home === undefined) return;
+  try {
+    const file = path.join(home, "harness-skipped.txt");
+    if (skipped.length > 0) {
+      mkdirSync(home, { recursive: true, mode: 0o700 });
+      writeFileSync(file, skipped.map((l) => `${l}\n`).join(""), { mode: 0o600 });
+    } else if (existsSync(file)) writeFileSync(file, "", { mode: 0o600 });
+  } catch {
+    // a note that cannot be written changes nothing else
+  }
+}
+
 export async function runHook(run: HookRun): Promise<HookExit> {
   const now = run.journalNow ?? Date.now;
   let stderr = "";
@@ -286,6 +313,8 @@ export async function runHook(run: HookRun): Promise<HookExit> {
       failure = error;
     }
     process.umask(0o077);
+    // The person's own harness manifests. One that does not load is skipped; no other host's hook is affected. It is noted after the tracking gate (nothing is written before it).
+    const skippedHarnesses = loadOutsiderHarnesses(outsiderHarnessDir(run.env, home));
     const hostArg = run.argv[run.argv.indexOf("--host") + 1];
     // The payload is read first: the tracking gate below needs the session id. Nothing is written before the gate.
     const chunks: Buffer[] = [];
@@ -300,8 +329,9 @@ export async function runHook(run: HookRun): Promise<HookExit> {
         // a prune that cannot run changes nothing else
       }
     }
-    // Copilot also runs the hooks of a repo's `.claude/settings.json`; a run of another host's hook that Copilot started records nothing (the copilot entry does).
-    if (home !== undefined && isHostKey(hostArg) && !hasCapability(hostArg, "readsForeignHooks") && copilotRunsOtherHostsHook(safeJson(bytes))) return { exitCode: 0, stderr, stdout: "" };
+    // Copilot also runs the hooks of a repo's `.claude/settings.json`, and Cursor those of ~/.claude/settings.json; a run of another host's hook that such a host started
+    // records nothing (that host's own entry does). An outsider harness's fingerprint counts only while its own CoCheck hook is installed for the payload's folder.
+    if (home !== undefined && isHostKey(hostArg) && runsOtherHostsHook(hostArg, safeJson(bytes), { env: run.env, userHome: userHomeDir(run.env) })) return { exitCode: 0, stderr, stdout: "" };
     // The tracking gate. Every session starts untracked: nothing is journaled, recorded or injected until `cocheck track start` ran
     // in it. The switch commands are recognised here, keyed by the hook's own session id, and are themselves never recorded. A payload
     // that names no session (not JSON, no id) is not a session and falls through to the loud failure below.
@@ -309,12 +339,12 @@ export async function runHook(run: HookRun): Promise<HookExit> {
       let ev: ReturnType<typeof normalize> | undefined;
       try {
         const eventIdx = run.argv.indexOf("--event");
-        ev = normalize(hostArg, untag(JSON.parse(bytes.toString("utf8"))), eventIdx >= 0 ? run.argv[eventIdx + 1] : undefined);
+        ev = normalize(hostArg, untag(JSON.parse(bytes.toString("utf8")), hostArg), eventIdx >= 0 ? run.argv[eventIdx + 1] : undefined);
       } catch {
         ev = undefined;
       }
       if (ev !== undefined && typeof ev.session === "string" && ev.session !== "") {
-        const verb = SHELL_TOOLS.test(String(ev.toolName)) && ev.kind !== "other" ? trackCommand(shellCommandOf(ev.toolInput)) : undefined;
+        const verb = isShellTool(ev.toolName, ev.host) && ev.kind !== "other" ? trackCommand(shellCommandOf(ev.toolInput)) : undefined;
         if (verb !== undefined) {
           if (ev.kind === "tool-pre" && verb !== "status") {
             try {
@@ -341,7 +371,7 @@ export async function runHook(run: HookRun): Promise<HookExit> {
           return { exitCode: 0, stderr, stdout: "" };
         }
         // `cocheck open` names no session; the hook writes who asked, before the tracking check so it also fires after `track stop`.
-        if (ev.kind === "tool-pre" && SHELL_TOOLS.test(String(ev.toolName)) && isOpenCommand(shellCommandOf(ev.toolInput))) {
+        if (ev.kind === "tool-pre" && isShellTool(ev.toolName, ev.host) && isOpenCommand(shellCommandOf(ev.toolInput))) {
           try {
             writeOpenRecord(home, hostArg, ev.session, (run.journalNow ?? Date.now)());
           } catch {
@@ -350,7 +380,7 @@ export async function runHook(run: HookRun): Promise<HookExit> {
         }
         started = trackingOf(home, hostArg, ev.session);
         if (hasCapability(hostArg, "helperSessions")) {
-          // A helper's calls under a session id of their own are linked to their main session, or held until they are (src/copilot-helpers.ts).
+          // A helper's calls under a session id of their own are linked to their main session, or held until they are (src/helper-linker.ts).
           const eventName = typeof ev.eventName === "string" ? ev.eventName : "";
           const gate = await helperGate(home, started, ev, bytes, eventName, (run.journalNow ?? Date.now)());
           if (gate.stop) return { exitCode: 0, stderr, stdout: "" };
@@ -362,7 +392,7 @@ export async function runHook(run: HookRun): Promise<HookExit> {
             stderr += again.stderr;
           }
         }
-        const sessionStart = hasCapability(hostArg, "argvTag") && ev.eventName === "SessionStart";
+        const sessionStart = hasCapability(hostArg, "argvTag") && ev.eventName === findProfile(hostArg)?.argvTag?.sessionStartEvent;
         if (started === undefined && !sessionStart) return { exitCode: 0, stderr, stdout: "" };
       }
     }
@@ -378,6 +408,7 @@ export async function runHook(run: HookRun): Promise<HookExit> {
         failure = error;
       }
     }
+    noteSkippedHarnesses(home, skippedHarnesses);
     const tagSetting = parseTagSetting(run.argv, run.env);
     if (home !== undefined && failure === undefined && hasCapability(hostArg, "argvTag")) {
       // SessionStart only sets the write hooks' environment for the session's Bash calls (CLAUDE_ENV_FILE); it records nothing.
@@ -387,15 +418,16 @@ export async function runHook(run: HookRun): Promise<HookExit> {
       } catch {
         start = undefined;
       }
-      if (start?.hook_event_name === "SessionStart") {
-        const envFile = run.env.CLAUDE_ENV_FILE;
+      const tagParams = findProfile(hostArg)?.argvTag;
+      if (tagParams !== undefined && start?.[findProfile(hostArg)!.fields.eventName] === tagParams.sessionStartEvent) {
+        const envFile = run.env[tagParams.envFileVar];
         // The SessionStart payload carries no permission_mode (the hooks reference's SessionStart input lists none), and the mode can
         // change mid-session, so the environment is set whenever the setting is not off. The hooks stay inert (no process walk, no
         // record) until a Pre tags one of the session's calls and marks the session (markSessionTagged).
         if (envFile && path.isAbsolute(envFile) && tagSetting !== "off") {
           try {
             const roots = [...(registered ?? []), taskFolder(run.argv, run.env, hostArg, bytes, started)].filter((f): f is string => typeof f === "string");
-            appendFileSync(envFile, prepareSession(home, start.session_id, roots, now()));
+            appendFileSync(envFile, prepareSession(home, start[findProfile(hostArg)!.fields.session], roots, now()));
           } catch (error) {
             stderr += `cocheck hook: could not set the write hooks' environment: ${(error as NodeJS.ErrnoException).code ?? "error"}\n`;
           }
@@ -405,10 +437,10 @@ export async function runHook(run: HookRun): Promise<HookExit> {
     }
     if (home !== undefined) {
       try {
-        ref = journalEvent(home, bytes, isHostKey(hostArg) ? hostArg : "unknown", now);
+        ref = journalEvent(home, bytes, isHostKey(hostArg) ? hostArg : "unknown", now, eventArgOf(run.argv));
       } catch (error) {
         stderr += `cocheck hook: journal unavailable: ${(error as NodeJS.ErrnoException).code ?? "error"}\n`;
-        noteDegraded(home, (error as NodeJS.ErrnoException).code ?? "error", now, sessionKeyOfBytes(bytes));
+        noteDegraded(home, (error as NodeJS.ErrnoException).code ?? "error", now, sessionKeyOfBytes(bytes, isHostKey(hostArg) ? hostArg : "unknown", eventArgOf(run.argv)));
       }
     }
     if (!isHostKey(hostArg)) {
@@ -417,18 +449,19 @@ export async function runHook(run: HookRun): Promise<HookExit> {
     if (failure !== undefined) throw failure;
     const folder = taskFolder(run.argv, run.env, hostArg, bytes, started);
     if (!folder) {
-      throw new Error("no task folder: pass --folder <dir> in the hook command (Claude Code sets CLAUDE_PROJECT_DIR; Codex's payload carries a cwd)");
+      const sources = allProfiles().flatMap((p) => [...(p.install?.projectDirEnv === undefined ? [] : [`${p.fullName ?? p.displayName} sets ${p.install.projectDirEnv}`]), ...(p.install?.folderFromPayloadCwd === true ? [`${p.displayName}'s payload carries a cwd`] : [])]);
+      throw new Error(`no task folder: pass --folder <dir> in the hook command (${sources.join("; ")})`);
     }
     const eventIdx = run.argv.indexOf("--event");
     const parsed = JSON.parse(bytes.toString("utf8"));
-    const event = normalize(hostArg as HookHost, hasCapability(hostArg, "argvTag") ? untag(parsed) : parsed, eventIdx >= 0 ? run.argv[eventIdx + 1] : undefined);
+    const event = normalize(hostArg as HookHost, untag(parsed, hostArg), eventIdx >= 0 ? run.argv[eventIdx + 1] : undefined);
     let tag = "";
     if (event.kind === "tool-pre" && hasCapability(hostArg, "argvTag")) {
       try {
         // Only a session whose SessionStart set the write hooks' environment is tagged: a tag without hooks would read as observed.
-        tag = sessionReady(home!, parsed.session_id) ? tagOutput(parsed, tagSetting, run.env) : "";
+        tag = sessionReady(home!, parsed[findProfile(hostArg)!.fields.session]) ? tagOutput(parsed, hostArg, event.extra.permissionMode, tagSetting, run.env) : "";
         // The session is marked before the call is recorded as tagged: a call is never believed tagged unless its children will look.
-        if (tag !== "") markSessionTagged(home!, parsed.session_id);
+        if (tag !== "") markSessionTagged(home!, parsed[findProfile(hostArg)!.fields.session]);
       } catch {
         tag = "";
       }
@@ -439,7 +472,7 @@ export async function runHook(run: HookRun): Promise<HookExit> {
         journalBeforeSide(ref, beforeSide, now);
       } catch (error) {
         stderr += `cocheck hook: could not record the before side: ${(error as NodeJS.ErrnoException).code ?? "error"}\n`;
-        noteDegraded(home!, (error as NodeJS.ErrnoException).code ?? "error", now, sessionKeyOfBytes(bytes));
+        noteDegraded(home!, (error as NodeJS.ErrnoException).code ?? "error", now, sessionKeyOfBytes(bytes, isHostKey(hostArg) ? hostArg : "unknown", eventArgOf(run.argv)));
       }
     }
     await handleEvent(event, { host: event.host, home: home!, folder, outsideWatching: parseOutsideWatching(run.argv, run.env), now: run.now, fault: run.fault, attributionTag: tagSetting, taggedCall: tag !== "", ...(run.heldReplay === true ? { heldReplay: true } : {}) });

@@ -1,6 +1,6 @@
 # Platforms
 
-CoCheck's sourced, versioned record of each host platform it serves or may serve: Claude Code, Codex, Copilot CLI, Copilot in VS Code, ChatGPT Work and Claude Cowork. Each platform has one folder with a machine-readable `capabilities.json`, a plain-language `guide.md`, its `sources.md`, and optional real recordings under `versions/`. The format is in `SCHEMA.md`. `matrix.md` is generated from the capabilities files and `discrepancies.json` and compares the platforms. The four hook-register hosts list every documented hook event; see "Hook register" in `SCHEMA.md`.
+CoCheck's sourced, versioned record of each host platform it serves or may serve: Claude Code, Codex, Copilot CLI, Copilot in VS Code, Cursor, Antigravity CLI, ChatGPT Work and Claude Cowork. Each platform has one folder with a machine-readable `capabilities.json`, a plain-language `guide.md`, its `sources.md`, and optional real recordings under `versions/`. The format is in `SCHEMA.md`. `matrix.md` is generated from the capabilities files and `discrepancies.json` and compares the platforms. The four hook-register hosts list every documented hook event; see "Hook register" in `SCHEMA.md`.
 
 ## The fact rule
 

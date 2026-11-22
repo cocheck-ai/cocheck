@@ -42,7 +42,7 @@ async function setup(host: "claude" | "codex", extra: { outsideWatching?: boolea
   if (extra.withWorkbook !== false) await copyFile(probe(0), path.join(folder, "casebook.xlsx"));
   cleanups.push(() => rm(root, { recursive: true, force: true }));
   let clock = Date.UTC(2026, 9, 8, 12, 0, 0);
-  const opts = { perSession: false, host, home, claimed: workbookClaims, folder, now: () => clock, codexSessions: sessions, ...(extra.outsideWatching === undefined ? {} : { outsideWatching: extra.outsideWatching }) };
+  const opts = { perSession: false, host, home, claimed: workbookClaims, folder, now: () => clock, sessionsDir: sessions, ...(extra.outsideWatching === undefined ? {} : { outsideWatching: extra.outsideWatching }) };
   const send = (over: Record<string, unknown>, session = "sess-1") => {
     clock += 1000;
     return handleHook({ session_id: session, cwd: folder, hook_event_name: "", ...over } as HookPayload, opts);

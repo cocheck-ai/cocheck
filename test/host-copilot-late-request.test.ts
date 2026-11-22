@@ -32,7 +32,7 @@ async function run(scen: "same" | "diff" | "never") {
   await mkdir(path.join(sessions, SESSION), { recursive: true });
   await copyFile(probe(0), path.join(folder, "g.xlsx"));
   let clock = Date.UTC(2026, 9, 18, 12, 0, 0);
-  const opts = { perSession: false, host: "copilot" as const, home, claimed: workbookClaims, folder, now: () => (clock += 1000), codexSessions: sessions };
+  const opts = { perSession: false, host: "copilot" as const, home, claimed: workbookClaims, folder, now: () => (clock += 1000), sessionsDir: sessions };
   const argsA = { command: "ls" };
   const argsB = scen === "diff" ? { command: "pwd" } : argsA;
   const send = (ev: string, args?: unknown, extra: Record<string, unknown> = {}) => handleEvent(normalize("copilot", { sessionId: SESSION, cwd: folder, toolName: "bash", toolArgs: args, ...extra }, ev), opts);

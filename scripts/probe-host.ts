@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Runs one tiny scripted session on a host (Claude Code, Codex or Copilot CLI) with hooks that log each event's raw stdin,
 // so a new host version's payload shapes can be compared with what the adapter expects.
-// Usage: node scripts/probe-host.ts <claude|codex|copilot> --out <dir> [--bin <path>] [--auth <auth.json>]
+// Usage: node scripts/probe-host.ts <claude|codex|copilot> --out <dir> [--bin <path>] [--auth <auth.json>] [--prompt-set write-tools]
 // Env: COCHECK_PROBE_BIN and COCHECK_PROBE_AUTH are the same as --bin and --auth.
 // Writes <out>/<host>-<version>/payloads.jsonl (one {event, ts, stdin} line per hook call) and sessions/<session files>.
 // Sweeps its own cocheck-probe-XXXXXX scratch dirs older than an hour at start; SIGINT/SIGTERM remove the live scratch dir before exit.
@@ -16,6 +16,7 @@ import { chmod, copyFile, lstat, mkdir, mkdtemp, readdir, readFile, realpath, rm
 import { existsSync, rmSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import path from "node:path";
+import { findTokenShapes, scrubText } from "../src/harness-cmd/scrub.ts";
 
 export type Host = "claude" | "codex" | "copilot";
 export interface ProbeOptions {
@@ -27,11 +28,22 @@ export interface ProbeOptions {
   realHome?: string;
   /** Directory holding the scratch dirs and swept at start; defaults to the OS tmpdir. Tests point it at a temp dir. */
   tmpRoot?: string;
+  /** "write-tools" makes the host use its own file tools (Claude Write and Edit, Codex apply_patch); output goes to <host>-<version>-write-tools. */
+  promptSet?: "default" | "write-tools";
 }
 
 const PROMPT =
   "Before each shell command, write one sentence saying what you are about to do. " +
   "Step 1: run cat data.csv. Step 2: write totals.csv containing column sums (header a,b,c) using a shell command.";
+const WRITE_TOOLS_PROMPT: Record<Host, string> = {
+  claude:
+    "Step 1: run cat data.csv. Step 2: use the Write tool to create notes.txt with three lines (alpha, beta, gamma). " +
+    "Step 3: use the Edit tool to change the second line of notes.txt to delta. Do not use shell commands to write files.",
+  codex:
+    "Step 1: run cat data.csv. Step 2: use apply_patch to create notes.txt with three lines (alpha, beta, gamma). " +
+    "Step 3: use apply_patch to modify data.csv, changing its second row to 9,9,9. Do not use shell commands to write files.",
+  copilot: PROMPT,
+};
 const CSV = "a,b,c\n1,2,3\n4,5,6\n7,8,9\n";
 const CODEX_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PermissionRequest", "PostToolUse", "PreCompact", "PostCompact", "SubagentStart", "SubagentStop", "Stop", "SessionEnd"];
 const CLAUDE_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PermissionRequest", "PostToolUse", "PreCompact", "SubagentStop", "Notification", "Stop", "SessionEnd"];
@@ -142,27 +154,7 @@ export async function sweepStaleScratch(root: string, now = Date.now()): Promise
   return removed;
 }
 
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/g;
-const TOKEN_SHAPES: Array<[string, RegExp]> = [
-  ["sk- key", /sk-[A-Za-z0-9_-]{16,}/],
-  ["ghp_ token", /ghp_[A-Za-z0-9]{16,}/],
-  ["gho_ token", /gho_[A-Za-z0-9]{16,}/],
-  ["JWT", /eyJ[A-Za-z0-9_-]{8,}/],
-  ["Bearer value", /Bearer\s+[A-Za-z0-9._~+/=-]{8,}/],
-  ["private key header", /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
-];
-
-/** Replaces emails and the home path (as given and as its realpath, longest first). */
-export function scrubText(text: string, homes: string[]): string {
-  let out = text;
-  for (const h of [...new Set(homes)].filter((x) => x.length > 1).sort((a, b) => b.length - a.length)) out = out.split(h).join("/Users/<user>");
-  return out.replace(EMAIL, "user@example.com");
-}
-
-/** Names of the token shapes found in text. */
-export function findTokenShapes(text: string): string[] {
-  return TOKEN_SHAPES.filter(([, re]) => re.test(text)).map(([name]) => name);
-}
+export { scrubText, findTokenShapes };
 
 async function writeScrubbed(src: string, dst: string, homes: string[]): Promise<string[]> {
   const clean = scrubText(await readFile(src, "utf8"), homes);
@@ -200,7 +192,8 @@ export async function runProbe(opts: ProbeOptions): Promise<{ dir: string; versi
   const work = path.join(scratch, "work");
   const payloads = path.join(scratch, "payloads.jsonl");
   const hookScript = path.join(scratch, "log-hook.mjs");
-  const dir = path.join(out, `${opts.host}-${version}`);
+  const prompt = opts.promptSet === "write-tools" ? WRITE_TOOLS_PROMPT[opts.host] : PROMPT;
+  const dir = path.join(out, `${opts.host}-${version}${opts.promptSet === "write-tools" ? "-write-tools" : ""}`);
   let failure: Error | undefined;
   try {
     await mkdir(work);
@@ -221,7 +214,7 @@ export async function runProbe(opts: ProbeOptions): Promise<{ dir: string; versi
       for (const ev of CODEX_EVENTS) toml.push(`[[hooks.${ev}]]`, `[[hooks.${ev}.hooks]]`, 'type = "command"', `command = ${JSON.stringify(hookCmd(ev))}`, "");
       await writeFile(path.join(home, "config.toml"), toml.join("\n"));
       env.CODEX_HOME = home;
-      args = ["--dangerously-bypass-hook-trust", "exec", "--skip-git-repo-check", "-C", work, "--sandbox", "workspace-write", PROMPT];
+      args = ["--dangerously-bypass-hook-trust", "exec", "--skip-git-repo-check", "-C", work, "--sandbox", "workspace-write", prompt];
     } else if (opts.host === "copilot") {
       const home = path.join(scratch, "home");
       await mkdir(home);
@@ -233,13 +226,16 @@ export async function runProbe(opts: ProbeOptions): Promise<{ dir: string; versi
       if (git.status !== 0) throw new Error(`git init failed in the scratch folder: ${(git.stderr || git.error?.message || "").trim()}`);
       env.COPILOT_HOME = home;
       env.COPILOT_ALLOW_ALL = "true";
-      args = ["-p", PROMPT, "--no-auto-update", "--no-remote"];
+      args = ["-p", prompt, "--no-auto-update", "--no-remote"];
     } else {
       const settings = path.join(scratch, "settings.json");
       const hooks: Record<string, unknown> = {};
       for (const ev of CLAUDE_EVENTS) hooks[ev] = [{ hooks: [{ type: "command", command: hookCmd(ev) }] }];
       await writeFile(settings, JSON.stringify({ hooks }));
-      args = ["-p", PROMPT, "--setting-sources", "", "--settings", settings, "--permission-mode", "bypassPermissions"];
+      const cfg = path.join(scratch, "claude-config");
+      await mkdir(cfg);
+      env.CLAUDE_CONFIG_DIR = cfg;
+      args = ["-p", prompt, "--setting-sources", "", "--settings", settings, "--permission-mode", "bypassPermissions"];
     }
     const r = await runHost(bin, args, { cwd: work, env, onChild: (c) => (child = c) });
     if (r.error || r.status !== 0) failure = new Error(`${opts.host} run failed (exit ${r.status}): ${r.error?.message ?? ""} ${r.stderr.slice(-500)}`);
@@ -289,10 +285,10 @@ if (import.meta.main) {
   const host = argv[0];
   const out = flag("--out");
   if ((host !== "claude" && host !== "codex" && host !== "copilot") || !out) {
-    console.error("usage: probe-host.ts <claude|codex|copilot> --out <dir> [--bin <path>] [--auth <auth.json>]");
+    console.error("usage: probe-host.ts <claude|codex|copilot> --out <dir> [--bin <path>] [--auth <auth.json>] [--prompt-set write-tools]");
     process.exit(2);
   }
-  runProbe({ host, out, bin: flag("--bin"), authSrc: flag("--auth") })
+  runProbe({ host, out, bin: flag("--bin"), authSrc: flag("--auth"), promptSet: flag("--prompt-set") === "write-tools" ? "write-tools" : "default" })
     .then((r) => console.log(`wrote ${r.dir}`))
     .catch((e) => {
       console.error(e instanceof Error ? e.message : e);

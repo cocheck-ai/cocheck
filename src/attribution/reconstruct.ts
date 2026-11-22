@@ -33,6 +33,23 @@ function applyEdits(text: string, edits: NonNullable<ReportedEdit["edits"]>): st
   return text;
 }
 
+/**
+ * The text before `edits` were applied, from the text after them: each edit undone in reverse order, its new text found exactly once and put
+ * back as its old text. Only single replacements undo (an `all` edit or an empty new text cannot be placed), and the result must give `text`
+ * again when the edits are replayed on it; anything else gives `undefined`. The result is built from the edit itself, so it can never prove that edit.
+ */
+export function revertEdits(text: string, edits: ReadonlyArray<{ old: string; new: string }>): string | undefined {
+  if (edits.length === 0) return undefined;
+  let before = text;
+  for (const e of [...edits].reverse()) {
+    if (typeof e.old !== "string" || typeof e.new !== "string" || e.new === "") return undefined;
+    const first = before.indexOf(e.new);
+    if (first < 0 || before.indexOf(e.new, first + 1) >= 0) return undefined;
+    before = before.slice(0, first) + e.old + before.slice(first + e.new.length);
+  }
+  return applyEdits(before, edits.map((e) => ({ old: e.old, new: e.new, all: false }))) === text ? before : undefined;
+}
+
 /** Applies patch sections to `text` (LF text only): each hunk's context and removed lines must be found, in order, from where the last one ended. */
 function applySections(text: string, sections: PatchSection[]): string | undefined {
   for (const sec of sections) {

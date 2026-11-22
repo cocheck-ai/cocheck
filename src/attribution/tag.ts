@@ -51,9 +51,9 @@ export function tagsInMode(setting: TagSetting, permissionMode: unknown): boolea
   return permissionMode === "bypassPermissions";
 }
 
-/** The shell Claude Code runs Bash calls in: `CLAUDE_CODE_SHELL`, else `SHELL`; only bash and zsh are tagged. */
-export function callShell(env: NodeJS.ProcessEnv): string | undefined {
-  for (const s of [env.CLAUDE_CODE_SHELL, env.SHELL]) {
+/** The shell the host runs its shell calls in (`shellEnv` names the variable it sets), else `SHELL`; only bash and zsh are tagged. */
+export function callShell(env: NodeJS.ProcessEnv, shellEnv?: string): string | undefined {
+  for (const s of [shellEnv === undefined ? undefined : env[shellEnv], env.SHELL]) {
     if (!s || !path.isAbsolute(s)) continue;
     const base = path.basename(s);
     if ((base === "bash" || base === "zsh") && existsSync(s)) return s;

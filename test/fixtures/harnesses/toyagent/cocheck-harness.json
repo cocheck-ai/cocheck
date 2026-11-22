@@ -1,0 +1,47 @@
+{
+  "schema": "cocheck-harness/1",
+  "key": "toyagent",
+  "displayName": "Toy Agent",
+  "chip": "T",
+  "testedVersions": ["0.1"],
+  "events": {
+    "userPrompt": "prompt",
+    "beforeTool": "tool-pre",
+    "afterTool": "tool-post",
+    "toolFailed": "tool-failure",
+    "finished": "stop"
+  },
+  "eventFrom": { "arg": "--event" },
+  "fields": {
+    "session": "sessionId",
+    "cwd": "workspace.roots[0]",
+    "toolName": "tool.name",
+    "toolInput": "tool.args",
+    "toolResponse": "tool.result",
+    "prompt": "userText",
+    "lastAssistantMessage": "final.message"
+  },
+  "toolInputEncoding": "json-text",
+  "callId": { "synthesized": true },
+  "failure": { "tool-failure": { "text": ["error.message"] } },
+  "toolClasses": {
+    "read_file": { "class": "read" },
+    "write_file": { "class": "write", "pathFields": ["path"], "fileInput": true },
+    "run_shell": { "class": "shell", "dialect": "bash", "backgroundable": true }
+  },
+  "narration": { "sources": [{ "kind": "closing-message", "readableAt": "post" }] },
+  "install": {
+    "format": "json",
+    "path": "{env:TOYAGENT_HOME|{home}/.toyagent}/hooks.json",
+    "mode": "owned",
+    "rootKey": "hooks",
+    "envelope": { "version": 1 },
+    "events": ["userPrompt", "beforeTool", "afterTool", "toolFailed", "finished"],
+    "entryTemplate": { "run": "{command}" },
+    "eventInCommand": true,
+    "skillRoot": ".toyagent/skills",
+    "hostFlag": "toyagent",
+    "folderFromPayloadCwd": true,
+    "checkPayload": { "payload": { "sessionId": "install-check", "workspace": { "roots": ["{folder}"] }, "tool": { "name": "run_shell", "args": "{\"command\":\"true\"}" } }, "event": "beforeTool" }
+  }
+}

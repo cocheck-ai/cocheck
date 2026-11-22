@@ -1,0 +1,209 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "copilot",
+  "description": "Copilot CLI 1.0.103: one task call starts a helper, the helper's apply_patch creates memo.md, the helper stops, then a shell call fails. Two of the three parallel helpers and their calls are left out.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\",\"timestamp\":1792885640039,\"cwd\":\"<folder>\",\"toolName\":\"task\",\"toolArgs\":{\"description\":\"Write model memo\",\"prompt\":\"In the current working folder, write memo.md containing exactly 10 lines explaining the 3-year revenue model (purpose, assumptions, formula logic, years, and interpretation). Do not modify unrelated files. At completion, report the output path and line count.\",\"agent_type\":\"memo-writer\",\"name\":\"model-memo-writer\",\"mode\":\"background\"}}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "subagentStart",
+      "stdin": "{\"sessionId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\",\"timestamp\":1792885640469,\"cwd\":\"<folder>\",\"agentName\":\"memo-writer\",\"agentDisplayName\":\"memo-writer\",\"agentId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\"}",
+      "argv": [
+        "--event",
+        "subagentStart"
+      ]
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"sessionId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\",\"timestamp\":1792885640702,\"cwd\":\"<folder>\",\"toolName\":\"task\",\"toolArgs\":{\"description\":\"Write model memo\",\"prompt\":\"In the current working folder, write memo.md containing exactly 10 lines explaining the 3-year revenue model (purpose, assumptions, formula logic, years, and interpretation). Do not modify unrelated files. At completion, report the output path and line count.\",\"agent_type\":\"memo-writer\",\"name\":\"model-memo-writer\",\"mode\":\"background\"},\"toolResult\":{\"resultType\":\"success\",\"textResultForLlm\":\"Agent started in background with agent_id: 24353f5c-439a-42a5-a8b3-c3a7ae64d58e. You'll be notified when it completes. Tell the user you're waiting and end your response, or continue unrelated work un\"}}",
+      "argv": [
+        "--event",
+        "postToolUse"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"timestamp\":1792885649072,\"cwd\":\"<folder>\",\"toolName\":\"apply_patch\",\"toolArgs\":\"*** Begin Patch\\n*** Add File: memo.md\\n+# 3-Year Revenue Model\\n+Purpose: estimate revenue over a three-year planning horizon for budgeting and decision-making.\\n+The model assumes a starting revenue base, an annual growth rate, and stable measurement periods.\\n+It can be adapted for new customers, rete\",\"agentId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\"}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"sessionId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"timestamp\":1792885649200,\"cwd\":\"<folder>\",\"toolName\":\"apply_patch\",\"toolArgs\":\"*** Begin Patch\\n*** Add File: memo.md\\n+# 3-Year Revenue Model\\n+Purpose: estimate revenue over a three-year planning horizon for budgeting and decision-making.\\n+The model assumes a starting revenue base, an annual growth rate, and stable measurement periods.\\n+It can be adapted for new customers, rete\",\"toolResult\":{\"resultType\":\"success\",\"textResultForLlm\":\"Added 1 file(s): <folder>/memo.md\"},\"agentId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\"}",
+      "argv": [
+        "--event",
+        "postToolUse"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"timestamp\":1792885651171,\"cwd\":\"<folder>\",\"toolName\":\"bash\",\"toolArgs\":{\"command\":\"wc -l memo.md\",\"description\":\"Count memo lines\"},\"agentId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\"}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"sessionId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"timestamp\":1792885651587,\"cwd\":\"<folder>\",\"toolName\":\"bash\",\"toolArgs\":{\"command\":\"wc -l memo.md\",\"description\":\"Count memo lines\"},\"toolResult\":{\"resultType\":\"success\",\"textResultForLlm\":\"10 memo.md\\n<shellId: 7 completed with exit code 0>\"},\"agentId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\"}",
+      "argv": [
+        "--event",
+        "postToolUse"
+      ]
+    },
+    {
+      "event": "agentStop",
+      "stdin": "{\"sessionId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"timestamp\":1792885653922,\"cwd\":\"<folder>\",\"stopReason\":\"end_turn\",\"stop_hook_active\":false,\"agentId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\"}",
+      "argv": [
+        "--event",
+        "agentStop"
+      ]
+    },
+    {
+      "event": "subagentStop",
+      "stdin": "{\"sessionId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\",\"timestamp\":1792885654049,\"cwd\":\"<folder>\",\"agentId\":\"24353f5c-439a-42a5-a8b3-c3a7ae64d58e\",\"agentType\":\"memo-writer\",\"agentName\":\"memo-writer\",\"agentDisplayName\":\"memo-writer\",\"response\":\"Created `<folder>/memo.md` — 10 lines.\",\"stopReason\":\"end_turn\",\"stop_hook_active\":false,\"parentAgentId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\"}",
+      "argv": [
+        "--event",
+        "subagentStop"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\",\"timestamp\":1792885662842,\"cwd\":\"<folder>\",\"toolName\":\"bash\",\"toolArgs\":{\"command\":\"ls /nonexistent_t171\",\"description\":\"Run required failing path check\"}}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"sessionId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\",\"timestamp\":1792885662981,\"cwd\":\"<folder>\",\"toolName\":\"bash\",\"toolArgs\":{\"command\":\"ls /nonexistent_t171\",\"description\":\"Run required failing path check\"},\"toolResult\":{\"resultType\":\"success\",\"textResultForLlm\":\"ls: /nonexistent_t171: No such file or directory\\n<shellId: 12 completed with exit code 1>\"}}",
+      "argv": [
+        "--event",
+        "postToolUse"
+      ]
+    },
+    {
+      "event": "agentStop",
+      "stdin": "{\"sessionId\":\"d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4\",\"timestamp\":1792885665082,\"cwd\":\"<folder>\",\"stopReason\":\"end_turn\",\"stop_hook_active\":false}",
+      "argv": [
+        "--event",
+        "agentStop"
+      ]
+    }
+  ],
+  "files": {
+    "writes": [
+      {
+        "afterEvent": 4,
+        "path": "memo.md",
+        "content": "stand-in for memo.md\n"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "toolName": "task"
+      },
+      {
+        "kind": "other",
+        "eventName": "subagentStart",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "agentId": "24353f5c-439a-42a5-a8b3-c3a7ae64d58e",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "toolName": "task"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "toolName": "apply_patch",
+        "agentId": "24353f5c-439a-42a5-a8b3-c3a7ae64d58e",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "toolName": "apply_patch",
+        "agentId": "24353f5c-439a-42a5-a8b3-c3a7ae64d58e",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "toolName": "bash",
+        "agentId": "24353f5c-439a-42a5-a8b3-c3a7ae64d58e",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "toolName": "bash",
+        "agentId": "24353f5c-439a-42a5-a8b3-c3a7ae64d58e",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "other",
+        "eventName": "agentStop",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "agentId": "24353f5c-439a-42a5-a8b3-c3a7ae64d58e",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "subagent-stop",
+        "eventName": "subagentStop",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "agentId": "24353f5c-439a-42a5-a8b3-c3a7ae64d58e",
+        "agentType": "memo-writer",
+        "lastAssistantMessage": "Created `<folder>/memo.md` — 10 lines."
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "toolName": "bash"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4",
+        "toolName": "bash",
+        "failure": {
+          "interrupted": false
+        }
+      },
+      {
+        "kind": "stop",
+        "eventName": "agentStop",
+        "session": "d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4"
+      }
+    ],
+    "credit": {
+      "memo.md": {
+        "creditedTo": "call:copilot-d9b2e3f7-09b6-44cb-bf5e-e3b760bb42b4-2",
+        "basis": "inferred"
+      }
+    }
+  }
+}

@@ -3,14 +3,17 @@ import assert from "node:assert/strict";
 import { mkdtemp, mkdir, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { handleHook, type HookOptions, type HookPayload } from "../src/hook-adapter.ts";
-import { book, dumpLedger } from "./hook-corpus.ts";
+import { handleEvent, type HookHost, type HookOptions, type HookPayload } from "../src/hook-adapter.ts";
+import { normalize } from "../src/normalize.ts";
+import { book, dumpLedger, wireFor } from "./hook-corpus.ts";
 import { workbookClaims } from "./helpers/claims.ts";
 
 // the shipping default (one task per session) must record, for ONE session that writes, exactly what the old shared-task shape recorded.
 // Each scenario runs twice in fresh folders, once with `perSession: false` (main's behaviour) and once on the default, and the two ledgers are
 // compared whole: tasks, ops, steps, file states, rounds and review rows (client names compared without their `?session=` suffix).
 // A session whose calls never change a file gets no task by design (item 3); every scenario here writes.
+// Every scenario runs for each host; the Claude-shaped payloads are sent in the host's wire form (wireFor). Copilot reads its words from
+// events.jsonl, not a Claude transcript, so the narration scenario there only proves the two shapes agree.
 
 const cleanups: Array<() => Promise<void>> = [];
 afterEach(async () => {
@@ -27,7 +30,7 @@ interface Rig {
   tick: () => number;
 }
 
-async function runScenario(perSession: boolean, script: (r: Rig) => Promise<void>, over: Partial<HookOptions> = {}): Promise<Record<string, unknown[]>> {
+async function runScenario(host: HookHost, perSession: boolean, script: (r: Rig) => Promise<void>, over: Partial<HookOptions> = {}): Promise<Record<string, unknown[]>> {
   const home = await mkdtemp(path.join(tmpdir(), "cocheck-t130eq-home-"));
   const folder = await realpath(await mkdtemp(path.join(tmpdir(), "cocheck-t130eq-folder-")));
   const outside = await realpath(await mkdtemp(path.join(tmpdir(), "cocheck-t130eq-outside-")));
@@ -37,9 +40,11 @@ async function runScenario(perSession: boolean, script: (r: Rig) => Promise<void
   await writeFile(path.join(folder, "model.xlsx"), book({ A1: 1, A2: 2, A3: 3 }));
   await writeFile(path.join(outside, "ext.xlsx"), book({ A1: 5 }));
   let clock = 1_700_000_000_000;
-  const opts: HookOptions = { host: "claude", home, claimed: workbookClaims, folder, now: () => (clock += 1000), perSession, ...over };
-  const ev = (hook_event_name: string, id?: string, command = "python3 edit.py", extra: Record<string, unknown> = {}) =>
-    handleHook({ session_id: "7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11", transcript_path: "/x/t.jsonl", cwd: folder, hook_event_name, ...(id ? { tool_name: "Bash", tool_use_id: id, tool_input: { command, description: `do ${id}` } } : {}), ...extra } as HookPayload, opts);
+  const opts: HookOptions = { host, home, claimed: workbookClaims, folder, now: () => (clock += 1000), perSession, ...over };
+  const ev = (hook_event_name: string, id?: string, command = "python3 edit.py", extra: Record<string, unknown> = {}) => {
+    const w = wireFor(host, { session_id: "7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11", transcript_path: "/x/t.jsonl", cwd: folder, hook_event_name, ...(id ? { tool_name: "Bash", tool_use_id: id, tool_input: { command, description: `do ${id}` } } : {}), ...extra });
+    return handleEvent(normalize(host, w.payload as unknown as HookPayload, w.event), opts);
+  };
   const rig: Rig = {
     folder,
     outside,
@@ -54,16 +59,16 @@ async function runScenario(perSession: boolean, script: (r: Rig) => Promise<void
 }
 
 /** Both runs, compared whole; `must` guards against a scenario that recorded nothing. */
-async function same(name: string, script: (r: Rig) => Promise<void>, over: Partial<HookOptions> = {}): Promise<void> {
-  const old = await runScenario(false, script, over);
-  const now = await runScenario(true, script, over);
+async function same(host: HookHost, name: string, script: (r: Rig) => Promise<void>, over: Partial<HookOptions> = {}): Promise<void> {
+  const old = await runScenario(host, false, script, over);
+  const now = await runScenario(host, true, script, over);
   assert.ok((old.tasks as unknown[]).length === 1 && (old.ops as unknown[]).length > 0, `${name}: the scenario records a task`);
   for (const table of Object.keys(old)) assert.deepEqual(now[table], old[table], `${name}: table ${table}`);
 }
 
-describe("the default per-session path equals the old shape for one writing session", () => {
+for (const host of ["claude", "codex", "copilot"] as const) describe(`${host}: the default per-session path equals the old shape for one writing session`, () => {
   it("credit: a call that writes is credited; Stop cuts the round", async () => {
-    await same("credit", async (r) => {
+    await same(host, "credit", async (r) => {
       await r.ev("UserPromptSubmit", undefined, "", { prompt: "raise A1" });
       await r.ev("PreToolUse", "c1");
       await r.write({ A1: 10, A2: 2, A3: 3 });
@@ -73,7 +78,7 @@ describe("the default per-session path equals the old shape for one writing sess
   });
 
   it("a read-only call before the first write is logged in the task the write opens", async () => {
-    await same("read first", async (r) => {
+    await same(host, "read first", async (r) => {
       await r.ev("PreToolUse", "r1", "ls");
       await r.ev("PostToolUse", "r1", "ls");
       await r.ev("PreToolUse", "c1");
@@ -84,7 +89,7 @@ describe("the default per-session path equals the old shape for one writing sess
   });
 
   it("joint: overlapping calls of one session share the change", async () => {
-    await same("joint", async (r) => {
+    await same(host, "joint", async (r) => {
       await r.ev("PreToolUse", "a");
       await r.ev("PreToolUse", "b");
       await r.write({ A1: 11, A2: 2, A3: 3 });
@@ -95,7 +100,7 @@ describe("the default per-session path equals the old shape for one writing sess
   });
 
   it("round cutting: two rounds, the second after more edits", async () => {
-    await same("rounds", async (r) => {
+    await same(host, "rounds", async (r) => {
       await r.ev("PreToolUse", "c1");
       await r.write({ A1: 10, A2: 2, A3: 3 });
       await r.ev("PostToolUse", "c1");
@@ -109,7 +114,7 @@ describe("the default per-session path equals the old shape for one writing sess
   });
 
   it("Stop: a helper's call still open at the main Stop, a failed call and a new workbook", async () => {
-    await same("stop", async (r) => {
+    await same(host, "stop", async (r) => {
       await r.ev("PreToolUse", "main1");
       await r.write({ A1: 10, A2: 2, A3: 3 });
       await r.ev("PostToolUse", "main1");
@@ -125,7 +130,7 @@ describe("the default per-session path equals the old shape for one writing sess
   });
 
   it("a hand edit between calls (nobody's change) is recorded in the task as before", async () => {
-    await same("hand edit", async (r) => {
+    await same(host, "hand edit", async (r) => {
       await r.ev("PreToolUse", "c1");
       await r.write({ A1: 10, A2: 2, A3: 3 });
       await r.ev("PostToolUse", "c1");
@@ -138,7 +143,7 @@ describe("the default per-session path equals the old shape for one writing sess
 
   it("narration: the agent's words from the session file attach to the call and the closing claim", async () => {
     const j = (o: unknown) => `${JSON.stringify(o)}\n`;
-    await same("narration", async (r) => {
+    await same(host, "narration", async (r) => {
       const file = path.join(r.home, "t.jsonl");
       const asst = (...blocks: unknown[]) => j({ type: "assistant", uuid: `u-${blocks.length}`, isSidechain: false, requestId: "r1", message: { id: "m1", role: "assistant", content: blocks } });
       await mkdir(r.home, { recursive: true });
@@ -152,7 +157,7 @@ describe("the default per-session path equals the old shape for one writing sess
   });
 
   it("outside files: a workbook outside the folder a call names is baselined and credited", async () => {
-    await same("outside", async (r) => {
+    await same(host, "outside", async (r) => {
       await r.ev("PreToolUse", "o1", `python3 edit.py ${path.join(r.outside, "ext.xlsx")}`);
       await r.writeOutside({ A1: 6 });
       await r.write({ A1: 10, A2: 2, A3: 3 });
@@ -162,7 +167,7 @@ describe("the default per-session path equals the old shape for one writing sess
   });
 
   it("size cap: a small per-task store drops the oldest states the same way", async () => {
-    await same(
+    await same(host, 
       "size cap",
       async (r) => {
         for (let i = 1; i <= 4; i++) {

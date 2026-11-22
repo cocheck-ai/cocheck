@@ -1,0 +1,126 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "copilot",
+  "description": "Copilot CLI 1.0.98 (camelCase event names): apply_patch creates a.txt, a shell call fails, the agent stops. The permission and prompt-transform events are left out.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "sessionStart",
+      "stdin": "{\"sessionId\":\"3456c946-0d3c-4981-9ba5-5bdcae9c5916\",\"timestamp\":1792879293513,\"cwd\":\"<folder>\",\"source\":\"new\",\"initialPrompt\":\"Do these steps in order, one tool call each where possible: 1) create a file a.txt containing hello. 2) run the shell command: ls /nonexistent_dir_t147 (it will fail, that is expected, just continue). 3) delegate to the custom agent named writer: ask it to create sub1.txt containing custom. 4) delegate to the built-in general-purpose agent via the task tool: ask it to create sub2.txt containing builtin. 5) reply with the single word finished.\"}",
+      "argv": [
+        "--event",
+        "sessionStart"
+      ]
+    },
+    {
+      "event": "userPromptSubmitted",
+      "stdin": "{\"sessionId\":\"3456c946-0d3c-4981-9ba5-5bdcae9c5916\",\"timestamp\":1792879293731,\"cwd\":\"<folder>\",\"prompt\":\"Do these steps in order, one tool call each where possible: 1) create a file a.txt containing hello. 2) run the shell command: ls /nonexistent_dir_t147 (it will fail, that is expected, just continue). 3) delegate to the custom agent named writer: ask it to create sub1.txt containing custom. 4) delegate to the built-in general-purpose agent via the task tool: ask it to create sub2.txt containing builtin. 5) reply with the single word finished.\"}",
+      "argv": [
+        "--event",
+        "userPromptSubmitted"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"3456c946-0d3c-4981-9ba5-5bdcae9c5916\",\"timestamp\":1792879296389,\"cwd\":\"<folder>\",\"toolName\":\"apply_patch\",\"toolArgs\":\"*** Begin Patch\\n*** Add File: a.txt\\n+hello\\n*** End Patch\\n\"}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"sessionId\":\"3456c946-0d3c-4981-9ba5-5bdcae9c5916\",\"timestamp\":1792879296483,\"cwd\":\"<folder>\",\"toolName\":\"apply_patch\",\"toolArgs\":\"*** Begin Patch\\n*** Add File: a.txt\\n+hello\\n*** End Patch\\n\",\"toolResult\":{\"resultType\":\"success\",\"textResultForLlm\":\"Added 1 file(s): <folder>/a.txt\"}}",
+      "argv": [
+        "--event",
+        "postToolUse"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"3456c946-0d3c-4981-9ba5-5bdcae9c5916\",\"timestamp\":1792879297597,\"cwd\":\"<folder>\",\"toolName\":\"bash\",\"toolArgs\":{\"command\":\"ls /nonexistent_dir_t147\",\"description\":\"Run the expected failing directory listing\"}}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"sessionId\":\"3456c946-0d3c-4981-9ba5-5bdcae9c5916\",\"timestamp\":1792879297715,\"cwd\":\"<folder>\",\"toolName\":\"bash\",\"toolArgs\":{\"command\":\"ls /nonexistent_dir_t147\",\"description\":\"Run the expected failing directory listing\"},\"toolResult\":{\"resultType\":\"success\",\"textResultForLlm\":\"ls: /nonexistent_dir_t147: No such file or directory\\n<shellId: 0 completed with exit code 1>\"}}",
+      "argv": [
+        "--event",
+        "postToolUse"
+      ]
+    },
+    {
+      "event": "agentStop",
+      "stdin": "{\"sessionId\":\"3456c946-0d3c-4981-9ba5-5bdcae9c5916\",\"timestamp\":1792879308221,\"cwd\":\"<folder>\",\"stopReason\":\"end_turn\",\"stop_hook_active\":false}",
+      "argv": [
+        "--event",
+        "agentStop"
+      ]
+    }
+  ],
+  "files": {
+    "writes": [
+      {
+        "afterEvent": 3,
+        "path": "a.txt",
+        "content": "stand-in for a.txt\n"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "other",
+        "eventName": "sessionStart",
+        "session": "3456c946-0d3c-4981-9ba5-5bdcae9c5916"
+      },
+      {
+        "kind": "prompt",
+        "eventName": "userPromptSubmitted",
+        "session": "3456c946-0d3c-4981-9ba5-5bdcae9c5916",
+        "prompt": "Do these steps in order, one tool call each where possible: 1) create a file a.txt containing hello. 2) run the shell command: ls /nonexistent_dir_t147 (it will fail, that is expected, just continue). 3) delegate to the custom agent named writer: ask it to create sub1.txt containing custom. 4) delegate to the built-in general-purpose agent via the task tool: ask it to create sub2.txt containing builtin. 5) reply with the single word finished."
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "3456c946-0d3c-4981-9ba5-5bdcae9c5916",
+        "toolName": "apply_patch"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "3456c946-0d3c-4981-9ba5-5bdcae9c5916",
+        "toolName": "apply_patch"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "3456c946-0d3c-4981-9ba5-5bdcae9c5916",
+        "toolName": "bash"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "3456c946-0d3c-4981-9ba5-5bdcae9c5916",
+        "toolName": "bash",
+        "failure": {
+          "interrupted": false
+        }
+      },
+      {
+        "kind": "stop",
+        "eventName": "agentStop",
+        "session": "3456c946-0d3c-4981-9ba5-5bdcae9c5916"
+      }
+    ],
+    "credit": {
+      "a.txt": {
+        "creditedTo": "call:copilot-3456c946-0d3c-4981-9ba5-5bdcae9c5916-1",
+        "basis": "inferred"
+      }
+    }
+  }
+}

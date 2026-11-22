@@ -4,6 +4,7 @@
 // windows (hook-adapter.ts, `#proven`); with no record for a path, or a record it cannot trust, the open-call rule is unchanged.
 import { closeSync, openSync, readdirSync, readSync, rmSync, statSync } from "node:fs";
 import path from "node:path";
+import { isBackgroundableShell } from "../credit-guard.ts";
 import { evidenceDir } from "./tag.ts";
 
 /** What a folder's state keeps. `byPath` keys are the adapter's own path form (absolute, symlinks resolved, NFC). */
@@ -240,6 +241,8 @@ export function observedOnly(command: string): boolean {
 /** What the strict rule needs to know of one open call. `mayWrite`: every window guard lets it be credited with the file at all. */
 interface WriterFacts {
   tool: string;
+  /** The host of the call, for its tool table; absent reads every built-in host. */
+  host?: string | null;
   tagged: boolean;
   command: string;
   mayWrite: boolean;
@@ -262,7 +265,7 @@ export function strictWriters(file: string, candidates: readonly string[], write
     const c = factsOf(id);
     if (c === undefined) return undefined;
     if (!c.mayWrite) continue;
-    if (c.tool !== "Bash" || !c.tagged || !c.hooked || !observedOnly(c.command) || c.command.toLowerCase().includes(base) || unobserved.has(id)) return undefined;
+    if (!isBackgroundableShell(c.tool, c.host) || !c.tagged || !c.hooked || !observedOnly(c.command) || c.command.toLowerCase().includes(base) || unobserved.has(id)) return undefined;
   }
   return [...writers].sort();
 }

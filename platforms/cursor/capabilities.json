@@ -1,0 +1,757 @@
+{
+ "schema": 1,
+ "platform": "cursor",
+ "name": "Cursor",
+ "vendor": "Anysphere",
+ "surfaces": [
+  "editor agent chat",
+  "cursor-agent CLI (not recorded)",
+  "cloud agents (hooks run remotely)"
+ ],
+ "checked_on": "2026-11-22",
+ "versions_seen": [
+  {
+   "version": "3.31.15",
+   "where": "local: /Applications/Cursor.app, editor agent chat recorded in a scratch project (probe:versions/3.31.15/)",
+   "date": "2026-11-22"
+  }
+ ],
+ "cocheck_relevance": "Rich hooks shared by the editor and the CLI: preToolUse/postToolUse with tool_use_id, a postToolUseFailure event, subagent start/stop, a prompt and a stop event. CoCheck reads Cursor through a manifest only (public-kit/harness/harnesses/cursor/). Project-level install (.cursor/hooks.json) because user-level hooks are reported broken in the CLI.",
+ "install": [
+  {
+   "claim": "The editor app is /Applications/Cursor.app; the recording was made with 3.31.15.",
+   "kind": "observed",
+   "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+   "date": "2026-11-22",
+   "verified_on": "3.31.15",
+   "status": "confirmed"
+  }
+ ],
+ "processes_and_paths": [],
+ "auth": [
+  {
+   "claim": "Every hook payload carries the signed-in account's email (user_email); recordings must scrub it.",
+   "kind": "observed",
+   "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+   "date": "2026-11-22",
+   "verified_on": "3.31.15",
+   "status": "confirmed"
+  }
+ ],
+ "hooks": {
+  "available": {
+   "claim": "Cursor 3.31.15 ran project-level command hooks from .cursor/hooks.json in a trusted workspace for every configured event.",
+   "kind": "observed",
+   "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+   "date": "2026-11-22",
+   "verified_on": "3.31.15",
+   "status": "confirmed"
+  },
+  "config": [
+   {
+    "claim": "Hooks live in .cursor/hooks.json (project) or ~/.cursor/hooks.json (user): {version: 1, hooks: {<event>: [{command, type, timeout, matcher, failClosed, loop_limit}]}}.",
+    "kind": "documented",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "date": "2026-11-22",
+    "verified_on": null,
+    "status": "unverified"
+   }
+  ],
+  "trust_or_approval": [
+   {
+    "claim": "Project hooks run only in a trusted workspace.",
+    "kind": "documented",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "date": "2026-11-22",
+    "verified_on": null,
+    "status": "unverified"
+   }
+  ],
+  "events": [
+   {
+    "name": "sessionStart",
+    "when": "a chat session starts",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "composer_mode",
+     "conversation_id",
+     "cursor_version",
+     "generation_id",
+     "hook_event_name",
+     "is_background_agent",
+     "model",
+     "model_id",
+     "model_params",
+     "session_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "sessionStart fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "beforeSubmitPrompt",
+    "when": "the person submits a prompt",
+    "can_block": true,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "attachments",
+     "composer_mode",
+     "conversation_id",
+     "cursor_version",
+     "generation_id",
+     "hook_event_name",
+     "model",
+     "model_id",
+     "model_params",
+     "prompt",
+     "session_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "beforeSubmitPrompt fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "preToolUse",
+    "when": "before any tool call",
+    "can_block": true,
+    "can_rewrite": true,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "conversation_id",
+     "cursor_version",
+     "cwd",
+     "generation_id",
+     "hook_event_name",
+     "model",
+     "parent_agent_id",
+     "parent_tool_call_id",
+     "session_id",
+     "tool_input",
+     "tool_name",
+     "tool_use_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "preToolUse fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "postToolUse",
+    "when": "after a tool call succeeds",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "conversation_id",
+     "cursor_version",
+     "cwd",
+     "duration",
+     "generation_id",
+     "hook_event_name",
+     "model",
+     "parent_agent_id",
+     "parent_tool_call_id",
+     "session_id",
+     "tool_input",
+     "tool_name",
+     "tool_output",
+     "tool_use_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "postToolUse fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "postToolUseFailure",
+    "when": "after a tool call fails",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "conversation_id",
+     "cursor_version",
+     "cwd",
+     "duration",
+     "error_message",
+     "failure_type",
+     "generation_id",
+     "hook_event_name",
+     "is_interrupt",
+     "model",
+     "session_id",
+     "tool_input",
+     "tool_name",
+     "tool_use_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "postToolUseFailure fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "beforeShellExecution",
+    "when": "before a shell command",
+    "can_block": true,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "command",
+     "conversation_id",
+     "cursor_version",
+     "cwd",
+     "generation_id",
+     "hook_event_name",
+     "model",
+     "sandbox",
+     "session_id",
+     "tool_use_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "beforeShellExecution fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "afterShellExecution",
+    "when": "after a shell command",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "command",
+     "conversation_id",
+     "cursor_version",
+     "duration",
+     "generation_id",
+     "hook_event_name",
+     "model",
+     "output",
+     "sandbox",
+     "session_id",
+     "tool_use_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "afterShellExecution fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "afterFileEdit",
+    "when": "after the agent edits a file",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "conversation_id",
+     "cursor_version",
+     "edits",
+     "file_path",
+     "generation_id",
+     "hook_event_name",
+     "model",
+     "session_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "afterFileEdit fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "subagentStart",
+    "when": "a Task helper starts",
+    "can_block": true,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "conversation_id",
+     "cursor_version",
+     "generation_id",
+     "hook_event_name",
+     "is_parallel_worker",
+     "model",
+     "parent_agent_id",
+     "parent_conversation_id",
+     "session_id",
+     "subagent_id",
+     "subagent_model",
+     "subagent_type",
+     "task",
+     "tool_call_id",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "subagentStart fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "subagentStop",
+    "when": "a Task helper ends",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "agent_transcript_path",
+     "child_conversation_id",
+     "conversation_id",
+     "cursor_version",
+     "description",
+     "duration_ms",
+     "generation_id",
+     "hook_event_name",
+     "loop_count",
+     "message_count",
+     "model",
+     "parent_agent_id",
+     "parent_conversation_id",
+     "session_id",
+     "status",
+     "subagent_id",
+     "subagent_type",
+     "task",
+     "tool_call_count",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "subagentStop fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "afterAgentResponse",
+    "when": "after an assistant message",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "cache_read_tokens",
+     "cache_write_tokens",
+     "conversation_id",
+     "cursor_version",
+     "generation_id",
+     "hook_event_name",
+     "input_tokens",
+     "model",
+     "model_id",
+     "model_params",
+     "output_tokens",
+     "session_id",
+     "text",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "afterAgentResponse fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "stop",
+    "when": "the agent loop ends",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [
+     "cache_read_tokens",
+     "cache_write_tokens",
+     "conversation_id",
+     "cursor_version",
+     "generation_id",
+     "hook_event_name",
+     "input_tokens",
+     "loop_count",
+     "model",
+     "model_id",
+     "model_params",
+     "output_tokens",
+     "session_id",
+     "status",
+     "transcript_path",
+     "user_email",
+     "workspace_roots"
+    ],
+    "fact": {
+     "claim": "stop fired in Cursor 3.31.15 editor agent chat with these payload fields.",
+     "kind": "observed",
+     "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+     "date": "2026-11-22",
+     "verified_on": "3.31.15",
+     "status": "confirmed"
+    }
+   },
+   {
+    "name": "sessionEnd",
+    "when": "session ends",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "sessionEnd is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   },
+   {
+    "name": "beforeMCPExecution",
+    "when": "before an MCP tool call",
+    "can_block": true,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "beforeMCPExecution is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   },
+   {
+    "name": "afterMCPExecution",
+    "when": "after an MCP tool call",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "afterMCPExecution is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   },
+   {
+    "name": "beforeReadFile",
+    "when": "before the agent reads a file",
+    "can_block": true,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "beforeReadFile is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   },
+   {
+    "name": "preCompact",
+    "when": "before context compaction",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "preCompact is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   },
+   {
+    "name": "afterAgentThought",
+    "when": "after a thinking block",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "afterAgentThought is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   },
+   {
+    "name": "afterTabFileEdit",
+    "when": "after a Tab completion edits a file",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "afterTabFileEdit is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   },
+   {
+    "name": "beforeTabFileRead",
+    "when": "before Tab reads a file",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "beforeTabFileRead is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   },
+   {
+    "name": "workspaceOpen",
+    "when": "a workspace opens",
+    "can_block": false,
+    "can_rewrite": false,
+    "timeout_sec": null,
+    "matcher": null,
+    "payload_fields": [],
+    "fact": {
+     "claim": "workspaceOpen is documented; no recording shows it.",
+     "kind": "documented",
+     "source": "https://cursor.com/docs/agent/hooks",
+     "date": "2026-11-22",
+     "verified_on": null,
+     "status": "unverified"
+    }
+   }
+  ],
+  "missing_events": [],
+  "absent_events": [],
+  "config_paths": [
+   {
+    "claim": "Project scope: .cursor/hooks.json, commands run from the project root.",
+    "kind": "documented",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "date": "2026-11-22",
+    "verified_on": null,
+    "status": "unverified",
+    "value": {
+     "scope": "repo",
+     "path": ".cursor/hooks.json"
+    }
+   },
+   {
+    "claim": "User scope: ~/.cursor/hooks.json.",
+    "kind": "documented",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "date": "2026-11-22",
+    "verified_on": null,
+    "status": "unverified",
+    "note": "Reported broken for the CLI in 2026.11.05; not tested.",
+    "value": {
+     "scope": "user",
+     "path": "~/.cursor/hooks.json"
+    }
+   }
+  ],
+  "surfaces": [
+   {
+    "claim": "The editor agent chat ran command hooks.",
+    "kind": "observed",
+    "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+    "date": "2026-11-22",
+    "verified_on": "3.31.15",
+    "status": "confirmed",
+    "value": {
+     "surface": "editor agent chat",
+     "runs_hooks": true
+    }
+   },
+   {
+    "claim": "The CLI shares the hook config; headless mode skips prompt, stop and closing events.",
+    "kind": "documented",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "date": "2026-11-22",
+    "verified_on": null,
+    "status": "unverified",
+    "value": {
+     "surface": "cursor-agent CLI",
+     "runs_hooks": true
+    }
+   }
+  ],
+  "skill_and_plugin_paths": [],
+  "sandbox_and_network": [
+   {
+    "claim": "Shell tool calls ran with sandbox: true in the payload; the hooks themselves wrote into the project folder.",
+    "kind": "observed",
+    "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+    "date": "2026-11-22",
+    "verified_on": "3.31.15",
+    "status": "confirmed",
+    "value": {
+     "kind": "sandbox",
+     "hooks_sandboxed": false
+    }
+   }
+  ]
+ },
+ "other_observation_channels": [
+  {
+   "claim": "A Hooks output channel and a Hooks tab show configured hooks and their errors.",
+   "kind": "documented",
+   "source": "https://cursor.com/docs/agent/hooks",
+   "date": "2026-11-22",
+   "verified_on": null,
+   "status": "unverified"
+  }
+ ],
+ "call_ids": [
+  {
+   "claim": "tool_use_id is shared by a call's preToolUse, postToolUse/postToolUseFailure and its beforeShellExecution/afterShellExecution. File-tool ids hold a line break (call-<uuid>-<n>\\nfc_<uuid>_<n>), and two consecutive calls of one model step reused one id (a failed Read then a Write, a Read then a Write).",
+   "kind": "observed",
+   "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+   "date": "2026-11-22",
+   "verified_on": "3.31.15",
+   "status": "confirmed",
+   "note": "afterFileEdit carries no tool_use_id; it arrives between the Write call's preToolUse and postToolUse."
+  }
+ ],
+ "narration_sources": [],
+ "session_files": [
+  {
+   "claim": "stop and afterAgentResponse carry transcript_path (~/.cursor/projects/<folder slug>/agent-transcripts/<conversation>/<conversation>.jsonl); other events send null.",
+   "kind": "observed",
+   "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+   "date": "2026-11-22",
+   "verified_on": "3.31.15",
+   "status": "confirmed"
+  }
+ ],
+ "helpers_or_subagents": [
+  {
+   "claim": "A Task helper's calls arrive under the helper's own conversation_id, with parent_agent_id (the main conversation) and parent_tool_call_id (the Task call); subagentStart/subagentStop carry the brief (task, description) and child_conversation_id.",
+   "kind": "observed",
+   "source": "probe:versions/3.31.15/hook-calls-editor.jsonl",
+   "date": "2026-11-22",
+   "verified_on": "3.31.15",
+   "status": "confirmed"
+  }
+ ],
+ "limits_and_timeouts": [
+  {
+   "claim": "A permission hook (preToolUse, beforeShellExecution, subagentStart, ...) whose answer is not valid JSON blocks the action; crashes, timeouts and exit codes other than 0 and 2 fail open.",
+   "kind": "documented",
+   "source": "https://cursor.com/docs/agent/hooks",
+   "date": "2026-11-22",
+   "verified_on": null,
+   "status": "unverified",
+   "note": "CoCheck's hook prints nothing on these events; whether Cursor blocks on an empty answer is not tested (the recording rig answered with JSON)."
+  }
+ ],
+ "update_channel": [],
+ "open_questions": [
+  "Does Cursor block a preToolUse, beforeShellExecution or subagentStart hook that exits 0 with empty stdout?",
+  "Do afterTabFileEdit and checkpoint restore send anything CoCheck could use?",
+  "What does the cursor-agent CLI send (not installed; its installer is a fetched script)?"
+ ]
+}

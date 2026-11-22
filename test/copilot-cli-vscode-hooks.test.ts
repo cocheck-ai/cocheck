@@ -223,7 +223,8 @@ describe("hooks that Copilot also runs from a repo .claude/settings.json record 
   });
 
   it("a claude-host run that Copilot started is told apart from Claude Code's own payloads by shape, never by absence of fields alone", async () => {
-    const { copilotRunsOtherHostsHook } = await import("../src/hosts/copilot.ts");
+    const { runsOtherHostsHook } = await import("../src/hosts/index.ts");
+    const copilotRunsOtherHostsHook = (payload: unknown) => runsOtherHostsHook("claude", payload);
     const claudeCode = { hook_event_name: "PreToolUse", session_id: "s", transcript_path: "/x.jsonl", cwd: "/w", permission_mode: "default", tool_name: "Bash", tool_use_id: "toolu_1", tool_input: { command: "ls" } };
     assert.equal(copilotRunsOtherHostsHook(claudeCode), false);
     assert.equal(copilotRunsOtherHostsHook({ hook_event_name: "Stop", session_id: "s", transcript_path: "/x.jsonl", stop_hook_active: false }), false, "a Claude Code Stop has no timestamp");

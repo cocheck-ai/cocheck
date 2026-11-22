@@ -1,0 +1,99 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "antigravity",
+  "description": "Antigravity CLI 1.5.14: an edit_file call whose Target is not in the file. Its PostToolUse carries the tool's own words in `error`, which the manifest's tool-post failure rule (`nonEmpty`) reads as a failed call; then a shell call the headless permission check denied, which ends the run with no PostToolUse and no Stop. No credit: the failed edit changed nothing.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "SessionStart",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8\",\"conversationId\":\"979ee305-5d49-433f-8009-b3398b08c5f8\",\"cwd\":\"<folder>\",\"hookEventName\":\"SessionStart\",\"lastUserInput\":\"Do these two steps in order, then stop. Step 1: use your file edit tool on notes.txt to replace the text NOTPRESENT with x (it is fine if this fails; do not retry). Step 2: run exactly this shell command: echo from-shell > shell.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8\",\"conversationId\":\"979ee305-5d49-433f-8009-b3398b08c5f8\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":1,\"invocationNum\":0,\"lastUserInput\":\"Do these two steps in order, then stop. Step 1: use your file edit tool on notes.txt to replace the text NOTPRESENT with x (it is fine if this fails; do not retry). Step 2: run exactly this shell command: echo from-shell > shell.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8\",\"conversationId\":\"979ee305-5d49-433f-8009-b3398b08c5f8\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"Do these two steps in order, then stop. Step 1: use your file edit tool on notes.txt to replace the text NOTPRESENT with x (it is fine if this fails; do not retry). Step 2: run exactly this shell command: echo from-shell > shell.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":2,\"toolCall\":{\"args\":{\"Path\":\"<folder>/notes.txt\",\"Replacement\":\"x\",\"Target\":\"NOTPRESENT\"},\"id\":\"call_2074186915962693775\",\"name\":\"edit_file\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8\",\"conversationId\":\"979ee305-5d49-433f-8009-b3398b08c5f8\",\"cwd\":\"<folder>\",\"error\":\"target content not found in the file; the Target must exactly match existing file text, including whitespace\",\"hookEventName\":\"PostToolUse\",\"lastUserInput\":\"Do these two steps in order, then stop. Step 1: use your file edit tool on notes.txt to replace the text NOTPRESENT with x (it is fine if this fails; do not retry). Step 2: run exactly this shell command: echo from-shell > shell.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":2,\"toolCall\":{\"args\":{\"Path\":\"<folder>/notes.txt\",\"Replacement\":\"x\",\"Target\":\"NOTPRESENT\"},\"id\":\"call_2074186915962693775\",\"name\":\"edit_file\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8\",\"conversationId\":\"979ee305-5d49-433f-8009-b3398b08c5f8\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":1,\"invocationNum\":0,\"lastUserInput\":\"Do these two steps in order, then stop. Step 1: use your file edit tool on notes.txt to replace the text NOTPRESENT with x (it is fine if this fails; do not retry). Step 2: run exactly this shell command: echo from-shell > shell.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8\",\"conversationId\":\"979ee305-5d49-433f-8009-b3398b08c5f8\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":3,\"invocationNum\":1,\"lastUserInput\":\"Do these two steps in order, then stop. Step 1: use your file edit tool on notes.txt to replace the text NOTPRESENT with x (it is fine if this fails; do not retry). Step 2: run exactly this shell command: echo from-shell > shell.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8\",\"conversationId\":\"979ee305-5d49-433f-8009-b3398b08c5f8\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"Do these two steps in order, then stop. Step 1: use your file edit tool on notes.txt to replace the text NOTPRESENT with x (it is fine if this fails; do not retry). Step 2: run exactly this shell command: echo from-shell > shell.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":4,\"toolCall\":{\"args\":{\"CommandLine\":\"echo from-shell > shell.txt\",\"WaitMsBeforeAsync\":5000,\"toolSummary\":\"Echo to shell.txt\"},\"id\":\"call_9797148230101955734\",\"name\":\"run_command\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/979ee305-5d49-433f-8009-b3398b08c5f8/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    }
+  ],
+  "files": {
+    "before": {
+      "notes.txt": "goodbye from agy\n"
+    },
+    "writes": []
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "session-start",
+        "eventName": "SessionStart",
+        "session": "979ee305-5d49-433f-8009-b3398b08c5f8"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "979ee305-5d49-433f-8009-b3398b08c5f8"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "979ee305-5d49-433f-8009-b3398b08c5f8",
+        "toolName": "edit_file",
+        "callId": "call_2074186915962693775"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "979ee305-5d49-433f-8009-b3398b08c5f8",
+        "toolName": "edit_file",
+        "callId": "call_2074186915962693775",
+        "failure": {
+          "raw": "target content not found in the file; the Target must exactly match existing file text, including whitespace",
+          "interrupted": false
+        }
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "979ee305-5d49-433f-8009-b3398b08c5f8"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "979ee305-5d49-433f-8009-b3398b08c5f8"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "979ee305-5d49-433f-8009-b3398b08c5f8",
+        "toolName": "run_command",
+        "callId": "call_9797148230101955734"
+      }
+    ],
+    "credit": {}
+  }
+}

@@ -33,7 +33,7 @@ if [ -z "$node" ] && [ -n "$home" ] && [ -r "$home/installed-node.txt" ]; then
   if [ -n "$candidate" ] && [ -x "$candidate" ]; then node=$candidate; fi
 fi
 if [ -z "$node" ]; then
-  record "Node was not found. CoCheck needs Node 22.18 or newer (install it from nodejs.org), then restart Claude Code."
+  record "Node was not found. CoCheck needs Node 22.18 or newer (install it from nodejs.org), then restart your coding agent."
   echo "CoCheck: Node was not found, so this tool call was not recorded." >&2
   exit 1
 fi

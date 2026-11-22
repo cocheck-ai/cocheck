@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, readdirSync, realpathSync, rmSync } from "node:fs";
 import { writeFileAtomicSync } from "./home-perms.ts";
 import path from "node:path";
+import { sessionOfEnv } from "./hosts/index.ts";
 import { HOOK_PREFIX, HOOK_SESSION_MARK, stripHookSession } from "./tasks.ts";
 
 const OPEN_DIR = "open-requests";
@@ -94,9 +95,10 @@ export function chooseOpenTask(tasks: OpenTask[], cwd: string, env: NodeJS.Proce
   const sessions = new Set(here1.map((t) => sessionOfClient(t.client)));
   if (sessions.size === 1) return { task: newest(here1).id };
   // Several sessions worked in this folder: only a session that asked decides.
-  const claude = typeof env.CLAUDE_CODE_SESSION_ID === "string" && env.CLAUDE_CODE_SESSION_ID !== "" ? sanitize(env.CLAUDE_CODE_SESSION_ID) : undefined;
-  if (claude !== undefined) {
-    const mine = here1.filter((t) => t.client.startsWith("claude-hook:") && sessionOfClient(t.client) === claude);
+  // A host that sets its session id in the shell of its session (`sessionEnv`) names the asking session itself.
+  for (const own of sessionOfEnv(env)) {
+    const id = sanitize(own.session);
+    const mine = here1.filter((t) => t.client.startsWith(`${own.host}-hook:`) && sessionOfClient(t.client) === id);
     if (mine.length > 0) return { task: newest(mine).id };
   }
   const fresh = records.filter((r) => now - r.at < OPEN_FRESH_MS && r.at - now < OPEN_FRESH_MS);

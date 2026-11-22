@@ -4,12 +4,30 @@
 import type { NarrationCursor } from "../narration.ts";
 import type { TranscriptCalls } from "../coverage.ts";
 import type { HookCommandSpec, Platform } from "../platform/types.ts";
+import type { ToolTable } from "./tool-classes.ts";
+
+export type { ToolClass, ToolEntry, ToolTable } from "./tool-classes.ts";
 
 /** The host keys CoCheck can record. This is also the value `--host` takes and the value stored in ledger rows and journal records. */
 export type HostKey = string;
 
-/** What an event is, in the adapter's terms; "other" is an event name the adapter does not act on. */
-export type EventKind = "tool-pre" | "tool-post" | "tool-failure" | "stop" | "subagent-stop" | "prompt" | "other";
+/** What an event is, in the adapter's terms (see "Canonical event (v1)" in docs/hooks.md); "other" is an event name the adapter does not act on. */
+export type EventKind =
+  | "tool-pre"
+  | "tool-post"
+  | "tool-failure"
+  | "stop"
+  | "subagent-stop"
+  | "prompt"
+  /** A harness that reports each action on its own (not as a tool call): a file edit it made, with the path and the edit. */
+  | "file-edit"
+  /** The same harness's shell run, before and after (a `shell-pre` is a shell-class call's Pre, a `shell-post` its Post). */
+  | "shell-pre"
+  | "shell-post"
+  /** A session began or ended. Recognised and carried; the adapter records nothing for them yet. */
+  | "session-start"
+  | "session-end"
+  | "other";
 
 /** Where each field CoCheck reads sits in a host's hook payload (a top-level payload key; the per-call reason is a path inside the input). */
 export interface PayloadFields {
@@ -30,7 +48,61 @@ export interface PayloadFields {
   callReason?: string;
   /** A host whose helper events run under the helper's own session id and name the main session in this key: that value is the event's session, the helper's id stays its `agentId`. */
   parentSession?: string;
+  /** CoCheck's own key on a payload (never sent by the host): the launch key the helper linker puts on a linked helper's calls. Only a host with `capabilities.launchKey` has one. */
+  launchKey?: string;
 }
+
+/**
+ * A host that reports actions on their own events (`file-edit`, `shell-pre`, `shell-post`). Each such event is read as a call of the tool
+ * the host's table declares for it (`toolClasses`), with the input built from the payload keys named here, so it takes the credit rules of that tool's class.
+ */
+export interface PerActionEvents {
+  /** The tool name (in the host's `toolClasses`, an `edit` or `write` class with `pathFields: ["file_path"]`) a `file-edit` event is a call of. */
+  fileEditTool: string;
+  /** The tool name (a `shell` class) a `shell-pre` or `shell-post` event is a call of. */
+  shellTool: string;
+  fields: {
+    /** file-edit: the key holding the edited file's path. */
+    editPath: string;
+    /** file-edit: the key holding the list of `{ old_string, new_string }` edits. */
+    editList?: string;
+    /** file-edit: the key holding the file's whole new content, for a harness that sends content instead of edits. */
+    editContent?: string;
+    /** shell-pre, shell-post: the key holding the command. */
+    command: string;
+    /** shell-post: the key holding the exit code, when the harness sends one. */
+    exitCode?: string;
+    /** shell-post: the key holding the output, when the harness sends it. */
+    output?: string;
+  };
+}
+
+/** The payload fields that mark a run of one host's hook that came from another host (see `HostProfile.foreignHookFingerprint`). */
+export interface PayloadFingerprint {
+  /** Keys that must be present (not undefined). */
+  present: readonly string[];
+  /** Keys that must be present as text. */
+  strings: readonly string[];
+  /** Keys that must be absent: the other hosts' own fields. */
+  absent: readonly string[];
+}
+
+/** The parameters of the argv tag path: a host whose Pre hook output can rewrite a shell call's command and whose SessionStart hook can set the session's environment. */
+export interface ArgvTagParams {
+  /** The one tool the tag goes on (the host's own name for its shell). */
+  tool: string;
+  /** The Pre hook's stdout for a call whose input was rewritten: the whole `updatedInput`, in the host's output shape. */
+  preOutput(eventName: string, updatedInput: Record<string, unknown>): string;
+  /** The environment variable naming the file the SessionStart hook appends the session's environment to. */
+  envFileVar: string;
+  /** The environment variable naming the shell the host runs its shell calls in. */
+  shellEnv: string;
+  /** The event that sets the session's environment. */
+  sessionStartEvent: string;
+}
+
+/** A reader of the host's own trust list for a home folder (a test passes a stub). */
+export type TrustRead = (hostHome: string, env: NodeJS.ProcessEnv) => unknown;
 
 /** One place the call's words can come from, ranked first to last by the profile, and when each can be read. */
 export interface NarrationSource {
@@ -62,7 +134,7 @@ export interface HostCapabilities {
   failureEvent: boolean;
   /** The host runs a Pre hook whose output can rewrite the call's command (the argv tag) and a SessionStart hook that can set the session's environment. */
   argvTag: boolean;
-  /** Helper events arrive under the helper's own session id, so the hook links them to their main session or holds them (src/copilot-helpers.ts). */
+  /** Helper events arrive under the helper's own session id, so the hook links them to their main session or holds them (src/helper-linker.ts). */
   helperSessions: boolean;
   /** The host's payload may carry `cocheckLaunchKey`, the key that binds a helper launch to its calls. */
   launchKey: boolean;
@@ -82,7 +154,27 @@ export interface HostProfile {
   /** Host versions this profile was checked against. */
   testedVersions: readonly string[];
 
+  /** Names of optional parts only some hosts have; the core finds the host that has one with `profileWithExtra`. */
+  extras?: readonly string[];
+  /** The argv tag path (see `capabilities.argvTag`): what the core reads to tag a shell call and to set the session's environment. */
+  argvTag?: ArgvTagParams;
+  /** Environment variables that move the host's own folders (its config home, its session files): read from the `{env:NAME}` tokens of its install and session-file path templates, plus the ones a named extra adds. A test or a dry run points each at a temp folder. */
+  homeEnv?: readonly string[];
+  /** The environment variable the host sets in the shell of its session to the session id. */
+  sessionEnv?: string;
+  /** A host that also runs the hooks of other hosts' configs: the payload shape of such a run (see `capabilities.readsForeignHooks`). Another host's hook that receives such a payload records nothing. */
+  foreignHookFingerprint?: PayloadFingerprint;
+  /** The hosts whose config files this host also reads (declared; the fingerprint decides what is skipped). */
+  readsConfigsOf?: readonly HostKey[];
+
+  /** Where the profile came from: "outsider" is a harness manifest loaded from the user's folder. Its events never prove more than "inferred" (see `trustCap`), and it is never installed by editing the host's config. Absent: first-party. */
+  trust?: "outsider";
+  /** A host whose payload keeps its fields at nested paths: the payload with each key of `fields` filled in (and every other key kept), read by the normalizer instead of the raw payload. */
+  readPayload?(raw: unknown, eventArg?: string): Record<string, unknown>;
+
   // ---- events ----
+  /** A host with per-action events (`file-edit`, `shell-pre`, `shell-post` in `eventKinds`): how each is read as a tool call. */
+  perAction?: PerActionEvents;
   /** The host's hook event names, mapped to CoCheck's kinds. */
   eventKinds: Readonly<Record<string, EventKind>>;
   /** The host's payload carries no event name; the hook command names it (`--event <name>`) and the installer writes one entry per event. */
@@ -107,6 +199,10 @@ export interface HostProfile {
    * when read from a stored record). Every rule keyed on a tool name reads this form; it is applied at ingest and again when stored records are read.
    */
   toolName?(reported: string, payload: Record<string, unknown>): string;
+
+  // ---- tool classes ----
+  /** What each tool the host reports is (write, edit, shell, launcher ...). The core reads the class through `toolEntryOf`, never a tool name. */
+  toolClasses: ToolTable;
 
   // ---- call ids ----
   /**
@@ -217,8 +313,8 @@ export interface HostProfile {
     hostFlag: string;
     /** The environment variable the host sets to the project folder, used when the hook command names no `--folder`. */
     projectDirEnv?: string;
-    /** The payload a hook check sends to prove the hook records (a Pre of a harmless call, in the host's own shape), and the `--event` it names. Default: Claude's shape. */
-    checkPayload?(folder: string): { payload: Record<string, unknown>; event?: string };
+    /** The payload a hook check sends to prove the hook records (a Pre of a harmless call, in the host's own shape), and the `--event` it names. */
+    checkPayload(folder: string): { payload: Record<string, unknown>; event?: string };
     /** The config file is wholly CoCheck's: uninstall deletes it (only when it carries CoCheck's marker) instead of editing it. */
     ownsFile?: true;
     /** The host's payload carries the task folder as its `cwd`; the hook uses that when the command names no `--folder` and no variable is set. */
@@ -227,8 +323,8 @@ export interface HostProfile {
     promptContext?: false;
     /** The hook events CoCheck installs for this host. */
     events: readonly string[];
-    /** The host's config file, from the environment and the user's home. */
-    configFile(env: NodeJS.ProcessEnv, userHome: string): string;
+    /** The host's config file, from the environment, the user's home and, for a workspace-scoped config ({project} in the path), the task folder. Throws when the path needs the task folder and none is given. */
+    configFile(env: NodeJS.ProcessEnv, userHome: string, project?: string): string;
     /**
      * The config text with CoCheck's entries added (any earlier ones replaced). The command is built by `platform.hookCommand` from `spec`
      * (undefined: a dry run that only checks the file is safe to edit). Throws an Error (with the file named) when it is not.
@@ -238,8 +334,8 @@ export interface HostProfile {
     removeHooks(text: string, file: string, platform?: Platform): { text: string; changed: boolean };
     /** The events in `events` that have no CoCheck entry in this config text. */
     missingEvents(text: string, file: string, platform?: Platform): string[];
-    /** Why the host will not run CoCheck's installed hooks (its own trust state), read live; undefined when it will or cannot be told. `hookPath`: CoCheck's hook script. */
-    trustProblem?(configFile: string, env: NodeJS.ProcessEnv, hookPath: string, read?: (codexHome: string, env: NodeJS.ProcessEnv) => unknown): string | undefined;
+    /** Why the host will not run CoCheck's installed hooks (its own trust state), read live; undefined when it will or cannot be told. `hookPath`: CoCheck's hook script. `read`: a stub for the host's trust list (a test), or "live" to ask the host itself; absent: not read. */
+    trustProblem?(configFile: string, env: NodeJS.ProcessEnv, hookPath: string, read?: TrustRead | "live"): string | undefined;
     /** Said after an install, when the host needs a step from the person before the hooks run. */
     afterInstall?: string;
     /** A standing note about the install that depends on where CoCheck lives (also shown by `cocheck status`); `launcherDir` holds the hook's scripts and build, `home` is the data folder. */
@@ -278,4 +374,5 @@ export const SHARED_FIELDS: PayloadFields = {
   transcriptPath: "transcript_path",
   lastAssistantMessage: "last_assistant_message",
   prompt: "prompt",
+  callReason: "description",
 };

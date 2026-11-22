@@ -8,7 +8,7 @@ import { journalEvent } from "../src/hook-journal.ts";
 import { openLedger } from "../src/ledger.ts";
 import { normalize } from "../src/normalize.ts";
 import { scrubPatchText, scrubPayloadBytes } from "../src/patch-secrets.ts";
-import { helperGate } from "../src/copilot-helpers.ts";
+import { helperGate } from "../src/helper-linker.ts";
 import { setTracking } from "../src/tracking.ts";
 import { firstSecretRule } from "../src/secret-scan.ts";
 import { trackedClaims } from "./helpers/claims.ts";

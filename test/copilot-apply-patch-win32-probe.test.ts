@@ -5,7 +5,8 @@ import { syncBuiltinESMExports } from "node:module";
 import { editTargetsOf, reportedEditsOf } from "../src/credit-guard.ts";
 import { createPathKit, normalizePathForCompare } from "../src/paths.ts";
 import { platformFor } from "../src/platform/index.ts";
-import { copilot } from "../src/hosts/copilot.ts";
+import { profileOf } from "../src/hosts/index.ts";
+const copilot = profileOf("copilot");
 
 // The adapter's input reading (hook-adapter #writeIntent), run with the Windows path module and platform in place, a Windows cwd and task folder.
 const realPlat = Object.getOwnPropertyDescriptor(process, "platform")!;

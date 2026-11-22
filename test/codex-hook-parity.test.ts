@@ -5,7 +5,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { runHookTracked as runHook } from "./helpers/track.ts";
 import { normalize } from "../src/normalize.ts";
-import { codex } from "../src/hosts/codex.ts";
+import { profileOf } from "../src/hosts/index.ts";
+const codex = profileOf("codex");
 import { codexTrustProblem } from "../src/hosts/codex-trust.ts";
 import { installRecordPath, installStatus, runInstall } from "../src/install.ts";
 

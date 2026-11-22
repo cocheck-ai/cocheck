@@ -10,7 +10,8 @@
 
 import { baseName as pathBaseName, words, WORDY, type Call } from "./runs.ts";
 import { isUriSubject } from "../connector/subject.ts";
-import { isLauncherTool, SHELL_TOOLS } from "../credit-guard.ts";
+import { isShellTool } from "../credit-guard.ts";
+import { toolEntryOf } from "../hosts/index.ts";
 import { isMcpTool, type ToolLabel } from "../tool-label.ts";
 
 /** A file name for a sentence; a connector's URI subject is its own name, never cut to its last segment. */
@@ -261,21 +262,28 @@ export function translateShell(cmd: string, named: string[] = [], failed = false
 /** A skill's name without its prefix: "anthropic-skills:pdf" is "pdf". The core names no product. */
 const skillName = (raw: string): string => raw.slice(raw.lastIndexOf(":") + 1).trim();
 
-export function translateTool(tool: unknown, input: unknown, named: string[] = []): string {
+export function translateTool(tool: unknown, input: unknown, named: string[] = [], host?: string | null): string {
   const i = (input && typeof input === "object" ? input : {}) as Record<string, any>;
   const f = i.file_path ?? i.path ?? i.notebook_path ?? named[0] ?? null;
   const file = f ? baseName(f) : null;
-  const t = isLauncherTool(String(tool ?? "")) ? "Agent" : String(tool ?? "");
-  switch (t) {
-    case "Read":
+  const t = String(tool ?? "");
+  // A sentence by the tool's class in its host's table; a file tool is described only when its input has the file-tool shape the sentence reads.
+  const entry = toolEntryOf(host, t);
+  switch (entry?.class === "launcher" || (entry?.fileInput === true && entry.class !== "read") || entry?.class === "read" ? entry.class : undefined) {
+    case "read":
       return file ? `Read ${file}` : "Read a file";
-    case "Edit":
-    case "MultiEdit":
+    case "edit":
       return file ? `Edited ${file}` : "Edited a file";
-    case "Write":
+    case "write":
       return file ? `Wrote ${file}` : "Wrote a file";
-    case "NotebookEdit":
+    case "notebook-edit":
       return file ? `Edited the notebook ${file}` : "Edited a notebook";
+    case "launcher": {
+      const what = i.description ?? i.task_name;
+      return what ? `Started a helper agent: ${what}` : (i.subagent_type ?? i.agent_type) ? `Started a helper agent (${i.subagent_type ?? i.agent_type})` : "Started a helper agent";
+    }
+  }
+  switch (t) {
     case "Glob":
       return i.pattern ? `Looked for files matching ${q(i.pattern)}` : "Looked for files";
     case "Grep":
@@ -290,11 +298,6 @@ export function translateTool(tool: unknown, input: unknown, named: string[] = [
     }
     case "WebSearch":
       return i.query ? `Searched the web for ${q(i.query)}` : "Searched the web";
-    case "Task":
-    case "Agent": {
-      const what = i.description ?? i.task_name;
-      return what ? `Started a helper agent: ${what}` : (i.subagent_type ?? i.agent_type) ? `Started a helper agent (${i.subagent_type ?? i.agent_type})` : "Started a helper agent";
-    }
     case "TodoWrite":
       return "Updated its to-do list";
     case "AskUserQuestion":
@@ -321,7 +324,7 @@ export function translateTool(tool: unknown, input: unknown, named: string[] = [
 
 // ---- the line ----
 
-type LineCall = Pick<Call, "tool" | "description" | "command" | "named" | "narration" | "input" | "closedBy"> & { background?: boolean } & { error?: string | null } & { toolLabel?: ToolLabel | null };
+type LineCall = Pick<Call, "tool" | "description" | "command" | "named" | "narration" | "input" | "closedBy"> & { background?: boolean } & { host?: string | null } & { error?: string | null } & { toolLabel?: ToolLabel | null };
 
 // The label's fields as a tool input. `command` is never read from it: only a shell call has one, and a shell call never gets here.
 // A list (paths) reads as its first entry. Null when the label holds no field, so a tool known only by its input field names stays "Used <tool>".
@@ -336,7 +339,7 @@ function labelInput(label: ToolLabel | null | undefined): Record<string, string>
   return Object.keys(out).length ? out : null;
 }
 
-export const isShell = (c: Pick<Call, "tool" | "command">): boolean => SHELL_TOOLS.test(String(c.tool ?? "")) || (!!c.command && c.command !== c.tool && !c.tool);
+export const isShell = (c: Pick<Call, "tool" | "command"> & { host?: string | null }): boolean => isShellTool(String(c.tool ?? ""), c.host) || (!!c.command && c.command !== c.tool && !c.tool);
 
 const REFUSED_LINE = "The host refused this call; nothing ran";
 const NO_RESULT_SHELL = "Ran a command; no result recorded";
@@ -364,8 +367,8 @@ export function lineOf(c: LineCall): Line {
   }
   if (isShell(c)) return { text: translateShell(c.command ?? "", named, c.closedBy === "failure", c.error ?? null), source: "shell", command: c.command || null };
   const fromLabel = labelInput(c.toolLabel);
-  if (fromLabel) return { text: translateTool(c.tool, fromLabel, named), source: "label", command: c.command && c.command !== c.tool ? c.command : null };
-  return { text: translateTool(c.tool, c.input, named), source: "tool", command: c.command && c.command !== c.tool ? c.command : null };
+  if (fromLabel) return { text: translateTool(c.tool, fromLabel, named, c.host), source: "label", command: c.command && c.command !== c.tool ? c.command : null };
+  return { text: translateTool(c.tool, c.input, named, c.host), source: "tool", command: c.command && c.command !== c.tool ? c.command : null };
 }
 
 export interface LineGroup {

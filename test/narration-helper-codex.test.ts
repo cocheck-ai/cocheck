@@ -40,7 +40,7 @@ async function setup() {
   await copyFile(probe, path.join(folder, "casebook.xlsx"));
   cleanups.push(() => rm(root, { recursive: true, force: true }));
   let clock = Date.UTC(2026, 9, 18, 21, 0, 0);
-  const opts = { perSession: false, host: "codex" as const, home, claimed: workbookClaims, folder, now: () => clock, codexSessions: path.join(root, "codex-sessions") };
+  const opts = { perSession: false, host: "codex" as const, home, claimed: workbookClaims, folder, now: () => clock, sessionsDir: path.join(root, "codex-sessions") };
   const rollout = (id: string, body: string) => writeFile(path.join(day, `rollout-2026-10-18T16-58-41-${id}.jsonl`), body);
   const call = async (id: string, extra: Record<string, unknown> = {}) => {
     for (const hook_event_name of ["PreToolUse", "PostToolUse"]) {

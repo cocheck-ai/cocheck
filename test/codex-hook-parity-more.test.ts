@@ -44,7 +44,7 @@ describe("(a): outcomes Codex cannot confirm are never shown as succeeded", () =
     const s = await scratch();
     let clock = 1_000_000;
     const hook = (o: Record<string, unknown>) =>
-      handleHook({ session_id: "01a16ff1-ac5d-78f1-a588-6ff46ea9e279", cwd: s.folder, model: "gpt-6.1-sol", permission_mode: "bypassPermissions", ...o } as unknown as HookPayload, { host: "codex", home: s.home, claimed: workbookClaims, folder: s.folder, perSession: false, now: () => (clock += 1000), codexSessions: s.sessions });
+      handleHook({ session_id: "01a16ff1-ac5d-78f1-a588-6ff46ea9e279", cwd: s.folder, model: "gpt-6.1-sol", permission_mode: "bypassPermissions", ...o } as unknown as HookPayload, { host: "codex", home: s.home, claimed: workbookClaims, folder: s.folder, perSession: false, now: () => (clock += 1000), sessionsDir: s.sessions });
     await hook({ hook_event_name: "UserPromptSubmit", prompt: "Look around" });
     // the real failing ls and the real empty-output success shapes from hook-calls-run2.jsonl
     const ls = { tool_name: "Bash", tool_input: { command: "ls /nonexistent_dir" } };
@@ -95,7 +95,7 @@ describe("(b): two overlapping Codex helpers get no joint credit", () => {
     await writeFile(path.join(s.folder, "a.xlsx"), book({ A1: 0 }));
     await writeFile(path.join(s.folder, "b.xlsx"), book({ A1: 0 }));
     const hook = (o: Record<string, unknown>) =>
-      handleHook({ session_id: SESSION, cwd: s.folder, model: "gpt-6.1-sol", permission_mode: "bypassPermissions", ...o } as unknown as HookPayload, { host: "codex", home: s.home, claimed: workbookClaims, folder: s.folder, perSession: false, now: () => (clock += 1000), codexSessions: s.sessions });
+      handleHook({ session_id: SESSION, cwd: s.folder, model: "gpt-6.1-sol", permission_mode: "bypassPermissions", ...o } as unknown as HookPayload, { host: "codex", home: s.home, claimed: workbookClaims, folder: s.folder, perSession: false, now: () => (clock += 1000), sessionsDir: s.sessions });
     const helperCall = (agent: string) => ({ agent_id: agent, agent_type: "default", tool_name: "Bash" });
     // each helper runs a script that names no workbook; only its rollout (command output) says which one it wrote
     const cmdA = "python3 build_one.py";

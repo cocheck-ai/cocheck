@@ -1,0 +1,110 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "codex",
+  "description": "Codex 0.164 (run 2): a prompt, a shell call that writes a.txt, a shell call that fails, then the stop. The model-request events, the helper's lines and the rollout files are left out.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "SessionStart",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"cwd\":\"<folder>\",\"hook_event_name\":\"SessionStart\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"source\":\"startup\"}",
+      "argv": []
+    },
+    {
+      "event": "UserPromptSubmit",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"UserPromptSubmit\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"prompt\":\"Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence.\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"printf alpha > a.txt\"},\"tool_use_id\":\"exec-de551eab-320d-46a7-ab70-6433dab6dda3\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"printf alpha > a.txt\"},\"tool_response\":\"\",\"tool_use_id\":\"exec-de551eab-320d-46a7-ab70-6433dab6dda3\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"ls /nonexistent_t147\"},\"tool_use_id\":\"exec-9f48ad11-5e70-43ae-b212-0f8d4672e4e1\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"ls /nonexistent_t147\"},\"tool_response\":\"ls: /nonexistent_t147: No such file or directory\\n\",\"tool_use_id\":\"exec-9f48ad11-5e70-43ae-b212-0f8d4672e4e1\"}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"Stop\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"stop_hook_active\":false,\"last_assistant_message\":\"Created a.txt with alpha, ran the expected failing command, and waited for the helper to create b.txt with beta.\"}",
+      "argv": []
+    }
+  ],
+  "files": {
+    "writes": [
+      {
+        "afterEvent": 3,
+        "path": "a.txt",
+        "content": "alpha"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "other",
+        "eventName": "SessionStart",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279"
+      },
+      {
+        "kind": "prompt",
+        "eventName": "UserPromptSubmit",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "prompt": "Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence."
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "Bash",
+        "callId": "exec-de551eab-320d-46a7-ab70-6433dab6dda3"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "Bash",
+        "callId": "exec-de551eab-320d-46a7-ab70-6433dab6dda3"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "Bash",
+        "callId": "exec-9f48ad11-5e70-43ae-b212-0f8d4672e4e1"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "Bash",
+        "callId": "exec-9f48ad11-5e70-43ae-b212-0f8d4672e4e1",
+        "failure": {
+          "interrupted": false
+        }
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "lastAssistantMessage": "Created a.txt with alpha, ran the expected failing command, and waited for the helper to create b.txt with beta."
+      }
+    ],
+    "credit": {
+      "a.txt": {
+        "creditedTo": "call:exec-de551eab-320d-46a7-ab70-6433dab6dda3",
+        "basis": "inferred"
+      }
+    }
+  }
+}

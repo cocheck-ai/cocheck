@@ -1,20 +1,20 @@
-// Codex. Its facts: no failure event (a failed call arrives as a Post); the call's words are in the rollout, found by session id under
-// ~/.codex/sessions; a tool call's hook `tool_use_id` equals the rollout's CommandExecution `id`; a subagent's words are in its own rollout, named by its thread id; no helper records, no settings install yet.
+// Codex's first-party code, offered as named extras (src/hosts/extras.ts); its data is in harnesses/codex/cocheck-harness.json. Its facts: no failure event
+// (a failed call arrives as a Post); the call's words are in the rollout, found by session id under ~/.codex/sessions; a tool call's hook `tool_use_id`
+// equals the rollout's CommandExecution `id`; a subagent's words are in its own rollout, named by its thread id; no helper records.
 import { closeSync, lstatSync, openSync, readdirSync, readFileSync, readSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { addCoCheckHooks, inlineHooksProblem, missingCoCheckEvents, removeCoCheckHooks } from "../codex-config.ts";
 import { CLOSING_MAX, NARRATION_MAX, cut, joined, remember, type NarrationCursor } from "../narration.ts";
 import { platform } from "../platform/index.ts";
-import { claudeShapeExtra, claudeShapeFailure } from "./shared.ts";
-import { codexTrustProblem } from "./codex-trust.ts";
-import { codexSessionTitle } from "./session-titles.ts";
-import { SHARED_EVENT_KINDS, SHARED_FIELDS, type HostProfile } from "./types.ts";
+import { claudeShapeFailure } from "./shared.ts";
+import { codexTrustProblem, readCodexHooksList } from "./codex-trust.ts";
+import type { HostProfile } from "./types.ts";
 
 const CODEX_LINE = /"(?:AgentMessage|CommandExecution|UserMessage|task_started)"/;
 
 /** One line of a Codex rollout. Only the four item kinds above are parsed; a UserMessage is parsed for its kind and never read. */
-function codexLine(cur: NarrationCursor, line: string): void {
+export function codexLine(cur: NarrationCursor, line: string): void {
   if (!CODEX_LINE.test(line)) return;
   let d: any;
   try {
@@ -53,7 +53,7 @@ function codexLine(cur: NarrationCursor, line: string): void {
 // Display only: the ledger keeps the host's words. Only this exact directive name followed by a brace group of `key="value"` pairs matches.
 const CITATION = /:codex-file-citation\{((?:\s*[A-Za-z_][\w-]*="(?:[^"\\]|\\.)*")*)\s*\}/g;
 const CITATION_PATH = /(?:^|\s)path="((?:[^"\\]|\\.)*)"/;
-function codexDisplayText(text: string): string {
+export function codexDisplayText(text: string): string {
   if (!text.includes(":codex-file-citation{")) return text;
   const out = text.replace(CITATION, (_m, attrs: string) => {
     const raw = CITATION_PATH.exec(attrs)?.[1]?.replace(/\\(.)/g, "$1") ?? "";
@@ -66,7 +66,7 @@ function codexDisplayText(text: string): string {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The rollout named by a thread id: today's folder and the two days before it, matched on the whole name with a full uuid, never on a suffix a longer id could share. */
-function locateRollout(thread: string, now: number, root?: string): string | undefined {
+export function locateRollout(thread: string, now: number, root?: string): string | undefined {
   if (!UUID.test(thread)) return undefined;
   const rollout = new RegExp(`^rollout-\\d{4}-\\d{2}-\\d{2}T\\d{2}-\\d{2}-\\d{2}-${thread}\\.jsonl$`, "i");
   const base = root ?? path.join(homedir(), ".codex", "sessions");
@@ -108,7 +108,7 @@ function rolloutHeader(file: string): { id?: unknown; session_id?: unknown; pare
  * A subagent writes its own rollout, named by its own thread id (the hook's `agent_id`). The file is used only when its header names
  * that thread and the calling session as its parent or root, so a helper never reads the parent's file or another helper's.
  */
-function locateHelperRollout(session: string, agent: string, now: number, root?: string): string | undefined {
+export function locateHelperRollout(session: string, agent: string, now: number, root?: string): string | undefined {
   if (!UUID.test(session) || agent.toLowerCase() === session.toLowerCase()) return undefined;
   const file = locateRollout(agent, now, root);
   if (file === undefined) return undefined;
@@ -133,7 +133,7 @@ const callTextCache = new Map<string, { key: string; texts: Map<string, string>;
  * hook's `tool_use_id`). Read whole once per file state. Nothing else in the file is kept.
  * Bound: a call whose command and output do not name a file gives the credit no evidence about that file.
  */
-function rolloutCallText(file: string): ReadonlyMap<string, string> | undefined {
+export function rolloutCallText(file: string): ReadonlyMap<string, string> | undefined {
   return rolloutCalls(file)?.texts;
 }
 
@@ -142,7 +142,7 @@ function rolloutCallText(file: string): ReadonlyMap<string, string> | undefined 
  * nonzero number, or whose `status` is "failed" with no exit code. An item with exit code 0, or neither field, is not listed.
  * Bound: only a call whose item is already in the file is seen; the item is written just before the call's PostToolUse.
  */
-function rolloutCallExits(file: string): ReadonlyMap<string, CallExit> | undefined {
+export function rolloutCallExits(file: string): ReadonlyMap<string, CallExit> | undefined {
   return rolloutCalls(file)?.exits;
 }
 
@@ -196,7 +196,7 @@ const SHELL_WRAP = /^\S*\/(?:zsh|bash|sh) -l?c '(.*)'$/s;
  * A rejection that quotes no command is listed with no `command`: the caller matches it by position. Bound: a command whose quote does
  * not unwrap to a shell wrapper and one single-quoted body is skipped.
  */
-function rolloutRefusedCommands(file: string): Array<{ command?: string; at: number }> | undefined {
+export function rolloutRefusedCommands(file: string): Array<{ command?: string; at: number }> | undefined {
   try {
     const st = lstatSync(file);
     if (!st.isFile() || st.size > ROLLOUT_MAX_BYTES) return undefined;
@@ -235,7 +235,7 @@ const codexEvents = ["SessionStart", "PreToolUse", "PostToolUse", "SubagentStart
 // A failed Bash call arrives as PostToolUse with the bare output as `tool_response` and no exit code (discrepancies.json codex-posttooluse-no-exit-code).
 // Inferred as failed only when every non-empty output line is a shell error line; any other output, and empty output, reads as no failure.
 const SHELL_ERROR_LINE = /^[^\s:][^\n]*: (?:.*: )?(?:No such file or directory|Permission denied|command not found|Not a directory|Is a directory|Operation not permitted)$/;
-function codexFailure(kind: Parameters<typeof claudeShapeFailure>[0], p: Record<string, unknown>) {
+export function codexFailure(kind: Parameters<typeof claudeShapeFailure>[0], p: Record<string, unknown>) {
   const known = claudeShapeFailure(kind, p);
   if (known !== undefined || kind !== "tool-post" || typeof p.tool_response !== "string") return known;
   const lines = p.tool_response.split("\n").map((l) => l.trim()).filter((l) => l !== "");
@@ -263,71 +263,34 @@ export function codexToolName(reported: string, payload: Record<string, unknown>
   return reported;
 }
 
-export const codex: HostProfile = {
-  key: "codex",
-  displayName: "Codex",
-  chip: "C",
-  testedVersions: ["0.162.0-alpha.2", "0.164.0-alpha.11.1"],
-  eventKinds: SHARED_EVENT_KINDS,
-  capabilities: { failureEvent: false, argvTag: false, helperSessions: false, launchKey: false, readsForeignHooks: false },
-  fields: { ...SHARED_FIELDS },
-  toolName: codexToolName,
-  failureOf: codexFailure,
-  displayText: codexDisplayText,
-  extraOf: claudeShapeExtra,
-  narration: {
-    // Codex writes the commentary to the rollout before the call runs but binds it to a call only when the call's item completes: the Pre claims it, the Post reads the bound one when the Pre found none.
-    sources: [
-      { kind: "commentary-before-call", readableAt: "pre", reason: true },
-      { kind: "closing-message", readableAt: "post" },
-    ],
-    foldLine: codexLine,
-    claimAtPre(cur, id) {
-      const text = joined(cur.pending, NARRATION_MAX);
-      cur.pending = [];
-      if (text !== "") remember(cur, id, { text });
-    },
-    closing: (cur) => cur?.closing ?? "",
+/** The words the cursor holds, not yet bound, go to the call `id` at its Pre. */
+export function codexClaimAtPre(cur: NarrationCursor, id: string): void {
+  const text = joined(cur.pending, NARRATION_MAX);
+  cur.pending = [];
+  if (text !== "") remember(cur, id, { text });
+}
+
+/** Codex's own hook config: TOML `[[hooks.X]]` tables in `$CODEX_HOME/config.toml`. */
+export const CODEX_TOML_EDITOR: Pick<NonNullable<HostProfile["install"]>, "configFile" | "addHooks" | "removeHooks" | "missingEvents"> = {
+  configFile: (env, userHome) => path.join(env.CODEX_HOME || path.join(userHome, ".codex"), "config.toml"),
+  addHooks: (text, file, spec, plat = platform()) => {
+    const problem = inlineHooksProblem(text);
+    if (problem !== undefined) {
+      throw new Error(`${file} already has ${problem} for hooks, and CoCheck's [[hooks.X]] entries would make the file invalid. Nothing was changed. Move your hooks to [[hooks.X]] tables, then run the installer again`);
+    }
+    const command = spec === undefined ? "" : plat.hookCommand.build(spec);
+    return addCoCheckHooks(removeCoCheckHooks(text).toml, { command: () => command, events: [...codexEvents] }).toml;
   },
-  sessionTitle: codexSessionTitle,
-  sessionFile: { bySessionId: true, locate: locateRollout, locateHelper: locateHelperRollout, callText: rolloutCallText, callExit: rolloutCallExits, refusedCommands: rolloutRefusedCommands },
-  install: {
-    skillRoot: path.join(".agents", "skills"),
-    inBothAlias: true,
-    reusesRecord: true,
-    hostFlag: "codex",
-    // Codex sets no project-folder variable; its payload carries the folder as `cwd`.
-    folderFromPayloadCwd: true,
-    // The events that fired in the probe run and that the adapter acts on; Codex sends no failure event.
-    events: codexEvents,
-    configFile: (env, userHome) => path.join(env.CODEX_HOME || path.join(userHome, ".codex"), "config.toml"),
-    addHooks: (text, file, spec, plat = platform()) => {
-      const problem = inlineHooksProblem(text);
-      if (problem !== undefined) {
-        throw new Error(`${file} already has ${problem} for hooks, and CoCheck's [[hooks.X]] entries would make the file invalid. Nothing was changed. Move your hooks to [[hooks.X]] tables, then run the installer again`);
-      }
-      const command = spec === undefined ? "" : plat.hookCommand.build(spec);
-      return addCoCheckHooks(removeCoCheckHooks(text).toml, { command: () => command, events: [...codexEvents] }).toml;
-    },
-    removeHooks: (text) => {
-      const r = removeCoCheckHooks(text);
-      return { text: r.toml, changed: r.changed };
-    },
-    missingEvents: (text) => missingCoCheckEvents(text, codexEvents),
-    trustProblem: (configFile, env, hookPath, read) => {
-      if (read === undefined) return undefined;
-      const result = read(path.dirname(configFile), env);
-      return result === undefined ? undefined : codexTrustProblem(result, hookPath);
-    },
-    afterInstall: "Codex asks you to trust new hooks before they run: open Codex and trust the new hooks in Codex once, or CoCheck records nothing from it.",
+  removeHooks: (text) => {
+    const r = removeCoCheckHooks(text);
+    return { text: r.toml, changed: r.changed };
   },
-  shape: {
-    SessionStart: ["session_id"],
-    SubagentStart: ["session_id", "agent_id"],
-    SubagentStop: ["session_id", "agent_id"],
-    PreToolUse: ["session_id", "tool_name", "tool_use_id", "tool_input"],
-    PostToolUse: ["session_id", "tool_name", "tool_use_id", "tool_input", "tool_response"],
-    Stop: ["session_id"],
-    UserPromptSubmit: ["session_id", "prompt"],
-  },
+  missingEvents: (text) => missingCoCheckEvents(text, codexEvents),
+};
+
+/** Why Codex will not run CoCheck's installed hooks (its trust list), read live or through a stub. */
+export const codexTrustProblemOf: NonNullable<NonNullable<HostProfile["install"]>["trustProblem"]> = (configFile, env, hookPath, read) => {
+  if (read === undefined) return undefined;
+  const result = (read === "live" ? readCodexHooksList : read)(path.dirname(configFile), env);
+  return result === undefined ? undefined : codexTrustProblem(result, hookPath);
 };
