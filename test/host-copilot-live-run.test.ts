@@ -36,7 +36,7 @@ describe("the live Copilot run", () => {
     await mkdir(path.join(sessions, SESSION), { recursive: true });
     await copyFile(probe(0), path.join(folder, "casebook.xlsx"));
     let clock = Date.UTC(2026, 9, 18, 12, 0, 0);
-    const opts = { perSession: false, host: "copilot" as const, home, claimed: workbookClaims, folder, now: () => (clock += 1000), codexSessions: sessions };
+    const opts = { perSession: false, host: "copilot" as const, home, claimed: workbookClaims, folder, now: () => (clock += 1000), sessionsDir: sessions };
     const send = (event: string, payload: Record<string, unknown>) => handleEvent(normalize("copilot", { ...payload, cwd: folder }, event), opts);
     const events = path.join(sessions, SESSION, "events.jsonl");
     const all = (await readFile(path.join(REC, "session-events.jsonl"), "utf8")).split("\n").filter(Boolean);

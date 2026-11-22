@@ -1,0 +1,62 @@
+{
+  "schema": "cocheck-harness/1",
+  "key": "antigravity",
+  "displayName": "Antigravity",
+  "fullName": "Antigravity CLI",
+  "chip": "A",
+  "testedVersions": ["1.5.14"],
+  "events": {
+    "SessionStart": "session-start",
+    "PreInvocation": "other",
+    "PostInvocation": "other",
+    "PreToolUse": "tool-pre",
+    "PostToolUse": "tool-post",
+    "Stop": "stop"
+  },
+  "eventFrom": { "payload": "hookEventName" },
+  "fields": {
+    "session": "conversationId",
+    "cwd": "cwd",
+    "toolName": "toolCall.name",
+    "toolInput": "toolCall.args",
+    "transcriptPath": "transcriptPath"
+  },
+  "callId": { "payload": "toolCall.id" },
+  "extraFields": { "model": "modelName" },
+  "failure": { "tool-post": { "text": ["error"], "nonEmpty": true } },
+  "toolClasses": {
+    "write_file": { "class": "write", "pathFields": ["Path"], "pathChecked": true },
+    "edit_file": { "class": "edit", "pathFields": ["Path"], "pathChecked": true },
+    "run_command": { "class": "shell", "dialect": "bash", "backgroundable": true },
+    "invoke_subagent": { "class": "launcher" },
+    "send_message": { "class": "never-credited" }
+  },
+  "install": {
+    "format": "json",
+    "path": "{home}/.gemini/config/hooks.json",
+    "mode": "merge",
+    "rootKey": "cocheck",
+    "events": ["PreToolUse", "PostToolUse", "Stop"],
+    "matcherEvents": { "PreToolUse": "*", "PostToolUse": "*" },
+    "entryTemplate": { "type": "command", "command": "{command}", "timeout": 30 },
+    "entryTemplates": {
+      "PreToolUse": { "hooks": [{ "type": "command", "command": "{command}", "timeout": 30 }] },
+      "PostToolUse": { "hooks": [{ "type": "command", "command": "{command}", "timeout": 30 }] }
+    },
+    "failOpenEvents": ["PreToolUse"],
+    "skillRoot": ".gemini/config/skills",
+    "hostFlag": "antigravity",
+    "folderFromPayloadCwd": true,
+    "promptContext": false,
+    "notes": "Unverified: the global hooks file ({home}/.gemini/config/hooks.json) is read from Antigravity's documentation; the recordings used a workspace file, <folder>/.agents/hooks.json, which takes the same entries.",
+    "checkPayload": {
+      "payload": { "conversationId": "install-check", "cwd": "{folder}", "hookEventName": "PreToolUse", "toolCall": { "id": "install-check-1", "name": "run_command", "args": { "CommandLine": "true" } } },
+      "event": "PreToolUse"
+    }
+  },
+  "shape": {
+    "PreToolUse": ["conversationId", "cwd", "workspacePaths", "transcriptPath", "hookEventName", "toolCall", "stepIdx"],
+    "PostToolUse": ["conversationId", "cwd", "workspacePaths", "transcriptPath", "hookEventName", "toolCall", "stepIdx", "error"],
+    "Stop": ["conversationId", "cwd", "hookEventName", "terminationReason", "fullyIdle", "error"]
+  }
+}

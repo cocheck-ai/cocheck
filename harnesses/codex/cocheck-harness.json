@@ -1,0 +1,212 @@
+{
+  "schema": "cocheck-harness/1",
+  "key": "codex",
+  "displayName": "Codex",
+  "chip": "C",
+  "testedVersions": [
+    "0.162.0-alpha.2",
+    "0.164.0-alpha.11.1"
+  ],
+  "events": {
+    "PreToolUse": "tool-pre",
+    "PostToolUse": "tool-post",
+    "PostToolUseFailure": "tool-failure",
+    "Stop": "stop",
+    "SubagentStop": "subagent-stop",
+    "UserPromptSubmit": "prompt"
+  },
+  "eventFrom": {
+    "payload": "hook_event_name"
+  },
+  "fields": {
+    "session": "session_id",
+    "eventName": "hook_event_name",
+    "cwd": "cwd",
+    "toolName": "tool_name",
+    "toolInput": "tool_input",
+    "toolResponse": "tool_response",
+    "agentId": "agent_id",
+    "agentType": "agent_type",
+    "transcriptPath": "transcript_path",
+    "lastAssistantMessage": "last_assistant_message",
+    "prompt": "prompt",
+    "callReason": "description"
+  },
+  "callId": {
+    "payload": "tool_use_id"
+  },
+  "extraFields": {
+    "turnId": "turn_id",
+    "permissionMode": "permission_mode",
+    "model": "model",
+    "stopHookActive": "stop_hook_active"
+  },
+  "toolClasses": {
+    "send_message": {
+      "class": "never-credited"
+    },
+    "list_agents": {
+      "class": "never-credited"
+    },
+    "apply_patch": {
+      "class": "patch",
+      "anyCase": true
+    },
+    "patch": {
+      "class": "patch",
+      "anyCase": true
+    },
+    "spawn_agent": {
+      "class": "launcher"
+    },
+    "wait_agent": {
+      "class": "wait"
+    },
+    "Bash": {
+      "class": "shell",
+      "dialect": "bash",
+      "backgroundable": true,
+      "anyCase": true
+    },
+    "shell": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "sh": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "zsh": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "exec": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "exec_command": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "local_shell": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "container.exec": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "run_shell_command": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "terminal": {
+      "class": "shell",
+      "anyCase": true
+    },
+    "powershell": {
+      "class": "shell",
+      "dialect": "powershell",
+      "anyCase": true
+    },
+    "pwsh": {
+      "class": "shell",
+      "dialect": "powershell",
+      "anyCase": true
+    }
+  },
+  "narration": {
+    "sources": [
+      {
+        "kind": "commentary-before-call",
+        "readableAt": "pre",
+        "reason": true
+      },
+      {
+        "kind": "closing-message",
+        "readableAt": "post"
+      }
+    ]
+  },
+  "capabilities": {
+    "failureEvent": false,
+    "argvTag": false,
+    "helperSessions": false,
+    "launchKey": false,
+    "readsForeignHooks": false
+  },
+  "install": {
+    "skillRoot": ".agents/skills",
+    "inBothAlias": true,
+    "reusesRecord": true,
+    "hostFlag": "codex",
+    "folderFromPayloadCwd": true,
+    "editorExtra": "codex-toml-editor",
+    "events": [
+      "SessionStart",
+      "PreToolUse",
+      "PostToolUse",
+      "SubagentStart",
+      "SubagentStop",
+      "Stop",
+      "UserPromptSubmit"
+    ],
+    "checkPayload": {
+      "payload": {
+        "session_id": "install-check",
+        "cwd": "{folder}",
+        "hook_event_name": "PreToolUse",
+        "tool_name": "Bash",
+        "tool_use_id": "install-check-1",
+        "tool_input": {
+          "command": "true"
+        }
+      }
+    },
+    "afterInstall": "Codex asks you to trust new hooks before they run: open Codex and trust the new hooks in Codex once, or CoCheck records nothing from it."
+  },
+  "extras": [
+    "codex-rollout-narration",
+    "codex-rollout-locate",
+    "codex-helper-rollout-lookup",
+    "codex-rollout-call-readers",
+    "codex-display-text",
+    "codex-session-title",
+    "codex-failure-read",
+    "codex-tool-name",
+    "codex-trust-probe"
+  ],
+  "shape": {
+    "SessionStart": [
+      "session_id"
+    ],
+    "SubagentStart": [
+      "session_id",
+      "agent_id"
+    ],
+    "SubagentStop": [
+      "session_id",
+      "agent_id"
+    ],
+    "PreToolUse": [
+      "session_id",
+      "tool_name",
+      "tool_use_id",
+      "tool_input"
+    ],
+    "PostToolUse": [
+      "session_id",
+      "tool_name",
+      "tool_use_id",
+      "tool_input",
+      "tool_response"
+    ],
+    "Stop": [
+      "session_id"
+    ],
+    "UserPromptSubmit": [
+      "session_id",
+      "prompt"
+    ]
+  }
+}

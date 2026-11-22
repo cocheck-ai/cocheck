@@ -2,9 +2,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { PlatformNotBuiltError, hostPlatform, platform, platformFor } from "../src/platform/index.ts";
-import { claude } from "../src/hosts/claude.ts";
-import { codex } from "../src/hosts/codex.ts";
-import { copilot } from "../src/hosts/copilot.ts";
+import { profileOf } from "../src/hosts/index.ts";
+const claude = profileOf("claude");
+const codex = profileOf("codex");
+const copilot = profileOf("copilot");
 
 const spec = { dataHome: "/Users/me/CoCheck Data", launcher: "/opt/it's/hook-launch.sh", hookPath: "/opt/cocheck/dist/hook.js", host: "claude" };
 const darwin = platformFor("darwin");

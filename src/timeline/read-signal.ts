@@ -5,6 +5,7 @@
 //     docstring, wherever it sits (`ROOT / "data/x.csv"`, os.path.join, a function argument, open() for reading), unless every use of it is a write target (see `scriptReads`) (inferred).
 // A file the script only writes (to_csv, save, open in w/a/x), or only mentions in a comment, is never an input.
 
+import { hasFileInput, isReadTool } from "../credit-guard.ts";
 import { SCRIPT_RUNNERS, callWritesFile, inlineScripts, parseShell, scriptsRun, scriptsWrittenBy, stringsOf, type CallText, type ScriptLookup } from "./write-signal.ts";
 
 export interface ReadRef {
@@ -215,8 +216,6 @@ export function scriptReadsUnknown(script: string): boolean {
   }
   return false;
 }
-
-const WRITE_TOOLS = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 
 /** Whether the command runs a script file by a plain path: not `-m <module>`, and not a path held in a variable or glob (`$SK/scripts/x.py`), which the task did not write. */
 function runsFileByPath(words: string[]): boolean {
@@ -509,9 +508,9 @@ export function callReads(call: ReadCall, lookup?: ScriptLookup): ReadRef[] {
   // a path as the text may hold it: whole, or its last two or more segments (`$D/output/x.xlsx` for the absolute path of that file)
   const holds = (text: string, f: string): boolean => { const seg = f.split("/"); for (let k = 0; k <= seg.length - 2; k++) if (text.includes(seg.slice(k).join("/"))) return true; return false; };
   const onlyChecked = (f: string): boolean => checks.some((t) => holds(t, f)) && !holds(rest, f);
-  if (call.tool === "Read" && typeof call.readPath === "string") add(call.readPath, "read");
-  if (!call.tool || !WRITE_TOOLS.has(call.tool)) {
-    for (const f of call.named ?? []) if (call.tool !== "Read" && !callWritesFile(call, f, lookup) && !onlyChecked(f)) add(f, "call");
+  if (isReadTool(call.tool, call.host) && typeof call.readPath === "string") add(call.readPath, "read");
+  if (!call.tool || !hasFileInput(call.tool, call.host)) {
+    for (const f of call.named ?? []) if (!isReadTool(call.tool, call.host) && !callWritesFile(call, f, lookup) && !onlyChecked(f)) add(f, "call");
   }
   for (const s of scripts) if (!checks.includes(s)) for (const p of scriptReads(s)) add(p, "script");
   // the script file a call runs is an input of what the call makes, whether or not its text is known

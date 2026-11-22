@@ -14,7 +14,7 @@ import { KEYCHAIN_SERVICE } from "./seal.ts";
 import path from "node:path";
 import { resolveAdapterHome } from "./hook-adapter.ts";
 import { platform, platformFor, type Platform } from "./platform/index.ts";
-import { allProfiles, defaultProfile, findProfile, MARKER, type HostProfile } from "./hosts/index.ts";
+import { activeOutsiderFingerprints, allProfiles, findProfile, installableKeys, loadOutsiderHarnesses, MARKER, outsiderHarnessDir, profileWithExtra, skippedHarnesses, type HostProfile, type TrustRead } from "./hosts/index.ts";
 import { addToRegistry, readRegistry, resolveFolder } from "./registry.ts";
 import { heartbeatFilePath, isReviewProcessFor, lockFilePath, portFilePath, readPortFile } from "./review-server.ts";
 import { cliCommand } from "./session-context.ts";
@@ -26,7 +26,10 @@ const MIN_NODE = [22, 18, 0];
 /** Where the launcher looks for Node after PATH. Same list as scripts/hook-launch.sh: Homebrew's stable opt/node paths first, then the plain bin links. */
 const DEFAULT_NODE_SEARCH = "/opt/homebrew/opt/node/bin/node /usr/local/opt/node/bin/node /opt/homebrew/bin/node /usr/local/bin/node";
 /** The cost the hook adds to every tool call of the hosts installed (`hosts` is their display names). docs/install.md states the same figure. */
-export const hookTimingNote = (hosts: string[], windows = false): string => `every ${hosts.length === 0 ? "Claude Code" : hosts.join(" or ")} tool call runs CoCheck's hook twice, before and after it. ${windows ? "It adds a little time to each call; no timing has been measured on Windows yet." : "Together that is held under 1 second per call (median: 457 ms, measured on a Mac)."}`;
+/** The two hosts a comma list example names: the first and last listed. */
+const listExample = (): string => { const k = installableKeys(); return `${k[0]},${k[k.length - 1]}`; };
+const defaultTimingLabel = (): string => { const p = profileWithExtra("install-default"); return p.install?.timingLabel ?? p.displayName; };
+export const hookTimingNote = (hosts: string[], windows = false): string => `every ${hosts.length === 0 ? defaultTimingLabel() : hosts.join(" or ")} tool call runs CoCheck's hook twice, before and after it. ${windows ? "It adds a little time to each call; no timing has been measured on Windows yet." : "Together that is held under 1 second per call (median: 457 ms, measured on a Mac)."}`;
 
 /** True when a file under the `src/` next to `dist/` is newer than the built hook. No `src/` (a packaged build) means not stale. */
 export function builtHookIsStale(hookPath: string): boolean {
@@ -91,7 +94,7 @@ function parseArgs(args: string[]): { home?: string; folder?: string; for?: stri
     if (a === "--uninstall") out.uninstall = true;
     else if (a === "--for") {
       const v = args[++i];
-      if (v === undefined || v.startsWith("--")) throw new Refusal("--for needs a host (claude, codex, copilot), a comma list such as claude,copilot, both, all or none");
+      if (v === undefined || v.startsWith("--")) throw new Refusal(`--for needs a host (${installableKeys().join(", ")}), a comma list such as ${listExample()}, both, all or none`);
       out.for = v;
     } else if (a === "--home" || a === "--folder") {
       const v = args[++i];
@@ -116,12 +119,12 @@ type HostInstall = NonNullable<HostProfile["install"]>;
  * The folder that marks a host as present: the host's own config folder (~/.claude or $CLAUDE_CONFIG_DIR, ~/.codex or $CODEX_HOME,
  * ~/.copilot or $COPILOT_HOME). A host whose config file CoCheck owns (Copilot's hooks/cocheck.json) is marked by the folder above `hooks`.
  */
-export function hostDir(profile: HostProfile, env: NodeJS.ProcessEnv, userHome: string): string {
-  const file = profile.install!.configFile(env, userHome);
+export function hostDir(profile: HostProfile, env: NodeJS.ProcessEnv, userHome: string, project?: string): string {
+  const file = profile.install!.configFile(env, userHome, project);
   return profile.install!.ownsFile === true ? path.dirname(path.dirname(file)) : path.dirname(file);
 }
 /** A host is present when its config folder exists on disk. A host's binary on PATH does not count: an install never creates a host's folder. */
-export const hostPresent = (profile: HostProfile, env: NodeJS.ProcessEnv, userHome: string): boolean => profile.install !== undefined && existsSync(hostDir(profile, env, userHome));
+export const hostPresent = (profile: HostProfile, env: NodeJS.ProcessEnv, userHome: string, project?: string): boolean => profile.install !== undefined && existsSync(hostDir(profile, env, userHome, project));
 
 /** Per host, whether its hooks ran lately, read from the hook journal's event lines (the newest `at` of each host). */
 export function lastHookRuns(home: string): Map<string, number> {
@@ -129,8 +132,8 @@ export function lastHookRuns(home: string): Map<string, number> {
 }
 
 /** As `lastHookRuns`, with the CoCheck version the newest event line names (`version`), when the line carries one. */
-export function lastHookRunsDetailed(home: string): Map<string, { at: number; version?: string }> {
-  const out = new Map<string, { at: number; version?: string }>();
+export function lastHookRunsDetailed(home: string): Map<string, { at: number; version?: string; event?: string }> {
+  const out = new Map<string, { at: number; version?: string; event?: string }>();
   const dir = path.join(home, "journal");
   let names: string[] = [];
   try {
@@ -145,9 +148,9 @@ export function lastHookRunsDetailed(home: string): Map<string, { at: number; ve
       const tail = readFileSync(f, "utf8").slice(-Math.min(size, 65536));
       for (const l of tail.split("\n")) {
         if (!l.includes('"k":"event"')) continue;
-        const r = JSON.parse(l) as { host?: string; at?: string; version?: unknown };
+        const r = JSON.parse(l) as { host?: string; at?: string; version?: unknown; event?: unknown };
         const at = Date.parse(r.at ?? "");
-        if (r.host !== undefined && !Number.isNaN(at) && at > (out.get(r.host)?.at ?? 0)) out.set(r.host, typeof r.version === "string" && r.version !== "" ? { at, version: r.version } : { at });
+        if (r.host !== undefined && !Number.isNaN(at) && at > (out.get(r.host)?.at ?? 0)) out.set(r.host, { at, ...(typeof r.version === "string" && r.version !== "" ? { version: r.version } : {}), ...(typeof r.event === "string" && r.event !== "" ? { event: r.event } : {}) });
       }
     } catch {
       // a partial first line of the tail or an unreadable file: skipped
@@ -168,17 +171,20 @@ export function ageText(ms: number): string {
  * The hosts `--for` names: one key, a comma list (`claude,copilot`), `both` (an alias for `claude,codex`), `all` (every host with an installer)
  * or `none` (no host: the data home and review page only). No flag installs every host that is present (see hostPresent). Order and repeats do not matter.
  */
-function hostsFor(value: string | undefined, env: NodeJS.ProcessEnv, userHome: string): HostProfile[] {
+function hostsFor(value: string | undefined, env: NodeJS.ProcessEnv, userHome: string, project: string): HostProfile[] {
   const withInstaller = allProfiles().filter((p) => p.install !== undefined);
-  if (value === undefined) return withInstaller.filter((p) => hostPresent(p, env, userHome));
+  // An outsider harness is never picked by presence or by `all`: only by its own key, and then CoCheck prints its hook snippet instead of editing its config.
+  if (value === undefined) return withInstaller.filter((p) => p.trust !== "outsider" && hostPresent(p, env, userHome, project));
   if (value === "none") return [];
   const keys = new Set<string>();
   for (const part of value.split(",")) {
     if (part === "both") {
       for (const p of withInstaller) if (p.install?.inBothAlias === true) keys.add(p.key);
-    } else if (part === "all") for (const p of withInstaller) keys.add(p.key);
+    } else if (part === "all") {
+      for (const p of withInstaller) if (p.trust !== "outsider") keys.add(p.key);
+    }
     else if (withInstaller.some((p) => p.key === part)) keys.add(part);
-    else throw new Refusal(`--for must be ${withInstaller.map((p) => p.key).join(", ")}, a comma list of them, both, all or none, not ${JSON.stringify(value)}`);
+    else throw new Refusal(`--for must be ${withInstaller.map((p) => p.key).join(", ")}, a comma list of them, both, all or none, not ${JSON.stringify(value)}${skippedHarnesses().length > 0 ? `. Harness manifests that did not load: ${skippedHarnesses().join("; ")}` : ""}`);
   }
   return withInstaller.filter((p) => keys.has(p.key));
 }
@@ -201,7 +207,7 @@ function backupOnce(file: string, backup: string): void {
  * Fires the hook once through the same launcher the settings will call, against a scratch home and folder, and returns an error text, or
  * undefined when it recorded the event. The person's own PATH is used, so a Node that only the installer could find fails here too.
  */
-export function hookFires(launcher: string, hookPath: string, env: NodeJS.ProcessEnv = process.env, install: HostInstall = defaultProfile().install!, plat: Platform = platform()): string | undefined {
+export function hookFires(launcher: string, hookPath: string, env: NodeJS.ProcessEnv = process.env, install: HostInstall = profileWithExtra("install-default").install!, plat: Platform = platform()): string | undefined {
   const scratch = mkdtempSync(path.join(tmpdir(), "cocheck-install-check-"));
   try {
     const home = path.join(scratch, "home");
@@ -209,7 +215,7 @@ export function hookFires(launcher: string, hookPath: string, env: NodeJS.Proces
     mkdirSync(folder);
     addToRegistry(home, folder);
     setTracking(home, install.hostFlag, "install-check", true, folder);
-    const check = install.checkPayload?.(folder) ?? { payload: { session_id: "install-check", cwd: folder, hook_event_name: "PreToolUse", tool_name: "Bash", tool_use_id: "install-check-1", tool_input: { command: "true" } } };
+    const check = install.checkPayload(folder);
     const payload = JSON.stringify(check.payload);
     const hookArgs = ["--host", install.hostFlag, ...(check.event === undefined ? [] : ["--event", check.event]), ...(install.folderFromPayloadCwd === true ? [] : ["--folder", folder])];
     // On Windows the host starts `node hook-launch.mjs ...` itself (no shell script), so the check does the same, with the data home as a launcher option.
@@ -292,8 +298,9 @@ export interface Status {
 }
 
 /** What `cocheck status` prints and `cocheck open` prints first. Reads only; the reasons are the same ones the launcher writes and these checks add. */
-export function installStatus(env: NodeJS.ProcessEnv, userHome: string, readHooksList?: (codexHome: string, env: NodeJS.ProcessEnv) => unknown, plat: Platform = platform()): Status {
+export function installStatus(env: NodeJS.ProcessEnv, userHome: string, readHooksList?: TrustRead | "live", plat: Platform = platform()): Status {
   const record = readInstallRecord(userHome);
+  if (record !== undefined) loadOutsiderHarnesses(outsiderHarnessDir(env, record.home));
   if (record === undefined) {
     const reason = "CoCheck is not installed (no install record). Run: cocheck install --home <dir> --for <host>";
     return { recording: false, reasons: [reason], text: `CoCheck: not recording. ${reason}\n` };
@@ -314,9 +321,18 @@ export function installStatus(env: NodeJS.ProcessEnv, userHome: string, readHook
     if (last === undefined) return "hooks have not fired yet";
     return `hooks last fired ${ageText(Date.now() - last.at)} (${new Date(last.at).toISOString()})${last.version === undefined ? "" : `, by CoCheck ${last.version}`}`;
   };
+  // The last event seen for a harness, from the same journal lines: its own line under the harness's state.
+  const lastEvent = (key: string): string => {
+    const last = ran.get(key);
+    return last === undefined ? "    no event seen yet\n" : `    last event: ${last.event ?? "(unnamed)"}, ${ageText(Date.now() - last.at)} (${new Date(last.at).toISOString()})\n`;
+  };
   for (const profile of allProfiles()) {
     const install = profile.install;
     const entry = recorded.find((h) => h.host === profile.key);
+    if (profile.trust === "outsider") {
+      states.push(`  ${profile.displayName} (your harness):\n${lastEvent(profile.key)}`);
+      continue;
+    }
     if (install === undefined || entry === undefined) {
       states.push(`  ${profile.displayName}: not installed\n`);
       continue;
@@ -334,7 +350,7 @@ export function installStatus(env: NodeJS.ProcessEnv, userHome: string, readHook
         if (trust !== undefined) {
           hostBroken.push({ name: profile.displayName, reason: trust, full: trust });
           states.push(`  ${profile.displayName}: installed, hooks not trusted (${entry.configFile})\n`);
-        } else states.push(`  ${profile.displayName}: installed (${entry.configFile}); ${fired(profile.key)}\n`);
+        } else states.push(`  ${profile.displayName}: installed (${entry.configFile}); ${fired(profile.key)}\n${lastEvent(profile.key)}`);
       }
       const note = install.notes?.({ launcherDir: path.dirname(path.dirname(record.launcher)), home: record.home });
       if (note !== undefined) states.push(`    ${note}\n`);
@@ -344,7 +360,19 @@ export function installStatus(env: NodeJS.ProcessEnv, userHome: string, readHook
       states.push(`  ${profile.displayName}: config unreadable\n`);
     }
   }
-  if (recorded.length === 0) reasons.push("no host has CoCheck's hooks (it was installed with --for none), so nothing is recorded. Run the installer again with --for (claude, codex, copilot, both or all)");
+  // An outsider harness that also runs other hosts' hooks, with its own CoCheck hook installed: those hosts' hooks skip its payloads (see `runsOtherHostsHook`).
+  let watched: string[] = [];
+  try {
+    watched = readRegistry(record.home) ?? [];
+  } catch {
+    // an unreadable registry: only the install's own folder is looked at
+  }
+  for (const a of activeOutsiderFingerprints(env, userHome, [...new Set([record.folder, ...watched])])) {
+    states.push(`  ${a.skippedBy.join(" and ")} ${a.skippedBy.length === 1 ? "hook skips" : "hooks skip"} payloads from ${a.profile.displayName} (its CoCheck hook is in ${a.configFile})\n`);
+  }
+  // A harness manifest in the person's folder that did not load: named here, and it never stops another host.
+  for (const line of skippedHarnesses()) states.push(`  Harness manifest skipped: ${line}\n`);
+  if (recorded.length === 0) reasons.push(`no host has CoCheck's hooks (it was installed with --for none), so nothing is recorded. Run the installer again with --for (${installableKeys().join(", ")}, both or all)`);
   // What this OS cannot do, one plain line each. The per-call tag finds its call through the process tree and a POSIX shell comment, so it works on macOS only.
   const absent = `${plat.office.liveExcel ? "" : "  Live Excel: not available on this system; CoCheck reads saved files only, not a workbook that is open.\n"}${plat.shellDialect.kind === "posix" ? "" : "  Per-call tag: not available on this system; writes are attributed by timing, not by which command made them.\n"}`;
   const node = findNode(env, plat);
@@ -441,18 +469,25 @@ export async function runInstall(run: InstallRun): Promise<InstallResult> {
   let stdout = "";
   try {
     const args = parseArgs(run.argv.slice(2));
+    loadOutsiderHarnesses(outsiderHarnessDir(run.env, args.home !== undefined && path.isAbsolute(args.home) ? path.resolve(args.home) : undefined));
     const plat = platformFor(run.platform ?? process.platform);
     const windows = plat.shellDialect.kind === "cmd";
     const userHome = (windows ? run.env.USERPROFILE : undefined) || run.env.HOME || homedir();
     // An uninstall with no --for reverses every host the install record lists (else the hosts present); an install detects the hosts present.
     const recordedKeys = args.uninstall && args.for === undefined ? readInstallRecord(userHome) : undefined;
-    const targets = recordedKeys !== undefined ? allProfiles().filter((p) => p.install !== undefined && recordedKeys.hosts.some((h) => h.host === p.key)) : hostsFor(args.for, run.env, userHome);
-    const claudeInstall = defaultProfile().install!;
-    const settingsFile = claudeInstall.configFile(run.env, userHome);
+    // The task folder, for a harness whose hook config sits in the project ({project} in its install path). An install replaces it with the
+    // resolved folder below, before any config is read or written; an uninstall reads the folder the install recorded.
+    let project = path.resolve(run.cwd, args.folder ?? (args.uninstall ? readInstallRecord(userHome)?.folder : undefined) ?? run.cwd);
+    const wanted = recordedKeys !== undefined ? allProfiles().filter((p) => p.install !== undefined && recordedKeys.hosts.some((h) => h.host === p.key)) : hostsFor(args.for, run.env, userHome, project);
+    // CoCheck edits only a built-in host's config. For an outsider harness it prints the entries to add (and, on uninstall, says there is nothing to remove).
+    const targets = wanted.filter((p) => p.trust !== "outsider");
+    const printed = wanted.filter((p) => p.trust === "outsider");
+    const defaultInstall = profileWithExtra("install-default").install!;
+    const settingsFile = defaultInstall.configFile(run.env, userHome);
     const backupFile = `${settingsFile}.cocheck-backup`;
     const readText = (file: string): string => (existsSync(file) ? readFileSync(file, "utf8") : "");
     const placeOf = (profile: HostProfile) => {
-      const configFile = profile.install!.configFile(run.env, userHome);
+      const configFile = profile.install!.configFile(run.env, userHome, project);
       return { profile, install: profile.install!, configFile, backupFile: `${configFile}.cocheck-backup` };
     };
 
@@ -517,6 +552,7 @@ export async function runInstall(run: InstallRun): Promise<InstallResult> {
       stdout += `  review-port and review-token in ${home === undefined ? "the data folder" : home}: the review page's port and access token. They stay with your data and are reused by a reinstall.\n`;
       for (const r of removals) stdout += `  settings backup: ${existsSync(r.backupFile) ? `${r.backupFile}, a copy of your settings made by the first install` : "none was made"}.\n`;
       if (removals.length === 0) stdout += "  settings backup: none was made.\n";
+      for (const p of printed) stdout += `  ${p.displayName}: CoCheck never edited this harness's config; delete the CoCheck entries you added to ${p.install!.configFile(run.env, userHome, project)}.\n`;
       return { exitCode: 0, stdout, stderr: "" };
     }
 
@@ -540,6 +576,7 @@ export async function runInstall(run: InstallRun): Promise<InstallResult> {
     const folderArg = args.folder ?? recordedFolder ?? run.cwd;
     if (!existsSync(folderArg) || !statSync(folderArg).isDirectory()) throw new Refusal(`${folderArg} is not a folder`);
     const folder = resolveFolder(folderArg);
+    project = folder;
     // CoCheck owns every file in its data folder (it sets their modes), so that folder must be one nothing of the person's lives in.
     const homeOwners = [userHome, plat.paths.userHome()];
     for (const owner of homeOwners) {
@@ -637,13 +674,19 @@ export async function runInstall(run: InstallRun): Promise<InstallResult> {
     stdout += `CoCheck records the folder your agent is opened in. The install check ran in ${folder}\n`;
     // What was written where, per host; a host that was not present is named so the person sees why nothing went there.
     if (args.for === undefined) {
-      const absent = allProfiles().filter((p) => p.install !== undefined && !plans.some((x) => x.profile.key === p.key));
-      if (plans.length === 0) stdout += `No host found: none of ${absent.map((p) => hostDir(p, run.env, userHome)).join(", ")} exists, so no hooks or skill were installed. Start the host once, or name it with --for.\n`;
+      const absent = allProfiles().filter((p) => p.install !== undefined && p.trust !== "outsider" && !plans.some((x) => x.profile.key === p.key));
+      if (plans.length === 0) stdout += `No host found: none of ${absent.map((p) => hostDir(p, run.env, userHome, folder)).join(", ")} exists, so no hooks or skill were installed. Start the host once, or name it with --for.\n`;
       else if (absent.length > 0) stdout += `Not installed (no config folder found): ${absent.map((p) => p.displayName).join(", ")}.\n`;
     }
     for (const p of plans) {
       const skillFile = path.join(userHome, skillRootOf(p.profile.key), "cocheck", "SKILL.md");
       stdout += `${p.profile.displayName}: hooks in ${p.configFile}; ${skillSkipped.includes(skillFile) ? `skill NOT written, ${skillFile} is not CoCheck's and stays` : `skill in ${skillFile}`}.\n`;
+    }
+    for (const p of printed) {
+      const install = p.install!;
+      const configFile = install.configFile(run.env, userHome, folder);
+      const entries = install.addHooks("", configFile, { dataHome, launcher, hookPath, host: install.hostFlag, ...(pinned === undefined ? {} : { node: pinned }) }, plat);
+      stdout += `${p.displayName}: CoCheck does not edit the config of a harness it does not ship with. Add these hooks to ${configFile} (merge them into any hooks already there):\n${entries}`;
     }
     stdout += "Every session starts untracked. In a session, say \"start tracking\" (the cocheck skill runs `cocheck track start`) and \"stop tracking\" to switch it.\n";
     // A source checkout is run as `node scripts/cocheck.ts`; a packaged install (no scripts/cocheck.ts) has `cocheck` on PATH.

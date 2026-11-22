@@ -1,0 +1,270 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "antigravity",
+  "description": "Antigravity CLI 1.5.14: the main conversation starts a helper with invoke_subagent (whose PostToolUse arrives at once, before the helper runs). The helper runs under its own conversationId, with an empty lastUserInput and no field naming its parent; it writes helper.txt with write_file and reports back with send_message. The write is credited to the helper's own call, in the helper's own session.",
+  "level": "L1",
+  "recording": [
+    {
+      "event": "SessionStart",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"hookEventName\":\"SessionStart\",\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":1,\"invocationNum\":0,\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":2,\"toolCall\":{\"args\":{\"Prompt\":\"Create a file named helper.txt in the current workspace directory (<folder>) containing exactly the line:\\nfrom helper\\nWhen finished, confirm completion.\",\"Role\":\"Helper Subagent\",\"TypeName\":\"self\"},\"id\":\"call_17570829882686036564\",\"name\":\"invoke_subagent\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"error\":\"\",\"hookEventName\":\"PostToolUse\",\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":2,\"toolCall\":{\"args\":{\"Prompt\":\"Create a file named helper.txt in the current workspace directory (<folder>) containing exactly the line:\\nfrom helper\\nWhen finished, confirm completion.\",\"Role\":\"Helper Subagent\",\"TypeName\":\"self\"},\"id\":\"call_17570829882686036564\",\"name\":\"invoke_subagent\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "SessionStart",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"SessionStart\",\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":1,\"invocationNum\":0,\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":0,\"invocationNum\":0,\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":3,\"invocationNum\":1,\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":3,\"invocationNum\":1,\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"continuationActive\":false,\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"error\":\"\",\"executionNum\":0,\"fullyIdle\":false,\"hookEventName\":\"Stop\",\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"terminationReason\":\"NO_TOOL_CALL\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":2,\"toolCall\":{\"args\":{\"Content\":\"from helper\\n\",\"Path\":\"<folder>/helper.txt\"},\"id\":\"call_11463291596007606126\",\"name\":\"write_file\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"error\":\"\",\"hookEventName\":\"PostToolUse\",\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":2,\"toolCall\":{\"args\":{\"Content\":\"from helper\\n\",\"Path\":\"<folder>/helper.txt\"},\"id\":\"call_11463291596007606126\",\"name\":\"write_file\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":0,\"invocationNum\":0,\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":3,\"invocationNum\":1,\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":4,\"toolCall\":{\"args\":{\"Message\":\"I have created the file helper.txt in <folder> with the line:\\nfrom helper\",\"Recipient\":\"56c63931-2014-4a71-a515-b765ee65203c\"},\"id\":\"call_16740207760375984009\",\"name\":\"send_message\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"error\":\"\",\"hookEventName\":\"PostToolUse\",\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":4,\"toolCall\":{\"args\":{\"Message\":\"I have created the file helper.txt in <folder> with the line:\\nfrom helper\",\"Recipient\":\"56c63931-2014-4a71-a515-b765ee65203c\"},\"id\":\"call_16740207760375984009\",\"name\":\"send_message\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":4,\"invocationNum\":0,\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":3,\"invocationNum\":1,\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":5,\"invocationNum\":2,\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":5,\"invocationNum\":2,\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"continuationActive\":false,\"conversationId\":\"702197ce-b8e6-4f37-9271-dfa733ae4a8a\",\"cwd\":\"<folder>\",\"error\":\"\",\"executionNum\":0,\"fullyIdle\":true,\"hookEventName\":\"Stop\",\"lastUserInput\":\"\",\"modelName\":\"gemini-3.8-flash-medium\",\"terminationReason\":\"NO_TOOL_CALL\",\"transcriptPath\":\"<root>/antigravity-cli/brain/702197ce-b8e6-4f37-9271-dfa733ae4a8a/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":4,\"invocationNum\":0,\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c\",\"continuationActive\":false,\"conversationId\":\"56c63931-2014-4a71-a515-b765ee65203c\",\"cwd\":\"<folder>\",\"error\":\"\",\"executionNum\":0,\"fullyIdle\":true,\"hookEventName\":\"Stop\",\"lastUserInput\":\"Use your invoke_subagent tool to start one helper subagent whose only task is to create a file named helper.txt in the current folder containing the line: from helper. Wait for it to finish, then stop.\",\"modelName\":\"gemini-3.8-flash-medium\",\"terminationReason\":\"NO_TOOL_CALL\",\"transcriptPath\":\"<root>/antigravity-cli/brain/56c63931-2014-4a71-a515-b765ee65203c/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    }
+  ],
+  "files": {
+    "before": {},
+    "writes": [
+      {
+        "afterEvent": 11,
+        "path": "helper.txt",
+        "content": "from helper\n"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "session-start",
+        "eventName": "SessionStart",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c",
+        "toolName": "invoke_subagent",
+        "callId": "call_17570829882686036564"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c",
+        "toolName": "invoke_subagent",
+        "callId": "call_17570829882686036564"
+      },
+      {
+        "kind": "session-start",
+        "eventName": "SessionStart",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a",
+        "toolName": "write_file",
+        "callId": "call_11463291596007606126"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a",
+        "toolName": "write_file",
+        "callId": "call_11463291596007606126"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a",
+        "toolName": "send_message",
+        "callId": "call_16740207760375984009"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a",
+        "toolName": "send_message",
+        "callId": "call_16740207760375984009"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a"
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "702197ce-b8e6-4f37-9271-dfa733ae4a8a"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "56c63931-2014-4a71-a515-b765ee65203c"
+      }
+    ],
+    "credit": {
+      "helper.txt": {
+        "creditedTo": "call:call_11463291596007606126",
+        "basis": "inferred"
+      }
+    }
+  }
+}

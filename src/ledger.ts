@@ -2472,6 +2472,20 @@ export class Ledger {
     return [...ids];
   }
 
+  /**
+   * Whether the task's session ran `cocheck track stop` and has done nothing since: its newest op, leaving out ops written on its behalf
+   * by other events (words found late, another session's call, a drop note), is the stop mark.
+   */
+  trackingStoppedLast(taskId: number): boolean {
+    const r = this.#db
+      .prepare(
+        `SELECT json_extract(args_json, '$.hookEvent') AS e FROM ops WHERE task_id = ?
+           AND COALESCE(json_extract(args_json, '$.hookEvent'), '') NOT IN ('LateNarration', 'OtherSessionCall', 'Dropped') ORDER BY id DESC LIMIT 1`,
+      )
+      .get(taskId) as { e: unknown } | undefined;
+    return r?.e === "TrackingStopped";
+  }
+
   /** The first request the person typed in a task (a recorded UserPromptSubmit, a wake notification skipped), as typed; undefined when none is recorded. */
   firstPromptForTask(taskId: number): string | undefined {
     const rows = this.#db.prepare("SELECT args_json FROM ops WHERE task_id = ? AND instr(args_json, 'UserPromptSubmit') > 0 ORDER BY id").all(taskId) as Array<{ args_json: string }>;

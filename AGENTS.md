@@ -129,7 +129,8 @@ Anyone can build a connector, including for a product reached through an MCP too
 
 - `README.md`: the author's notes and the overview.
 - `docs/install.md`: every install path, tracking, uninstall, troubleshooting.
-- `docs/hooks.md`: how the hooks record and attribute changes.
+- `docs/hooks.md`: how the hooks record and attribute changes, and the harness model (how an agent is described by a manifest).
+- `public-kit/harness/`: the harness kit, for adding another agent: `GUIDE.md` first, then `spec/v1.md`. Cursor and Antigravity CLI are supported through it. The README's Supported agents table lists every harness.
 - `docs/timeline.md`: how the review page is built.
 - `docs/security.md`: encryption of stored copies.
 - `docs/release-notes.md`: what changed in each version.

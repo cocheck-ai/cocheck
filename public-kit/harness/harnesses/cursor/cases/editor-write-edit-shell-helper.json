@@ -1,0 +1,359 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "cursor",
+  "description": "Cursor 3.31.15 editor agent chat: Write creates hello.txt, Write edits seed.txt (afterFileEdit arrives inside each Write call, without a call id), a shell call succeeds, one fails (postToolUseFailure), and a Task helper reads a file under its own conversation id.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "sessionStart",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"\", \"model\": \"grok-4.7-medium\", \"model_id\": \"grok-4.7\", \"model_params\": [{\"id\": \"context\", \"value\": \"256k\"}, {\"id\": \"reasoning_effort\", \"value\": \"medium\"}, {\"id\": \"fast\", \"value\": \"false\"}], \"is_background_agent\": false, \"composer_mode\": \"agent\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"sessionStart\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "beforeSubmitPrompt",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7-medium\", \"model_id\": \"grok-4.7\", \"model_params\": [{\"id\": \"context\", \"value\": \"256k\"}, {\"id\": \"reasoning_effort\", \"value\": \"medium\"}, {\"id\": \"fast\", \"value\": \"false\"}], \"composer_mode\": \"agent\", \"prompt\": \"This is a test run in a scratch folder. Please do these steps in order, one tool call each, and don't ask me anything:\\n1. Create a new file named hello.txt containing the single line: hello from cursor\\n2. Edit seed.txt: change the line \\\"status: draft\\\" to \\\"status: recorded\\\". Leave the other lines as they are.\\n3. Run this shell command: ls -la\\n4. Run this shell command, which is expected to fail, and just report that it failed: cat does-not-exist.txt\\n5. Use a subagent (the Task tool) to read hello.txt and reply with its contents. If you have no subagent tool, say so and skip this step.\\nThen give a one-line summary of what you did.\", \"attachments\": [], \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"beforeSubmitPrompt\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Read\", \"tool_input\": {\"file_path\": \"<folder>/hello.txt\"}, \"tool_use_id\": \"call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"preToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "postToolUseFailure",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Read\", \"tool_input\": {\"file_path\": \"<folder>/hello.txt\"}, \"error_message\": \"File not found: <folder>/hello.txt\", \"failure_type\": \"error\", \"duration\": 2.492, \"tool_use_id\": \"call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0\", \"is_interrupt\": false, \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"postToolUseFailure\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Write\", \"tool_input\": {\"file_path\": \"<folder>/hello.txt\", \"content\": \"hello from cursor\\n\"}, \"tool_use_id\": \"call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"preToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "afterFileEdit",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"file_path\": \"<folder>/hello.txt\", \"edits\": [{\"old_string\": \"\", \"new_string\": \"hello from cursor\\n\"}], \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"afterFileEdit\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Write\", \"tool_input\": {\"file_path\": \"<folder>/hello.txt\", \"content\": \"hello from cursor\\n\"}, \"tool_output\": \"{\\\"file_path\\\":\\\"<folder>/hello.txt\\\",\\\"success\\\":true}\", \"duration\": 15.341, \"tool_use_id\": \"call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"postToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Read\", \"tool_input\": {\"file_path\": \"<folder>/seed.txt\"}, \"tool_use_id\": \"call-1a0c295f-a03e-434d-957b-84212dabc35a-1\\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"preToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Read\", \"tool_input\": {\"file_path\": \"<folder>/seed.txt\"}, \"tool_output\": \"{\\\"file_path\\\":\\\"<folder>/seed.txt\\\",\\\"content_length\\\":51}\", \"duration\": 2.966, \"tool_use_id\": \"call-1a0c295f-a03e-434d-957b-84212dabc35a-1\\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"postToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Write\", \"tool_input\": {\"file_path\": \"<folder>/seed.txt\", \"content\": \"CoCheck recording seed\\nstatus: recorded\\nowner: nobody\\n\"}, \"tool_use_id\": \"call-1a0c295f-a03e-434d-957b-84212dabc35a-1\\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"preToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "afterFileEdit",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"file_path\": \"<folder>/seed.txt\", \"edits\": [{\"old_string\": \"status: draft\", \"new_string\": \"status: recorded\"}], \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"afterFileEdit\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Write\", \"tool_input\": {\"file_path\": \"<folder>/seed.txt\", \"content\": \"CoCheck recording seed\\nstatus: recorded\\nowner: nobody\\n\"}, \"tool_output\": \"{\\\"file_path\\\":\\\"<folder>/seed.txt\\\",\\\"success\\\":true}\", \"duration\": 9.555, \"tool_use_id\": \"call-1a0c295f-a03e-434d-957b-84212dabc35a-1\\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"postToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Shell\", \"tool_input\": {\"command\": \"ls -la\", \"cwd\": \"\", \"timeout\": 30000}, \"tool_use_id\": \"ecbec0ca-9c34-4a41-8b14-656478895237\", \"cwd\": \"\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"preToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "beforeShellExecution",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"command\": \"ls -la\", \"cwd\": \"\", \"sandbox\": true, \"tool_use_id\": \"ecbec0ca-9c34-4a41-8b14-656478895237\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"beforeShellExecution\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "afterShellExecution",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"command\": \"ls -la\", \"output\": \"total 24\\ndrwxr-xr-x@  7 <user>  staff   224 Nov 22 11:31 .\\ndrwxr-x---+ 61 <user>  staff  1952 Nov 22 11:29 ..\\ndrwxr-xr-x@  5 <user>  staff   160 Nov 22 11:15 .cursor\\n-rw-r--r--@  1 <user>  staff   637 Nov 22 11:15 PROMPT.txt\\ndrwxr-xr-x@  3 <user>  staff    96 Nov 22 11:15 capture\\n-rw-r--r--@  1 <user>  staff    18 Nov 22 11:31 hello.txt\\n-rw-r--r--@  1 <user>  staff    54 Nov 22 11:31 seed.txt\\n\", \"duration\": 492.336, \"sandbox\": true, \"tool_use_id\": \"ecbec0ca-9c34-4a41-8b14-656478895237\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"afterShellExecution\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Shell\", \"tool_input\": {\"command\": \"ls -la\", \"cwd\": \"\", \"timeout\": 30000}, \"tool_output\": \"{\\\"output\\\":\\\"total 24\\\\ndrwxr-xr-x@  7 <user>  staff   224 Nov 22 11:31 .\\\\ndrwxr-x---+ 61 <user>  staff  1952 Nov 22 11:29 ..\\\\ndrwxr-xr-x@  5 <user>  staff   160 Nov 22 11:15 .cursor\\\\n-rw-r--r--@  1 <user>  staff   637 Nov 22 11:15 PROMPT.txt\\\\ndrwxr-xr-x@  3 <user>  staff    96 Nov 22 11:15 capture\\\\n-rw-r--r--@  1 <user>  staff    18 Nov 22 11:31 hello.txt\\\\n-rw-r--r--@  1 <user>  staff    54 Nov 22 11:31 seed.txt\\\\n\\\",\\\"exitCode\\\":0}\", \"duration\": 492.336, \"tool_use_id\": \"ecbec0ca-9c34-4a41-8b14-656478895237\", \"cwd\": \"\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"postToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Shell\", \"tool_input\": {\"command\": \"cat does-not-exist.txt\", \"cwd\": \"\", \"timeout\": 30000}, \"tool_use_id\": \"a63eefc0-84a9-4d8b-8efc-8587911281ec\", \"cwd\": \"\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"preToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "beforeShellExecution",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"command\": \"cat does-not-exist.txt\", \"cwd\": \"\", \"sandbox\": true, \"tool_use_id\": \"a63eefc0-84a9-4d8b-8efc-8587911281ec\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"beforeShellExecution\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "afterShellExecution",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"command\": \"cat does-not-exist.txt\", \"output\": \"cat: does-not-exist.txt: No such file or directory\\n\", \"duration\": 150.739, \"sandbox\": true, \"tool_use_id\": \"a63eefc0-84a9-4d8b-8efc-8587911281ec\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"afterShellExecution\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "postToolUseFailure",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7\", \"tool_name\": \"Shell\", \"tool_input\": {\"command\": \"cat does-not-exist.txt\", \"cwd\": \"\", \"timeout\": 30000}, \"error_message\": \"cat: does-not-exist.txt: No such file or directory\", \"failure_type\": \"error\", \"duration\": 150.739, \"tool_use_id\": \"a63eefc0-84a9-4d8b-8efc-8587911281ec\", \"is_interrupt\": false, \"cwd\": \"\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"postToolUseFailure\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"\", \"tool_name\": \"Task\", \"tool_input\": {\"description\": \"Read hello.txt contents\", \"prompt\": \"Read the file <folder>/hello.txt and reply with its exact contents and nothing else. Do not modify any files.\", \"subagent_type\": \"generalPurpose\", \"run_in_background\": false}, \"tool_use_id\": \"call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"preToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "subagentStart",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7-medium\", \"subagent_id\": \"call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0\", \"subagent_type\": \"general-purpose\", \"task\": \"Read the file <folder>/hello.txt and reply with its exact contents and nothing else. Do not modify any files.\", \"parent_conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"tool_call_id\": \"call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0\", \"subagent_model\": \"grok-4.7-medium\", \"is_parallel_worker\": false, \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"subagentStart\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"parent_agent_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"conversation_id\": \"b0d6fa01-b7d8-4b6e-996f-e5158d433dce\", \"generation_id\": \"799cb1ac-2b29-4c9e-84ad-3e5e4c57e64f\", \"model\": \"grok-4.7-medium\", \"parent_tool_call_id\": \"call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0\", \"tool_name\": \"Read\", \"tool_input\": {\"file_path\": \"<folder>/hello.txt\"}, \"tool_use_id\": \"call-d8f4f580-e4e2-4cea-af81-a1720eca9e7c-1\\nfc_bfe28f19-e35e-421f-a5cc-f3d3c6f6c750_1\", \"session_id\": \"b0d6fa01-b7d8-4b6e-996f-e5158d433dce\", \"hook_event_name\": \"preToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"parent_agent_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"conversation_id\": \"b0d6fa01-b7d8-4b6e-996f-e5158d433dce\", \"generation_id\": \"799cb1ac-2b29-4c9e-84ad-3e5e4c57e64f\", \"model\": \"grok-4.7-medium\", \"parent_tool_call_id\": \"call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0\", \"tool_name\": \"Read\", \"tool_input\": {\"file_path\": \"<folder>/hello.txt\"}, \"tool_output\": \"{\\\"file_path\\\":\\\"<folder>/hello.txt\\\",\\\"content_length\\\":18}\", \"duration\": 2.658, \"tool_use_id\": \"call-d8f4f580-e4e2-4cea-af81-a1720eca9e7c-1\\nfc_bfe28f19-e35e-421f-a5cc-f3d3c6f6c750_1\", \"session_id\": \"b0d6fa01-b7d8-4b6e-996f-e5158d433dce\", \"hook_event_name\": \"postToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"parent_agent_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7-medium\", \"tool_name\": \"Task\", \"tool_input\": {\"description\": \"Read hello.txt contents\", \"prompt\": \"Read the file <folder>/hello.txt and reply with its exact contents and nothing else. Do not modify any files.\", \"subagent_type\": \"generalPurpose\", \"run_in_background\": false}, \"tool_output\": \"{\\\"status\\\":\\\"success\\\",\\\"agentId\\\":\\\"b0d6fa01-b7d8-4b6e-996f-e5158d433dce\\\",\\\"durationMs\\\":15532,\\\"isBackground\\\":false}\", \"duration\": 15532, \"tool_use_id\": \"call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"postToolUse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "subagentStop",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7-medium\", \"subagent_id\": \"call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0\", \"subagent_type\": \"general-purpose\", \"status\": \"completed\", \"duration_ms\": 15709, \"parent_conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"child_conversation_id\": \"b0d6fa01-b7d8-4b6e-996f-e5158d433dce\", \"message_count\": 0, \"tool_call_count\": 0, \"loop_count\": 0, \"task\": \"Read the file <folder>/hello.txt and reply with its exact contents and nothing else. Do not modify any files.\", \"description\": \"Read hello.txt contents\", \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"subagentStop\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"parent_agent_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"user_email\": \"user@example.com\", \"transcript_path\": null, \"agent_transcript_path\": null}",
+      "argv": []
+    },
+    {
+      "event": "afterAgentResponse",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7-medium\", \"model_id\": \"grok-4.7\", \"model_params\": [{\"id\": \"context\", \"value\": \"256k\"}, {\"id\": \"reasoning_effort\", \"value\": \"medium\"}, {\"id\": \"fast\", \"value\": \"false\"}], \"text\": \"EXECUTE\\n\\nCreated `hello.txt` (`hello from cursor`), set `seed.txt` to `status: recorded`, listed the directory, confirmed `cat does-not-exist.txt` failed, and [Read hello.txt](b0d6fa01-b7d8-4b6e-996f-e5158d433dce) returned `hello from cursor`.\", \"input_tokens\": 136854, \"output_tokens\": 1977, \"cache_read_tokens\": 104320, \"cache_write_tokens\": 0, \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"afterAgentResponse\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": \"<root>/.cursor/projects/Users-<user>-cocheck-cursor-recording/agent-transcripts/c49868f9-7b4e-426e-942a-47796279c579/c49868f9-7b4e-426e-942a-47796279c579.jsonl\"}",
+      "argv": []
+    },
+    {
+      "event": "stop",
+      "stdin": "{\"conversation_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"generation_id\": \"bf81fa1c-bfc2-4e3e-8688-82e918a4b0ad\", \"model\": \"grok-4.7-medium\", \"model_id\": \"grok-4.7\", \"model_params\": [{\"id\": \"context\", \"value\": \"256k\"}, {\"id\": \"reasoning_effort\", \"value\": \"medium\"}, {\"id\": \"fast\", \"value\": \"false\"}], \"status\": \"completed\", \"loop_count\": 0, \"input_tokens\": 136854, \"output_tokens\": 1977, \"cache_read_tokens\": 104320, \"cache_write_tokens\": 0, \"session_id\": \"c49868f9-7b4e-426e-942a-47796279c579\", \"hook_event_name\": \"stop\", \"cursor_version\": \"3.31.15\", \"workspace_roots\": [\"<folder>\"], \"user_email\": \"user@example.com\", \"transcript_path\": \"<root>/.cursor/projects/Users-<user>-cocheck-cursor-recording/agent-transcripts/c49868f9-7b4e-426e-942a-47796279c579/c49868f9-7b4e-426e-942a-47796279c579.jsonl\"}",
+      "argv": []
+    }
+  ],
+  "files": {
+    "before": {
+      "seed.txt": "CoCheck recording seed\nstatus: draft\nowner: nobody\n"
+    },
+    "writes": [
+      {
+        "afterEvent": 5,
+        "path": "hello.txt",
+        "content": "hello from cursor\n"
+      },
+      {
+        "afterEvent": 10,
+        "path": "seed.txt",
+        "content": "CoCheck recording seed\nstatus: recorded\nowner: nobody\n"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "other",
+        "eventName": "sessionStart",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "prompt",
+        "eventName": "beforeSubmitPrompt",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Read",
+        "callId": "call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0"
+      },
+      {
+        "kind": "tool-failure",
+        "eventName": "postToolUseFailure",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Read",
+        "failure": {
+          "raw": "File not found: <folder>/hello.txt",
+          "interrupted": false
+        },
+        "callId": "call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Write",
+        "callId": "call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0"
+      },
+      {
+        "kind": "other",
+        "eventName": "afterFileEdit",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Write",
+        "callId": "call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Read",
+        "callId": "call-1a0c295f-a03e-434d-957b-84212dabc35a-1\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Read",
+        "callId": "call-1a0c295f-a03e-434d-957b-84212dabc35a-1\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Write",
+        "callId": "call-1a0c295f-a03e-434d-957b-84212dabc35a-1\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0"
+      },
+      {
+        "kind": "other",
+        "eventName": "afterFileEdit",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Write",
+        "callId": "call-1a0c295f-a03e-434d-957b-84212dabc35a-1\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Shell",
+        "callId": "ecbec0ca-9c34-4a41-8b14-656478895237"
+      },
+      {
+        "kind": "other",
+        "eventName": "beforeShellExecution",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "other",
+        "eventName": "afterShellExecution",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Shell",
+        "callId": "ecbec0ca-9c34-4a41-8b14-656478895237"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Shell",
+        "callId": "a63eefc0-84a9-4d8b-8efc-8587911281ec"
+      },
+      {
+        "kind": "other",
+        "eventName": "beforeShellExecution",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "other",
+        "eventName": "afterShellExecution",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "tool-failure",
+        "eventName": "postToolUseFailure",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Shell",
+        "failure": {
+          "raw": "cat: does-not-exist.txt: No such file or directory",
+          "interrupted": false
+        },
+        "callId": "a63eefc0-84a9-4d8b-8efc-8587911281ec"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Task",
+        "callId": "call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0"
+      },
+      {
+        "kind": "other",
+        "eventName": "subagentStart",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Read",
+        "callId": "call-d8f4f580-e4e2-4cea-af81-a1720eca9e7c-1\nfc_bfe28f19-e35e-421f-a5cc-f3d3c6f6c750_1"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Read",
+        "callId": "call-d8f4f580-e4e2-4cea-af81-a1720eca9e7c-1\nfc_bfe28f19-e35e-421f-a5cc-f3d3c6f6c750_1"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579",
+        "toolName": "Task",
+        "callId": "call-981e8a13-6224-4e6f-baa4-cf2aaefecf58-5\nfc_58bb2bb6-3075-4bfe-8fe8-f20c8f622937_0"
+      },
+      {
+        "kind": "subagent-stop",
+        "eventName": "subagentStop",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "other",
+        "eventName": "afterAgentResponse",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      },
+      {
+        "kind": "stop",
+        "eventName": "stop",
+        "session": "c49868f9-7b4e-426e-942a-47796279c579"
+      }
+    ],
+    "credit": {
+      "hello.txt": {
+        "creditedTo": "call:call-09bdd4e8-c214-483d-b0e3-37a516bd4133-0\nfc_efc3824d-6272-9819-93fc-cbb67bf2de7e_0-r2",
+        "basis": "inferred"
+      },
+      "seed.txt": {
+        "creditedTo": "call:call-1a0c295f-a03e-434d-957b-84212dabc35a-1\nfc_7f434272-1c3a-43e5-86ec-be60809ca51d_0-r2",
+        "basis": "inferred"
+      }
+    }
+  }
+}

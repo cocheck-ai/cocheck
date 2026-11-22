@@ -7,7 +7,7 @@ import { chmod, copyFile, mkdir, readdir, readFile, rename, rm, stat, writeFile 
 import path from "node:path";
 import { cleanId, evidenceSince, readLauncher } from "./agent-transcripts.ts";
 import { isPatchTool, isWithheldSection } from "./patch-secrets.ts";
-import { EVIDENCE_SLACK_MS, creditWithEvidence, guardKit, isInternalAgentCall, isLauncherTool, isWaitTool, launcherMayCredit, neverRan, runsOnAfterResult, samePath, toolMayCredit, isShellTool, toolNeverWrites, waitsOnHelpers, writeTargetsOf, editTargetsOf, reportedEditsOf, type CallEvidence, type WriteEvidence } from "./credit-guard.ts";
+import { EVIDENCE_SLACK_MS, creditWithEvidence, guardKit, isInternalAgentCall, isLauncherTool, isWaitTool, launcherMayCredit, shellDialectOf, neverRan, runsOnAfterResult, samePath, toolMayCredit, isShellTool, toolNeverWrites, waitsOnHelpers, writeTargetsOf, editTargetsOf, reportedEditsOf, type CallEvidence, type WriteEvidence } from "./credit-guard.ts";
 import { withFileLock } from "./file-lock.ts";
 import { claimedFor, claimedLayer, cutShortReason, MOVED_WHILE_READ, type Claimed } from "./connector/claimed.ts";
 import { connectorClaimsFor, fileConnectorIdentity } from "./connector/installed-match.ts";
@@ -23,7 +23,7 @@ import { foldFolder, isInsideFolded, resolveFolder as realish } from "./registry
 import { sha256Stream } from "./fingerprint.ts";
 import { ensureStoreDir, mbText, removeEmptyStoreDir, removePreviews, STATE_FILE_CAP_BYTES, storeDirOf, storedShas, TASK_STORE_CAP_BYTES } from "./states.ts";
 import { openLedger, TOOL_FAILED, TOOL_NOT_RUN, type Ledger } from "./ledger.ts";
-import { profileOf } from "./hosts/index.ts";
+import { findProfile, profileOf, projectDirVars } from "./hosts/index.ts";
 import { exitFailureText } from "./timeline/rollout-failures.ts";
 import { assertNormalized, normalize, type HookHost, type NormalizedEvent } from "./normalize.ts";
 import { advance, advanceForward, claimAtPre, READ_BUDGET_MS, claimRequest, closingClaim, cut, CLOSING_MAX, lookup, newCursor, none, reasonOf, spend, validCursor, type Narration, type NarrationCursor } from "./narration.ts";
@@ -36,7 +36,7 @@ import { cannotHaveWritten, fsProbe, hooksProven, isReadOnlyCommand, writeScope,
 import { commandNamesFile, textNamesBase } from "./attribution/names.ts";
 import { rootsFile } from "./attribution/tag.ts";
 import { creditBasisOf, hostReportedEdit, type ProofMethod } from "./attribution/basis.ts";
-import { reconstructAll, RECONSTRUCT_MAX_BYTES, type ReportedEdit } from "./attribution/reconstruct.ts";
+import { reconstructAll, RECONSTRUCT_MAX_BYTES, revertEdits, type ReportedEdit } from "./attribution/reconstruct.ts";
 import type { TagSetting } from "./attribution/tag.ts";
 
 /**
@@ -170,8 +170,8 @@ export interface HookOptions {
   now?: () => number;
   /** Test seam: the size and scan caps, which default to the ones in `states.ts` and `formats/files/scan.ts`. */
   caps?: { fileBytes?: number; taskBytes?: number; scanFiles?: number; scanBytes?: number; claimedFiles?: number; claimedBytes?: number; walkEntries?: number; pendingFiles?: number; parkedSessions?: number; parkedOps?: number };
-  /** Where Codex keeps its session rollouts, used when the payload names no `transcript_path`. Defaults to `~/.codex/sessions`; tests point it at a temp tree. */
-  codexSessions?: string;
+  /** Test seam: the root of the host's own session-file tree (Codex rollouts today), used when the payload names no `transcript_path`. Defaults to the host's real folder; tests point it at a temp tree. */
+  sessionsDir?: string;
   /** Test seam: called with a step name ("after-sweep", "after-save", "after-flush"); a throw simulates a kill there. */
   fault?: (step: string) => void;
   /**
@@ -335,6 +335,8 @@ const UNKNOWN_DIR_NAME = "\0cocheck-unknown-dir";
 const isUnknownDir = (p: string): boolean => p.includes(UNKNOWN_DIR_NAME);
 
 interface OpenCall {
+  /** Opened by a harness's own per-action event (a `shell-pre`): a Pre of the same call id that arrives later is this call, not a second one. */
+  fromAction?: true;
   tool: string;
   named: string[];
   session: string;
@@ -448,6 +450,12 @@ interface State {
   parked?: Record<string, OutboxOp[]>;
   /** While no session has a task, the folder's starting copy and the changes nobody is credited with; the first task to open begins with them, as the one task of a folder did on main. */
   pendingStart?: { starts?: OutboxStep[]; unowned: OutboxStep[] };
+  /**
+   * Per session (newest SESSIONS_KEPT), where its tracking began in the step count: `from` before the look taken at its first event,
+   * `at` after it. A change nobody made that this look found (queued after `from`, up to `at`) happened while the session was not
+   * tracked and is folded into its starting copy instead of shown as a change. Absent for a session first seen by an earlier build.
+   */
+  sessionStarts?: Record<string, { from: number; at: number }>;
   /** The session of every call seen (newest last, capped): a call that has closed is still known to belong to its session. */
   callSession?: Record<string, string>;
   /** Per open call, the steps (by `seq`) found while it was open; they become its op's `steps`. */
@@ -466,6 +474,8 @@ interface State {
   called: string[];
   /** A host with no call id on stdin: per session, how many synthetic ids have been given (at most SESSIONS_KEPT sessions). */
   ordinals?: Record<string, number>;
+  /** A call id the host sent again for a new call (a Pre after the id's call closed): the id that new call took, by the id sent (newest last, at most CLOSED_KEEP). Absent until one is. */
+  reused?: Record<string, string>;
   /** Sessions in which a helper made a call since the last main Stop (absent until one is). */
   helped?: string[];
   /** Per session, where the host's session file was last read to; at most SESSIONS_KEPT, oldest first out. */
@@ -486,6 +496,8 @@ interface State {
    * same session's next call opens, the session's Stop, or `until` (the open-call expiry), whichever comes first.
    */
   tails?: Record<string, { call: OpenCall; until: number }>;
+  /** SHA-256 of before-states rebuilt from a reported edit's old text (an edit that was the folder's first event). Such a state never proves an edit. Absent until one is recorded. */
+  rebuilt?: string[];
 }
 
 /**
@@ -587,7 +599,7 @@ const ERROR_TEXT_MAX = 2000;
 const FAILED_NO_TEXT = "The host reported a failure and sent no error text.";
 /** A background launch of an agent is not a job that writes files: its work arrives through the agent's own hooked calls. */
 /** A call whose only work is waiting on helpers (Codex `wait_agent`, Copilot `read_agent` with `wait: true`); it writes nothing, so it never shares a helper's credit. */
-const isWaitCall = (c: { tool: string; waits?: true }): boolean => c.waits === true || isWaitTool(c.tool);
+const isWaitCall = (c: { tool: string; waits?: true }, host: string): boolean => c.waits === true || isWaitTool(c.tool, host);
 
 /** Most prompts a session keeps for a round; older ones are counted, not kept. */
 const PROMPTS_KEPT = 3;
@@ -619,15 +631,15 @@ type ClosedBy = "post" | "failure" | "stop" | "expiry" | "ghost-post" | "late" |
  */
 function assertTaskFolder(folder: string): void {
   if (!path.isAbsolute(folder)) {
-    throw new Error(`task folder "${folder}" is relative; pass an absolute path in --folder or CLAUDE_PROJECT_DIR`);
+    throw new Error(`task folder "${folder}" is relative; pass an absolute path in --folder or ${projectDirVars().join(" or ")}`);
   }
   let stat;
   try {
     stat = statSync(folder);
   } catch {
-    throw new Error(`task folder ${folder} does not exist; check --folder or CLAUDE_PROJECT_DIR`);
+    throw new Error(`task folder ${folder} does not exist; check --folder or ${projectDirVars().join(" or ")}`);
   }
-  if (!stat.isDirectory()) throw new Error(`task folder ${folder} is not a directory; check --folder or CLAUDE_PROJECT_DIR`);
+  if (!stat.isDirectory()) throw new Error(`task folder ${folder} is not a directory; check --folder or ${projectDirVars().join(" or ")}`);
 }
 
 /**
@@ -647,8 +659,10 @@ export async function handleHook(payload: HookPayload, options: HookOptions): Pr
   return handleEvent(normalize(options.host, payload), options);
 }
 
-export async function handleEvent(ev: NormalizedEvent, options: HookOptions): Promise<HookResult> {
-  assertNormalized(ev);
+export async function handleEvent(given: NormalizedEvent, options: HookOptions): Promise<HookResult> {
+  assertNormalized(given);
+  // A shell event of a per-action harness is a shell call's Pre or Post; everything after reads it as one (the failure, if any, is on the event).
+  const ev: NormalizedEvent = given.kind === "shell-pre" ? { ...given, kind: "tool-pre" } : given.kind === "shell-post" ? { ...given, kind: "tool-post" } : given;
   const { home } = options;
   const host = ev.host;
   assertTaskFolder(options.folder);
@@ -677,9 +691,16 @@ export async function handleEvent(ev: NormalizedEvent, options: HookOptions): Pr
         ctx.loadWriteEvidence();
         let submit = false;
         ctx.bindCall();
+        ctx.distinctCall(given.kind === "shell-pre");
+        if (ev.kind === "tool-pre" || ev.kind === "tool-post" || ev.kind === "tool-failure" || ev.kind === "stop" || ev.kind === "subagent-stop" || ev.kind === "prompt" || ev.kind === "file-edit") await ctx.startSession();
         switch (ev.kind) {
           case "tool-pre":
-            await ctx.pre();
+            // The same call reported by two events (a tool Pre and a shell Pre sharing one id) is opened once.
+            if (given.kind === "shell-pre") await ctx.actionPre();
+            else if (!ctx.joinsActionCall()) await ctx.pre();
+            break;
+          case "file-edit":
+            await ctx.fileEdit();
             break;
           case "tool-post":
           case "tool-failure":
@@ -707,7 +728,7 @@ export async function handleEvent(ev: NormalizedEvent, options: HookOptions): Pr
         if ((ev.kind === "tool-post" || ev.kind === "tool-failure") && typeof ev.toolName === "string" && ev.toolName.startsWith("mcp__") && typeof ev.toolUseId === "string" && ev.toolUseId !== "") {
           try {
             const keptTask = tasks.currentTaskId(client);
-            if (keptTask !== undefined) await keepCallValues(home, keptTask, { call: ev.toolUseId, tool: ev.toolName, input: ev.toolInput, response: ev.toolResponse ?? (ev.failure === undefined ? undefined : { error: ev.failure.raw }) });
+            if (keptTask !== undefined) await keepCallValues(home, keptTask, { call: ctx.callId ?? ev.toolUseId, tool: ev.toolName, input: ev.toolInput, response: ev.toolResponse ?? (ev.failure === undefined ? undefined : { error: ev.failure.raw }) });
           } catch {
             // the call is recorded without its values; the hook's own work goes on
           }
@@ -851,6 +872,8 @@ class Context {
   #stopSweptNothing = false;
   /** A new state was written to the store in this event, so the per-task cap is checked. */
   #storedNew = false;
+  /** The folder's first event is a reported edit: the edited file's state before it, rebuilt from the edit's old text, which the baseline records in place of the file's bytes now. */
+  #rebuilt: { file: string; bytes: Uint8Array } | undefined;
   #tmpN = 0;
   /** Files whose write evidence a sweep used in this event, dropped from the state before it is saved. */
   #evidenceUsed = new Set<string>();
@@ -914,6 +937,54 @@ class Context {
     if (id !== undefined) this.#ev = { ...this.#ev, toolUseId: id };
   }
 
+  /** The call id this event is handled under (the one the host sent, or the one `bindCall` or `distinctCall` gave it). */
+  get callId(): string | undefined {
+    return this.#ev.toolUseId || undefined;
+  }
+
+  /**
+   * One id, one call, within a session. Some hosts send the id of a call that has ended again for the next call (Cursor gives a Read and
+   * the Write after it in one step the same id). A Pre whose id names a call of the same session already closed or expired, or still open
+   * for another tool, starts a new call: it takes the id with an occurrence suffix (`<id>-r2`, `-r3`, ...), and the Post, failure or file
+   * edit of that session that follows under the sent id is that new call's. Not a host rule: any harness's events go through it. An id never
+   * sent again, or sent again by another session, is left as it is (as before).
+   * A shell Pre that shares the id of the tool Pre of the same call (`shellAction`) is that call, never a new one.
+   */
+  distinctCall(shellAction: boolean): void {
+    const kind = this.#ev.kind;
+    const sent = this.#ev.toolUseId;
+    if (!sent || (kind !== "tool-pre" && kind !== "tool-post" && kind !== "tool-failure" && kind !== "file-edit")) return;
+    const state = this.#state;
+    const session = this.#ev.session;
+    const mapped = state.reused?.[sent];
+    const given = mapped !== undefined && this.#sessionOfCall(mapped) === session ? mapped : undefined;
+    if (kind !== "tool-pre") {
+      if (given === undefined) return;
+      // The call first sent under the id still open for this tool, while the newer one is for another: the event is the first call's.
+      const first = state.open[sent];
+      if (first !== undefined && first.tool === (this.#ev.toolName ?? "") && state.open[given]?.tool !== first.tool) return;
+      this.#ev = { ...this.#ev, toolUseId: given };
+      return;
+    }
+    const current = given ?? sent;
+    const open = state.open[current];
+    const ended = open === undefined && (state.closed.includes(current) || state.expired.includes(current)) && this.#sessionOfCall(current) === session;
+    const otherTool = open !== undefined && !shellAction && open.fromAction !== true && open.session === session && open.tool !== (this.#ev.toolName ?? "");
+    if (!ended && !otherTool) {
+      if (given !== undefined) this.#ev = { ...this.#ev, toolUseId: given };
+      return;
+    }
+    const taken = (id: string): boolean => id in state.open || state.closed.includes(id) || state.expired.includes(id);
+    let n = 2;
+    while (taken(`${sent}-r${n}`)) n++;
+    const id = `${sent}-r${n}`;
+    const reused = (state.reused ??= {});
+    delete reused[sent];
+    reused[sent] = id;
+    for (const old of Object.keys(reused).slice(0, -CLOSED_KEEP)) delete reused[old];
+    this.#ev = { ...this.#ev, toolUseId: id };
+  }
+
   /**
    * Every open call of `session` that still holds a synthetic id (oldest first) takes the real id of the unclaimed request
    * for its tool and arguments, if the file holds one now. Run at every Pre, Post and failure before a step is written, so no step
@@ -952,6 +1023,32 @@ class Context {
       for (const f of step.files) if (f.credited !== undefined) f.credited = swap(f.credited);
     }
     for (const f of Object.values(state.files)) if (f.unreadable !== undefined) move(f.unreadable.calls);
+  }
+
+  /**
+   * A session's first event: the folder is looked at now, before the session's task can open, so the task starts from the folder as it
+   * stands when tracking began. A folder never looked at gets its starting copy. A folder looked at earlier (another session, an earlier
+   * stretch of tracking) is swept now, so what changed while this session was not tracked is credited as any sweep credits it (to the
+   * calls open, or to nobody) and never reaches this session's task as a change of its own: its starting copy is taken from the fresh states.
+   */
+  async startSession(): Promise<void> {
+    const session = this.#ev.session;
+    if (!this.#split || typeof session !== "string" || session === "" || this.#opts.heldReplay === true) return;
+    const marks = (this.#state.sessionStarts ??= {});
+    if (session in marks) return;
+    // Seen already by an earlier build (work, an open call, a held prompt): its task keeps the earlier rule.
+    if (this.#sessionHasWork(session) || Object.values(this.#state.open).some((c) => c.session === session) || session in this.#state.held) return;
+    const from = this.#state.stepSeq;
+    if (!this.#state.init) await this.#baseline();
+    else {
+      this.#expire();
+      const changed = await this.#sweep();
+      const open = this.#openCalls();
+      if (open.length > 0) this.#credit(changed, open);
+      else this.#unclaimed(changed, open);
+    }
+    marks[session] = { from, at: this.#state.stepSeq };
+    for (const old of Object.keys(marks).slice(0, -SESSIONS_KEPT)) delete marks[old];
   }
 
   /** Called by handleHook as the event starts, so lock wait and ledger open count as adapter time. */
@@ -1259,11 +1356,15 @@ class Context {
           if (keep.length > opsCap) this.#drop(client, `${keep.length - opsCap} earlier calls and prompts of this session were dropped before its task opened (only the newest ${opsCap} are kept)`);
           continue;
         }
-        // The task begins with the folder's starting copy (the one taken at the first event, else the files as they stood before this change) and what changed unowned since.
-        const held = pending.starts ?? [];
-        const first = held.length > 0 || pending.unowned.length > 0;
-        const start = held.length > 0 ? held : [this.#startStep(steps)].flatMap((x) => (x === undefined ? [] : [x]));
-        steps = [...start, ...(first ? pending.unowned : []), ...steps];
+        // The task begins with the folder's starting copy (the one taken at the first event, else the files as they stood before this change)
+        // and what changed unowned since. What the look at this session's own first event found had changed while nobody was tracking the
+        // folder is not the session's: it is folded into a starting copy taken from the fresh states, and an older held copy is stale.
+        const mark = Object.entries(state.sessionStarts ?? {}).find(([s]) => this.#clientOf(s) === client)?.[1];
+        const caught = mark === undefined ? [] : pending.unowned.filter((x) => x.seq > mark.from && x.seq <= mark.at);
+        const unowned = pending.unowned.filter((x) => !caught.includes(x));
+        const held = (pending.starts ?? []).filter((x) => caught.length === 0 || x.seq > mark!.from);
+        const start = held.length > 0 ? held : [this.#startStep([...unowned, ...steps])].flatMap((x) => (x === undefined ? [] : [x]));
+        steps = [...start, ...unowned, ...steps];
         taskId = await this.#openTask(client, steps);
         ops = [...(parked[client] ?? []).filter((p) => !ops.some((o) => o.key === p.key)), ...ops];
         delete parked[client];
@@ -1296,12 +1397,21 @@ class Context {
     else if (notes.length === 20) notes.push("more drops followed and are not listed");
   }
 
-  /** The clients of this folder (the folder-only one included) that have an open task now. */
+  /**
+   * The clients of this folder (the folder-only one included) that have an open task now. A session that ran `cocheck track stop`
+   * is left out until it starts again (its own event is that start): its task collects nothing more, so a change nobody's agent made
+   * after the stop goes to the sessions still tracking, or waits for the next task to open, or is never seen when nobody tracks.
+   */
   #openClients(): string[] {
     const out = new Set<string>();
+    const own = this.#split ? this.#clientOf(this.#ev.session) : undefined;
     for (const id of this.#ledger.tasksForFamily(this.#folderClient)) {
       const client = this.#ledger.taskClient(id);
-      if (typeof client === "string" && this.#tasks.currentTaskId(client) !== undefined) out.add(client);
+      if (typeof client !== "string" || out.has(client)) continue;
+      const current = this.#tasks.currentTaskId(client);
+      if (current === undefined) continue;
+      if (client !== own && this.#ledger.trackingStoppedLast(current)) continue;
+      out.add(client);
     }
     return [...out];
   }
@@ -1608,7 +1718,7 @@ class Context {
     // An apply_patch header names its file whole, spaces included; the word scan above cuts it at each space, so the pieces (a folder the call
     // never touched, a path made relative to the cwd) are dropped and the header's own path is taken instead. A Windows header (`C:\Users\...`)
     // is taken whole too: the word scan reads each backslash as a shell escape, so the path it records names no real file.
-    for (const h of writeTargetsOf(this.#ev.toolName, input)) {
+    for (const h of writeTargetsOf(this.#ev.toolName, input, this.#ev.host)) {
       if (!/[\s\\]/.test(h) ||!(pathKit().isAbs(h) || h.startsWith("~/"))) continue;
       const pieces = new Set(h.split(/\s+/).map((w) => w.replace(/[.,:;]+$/, "")));
       for (let k = items.length - 1; k >= 0; k--) if (pieces.has(items[k]!.raw)) items.splice(k, 1);
@@ -1856,6 +1966,8 @@ class Context {
       // No workbook is not an error: the task opens on any file of the folder (or the folder itself when it is empty), and every file is tracked like any other.
       if (books.length === 0) await this.#tasks.touch(this.#client, [...listing.whole, ...listing.hashOnly.keys(), ...listing.secret][0] ?? this.#folder);
     }
+    // A session's first look runs before its event is handled: a reported edit that is that event rebuilds its file's before-state here.
+    if (this.#rebuilt === undefined && this.#ev.kind === "file-edit") this.#rebuilt = this.#rebuildBefore();
     const changes: StateChange[] = [];
     for (const file of [...listing.whole, ...listing.hashOnly.keys(), ...listing.secret].sort()) {
       const note = listing.hashOnly.get(file);
@@ -1867,16 +1979,27 @@ class Context {
         continue; // gone since the listing
       }
       try {
-        const staged = await this.#capture(file, st, note !== undefined, secret);
+        const kit = pathKit();
+        const rebuilt = this.#rebuilt !== undefined && note === undefined && !secret && (kit.same(this.#rebuilt.file, file) || kit.same(realish(this.#rebuilt.file), realish(file))) ? this.#rebuilt.bytes : undefined;
+        const staged = await this.#capture(file, st, note !== undefined, secret, rebuilt);
+        const asRebuilt = rebuilt !== undefined && staged.kept === "whole" && staged.secret !== true;
         this.#state.files[file] = { copy: staged.copy, sha: staged.sha, size: staged.size, mtimeNs: staged.mtimeNs, ino: staged.ino, ctimeNs: staged.ctimeNs, first: staged.sha, kept: staged.kept, ...(staged.secret ? { secret: true as const } : {}) };
+        if (asRebuilt) {
+          // Not the bytes on disk: no stat matches it, so the next sweep reads the file and finds the edit.
+          const t = this.#state.files[file]!;
+          delete t.mtimeNs;
+          delete t.ino;
+          delete t.ctimeNs;
+          (this.#state.rebuilt ??= []).push(staged.sha);
+        }
         changes.push({
           path: file,
           sha: staged.sha,
           prev: null,
           size: staged.size,
           kept: staged.kept,
-          mtimeNs: staged.mtimeNs,
-          note: secret ? `A secret file is in the folder: ${this.#rel(file)}; only its hash and size are kept` : staged.secret ? this.#noted(file, "", true, staged.secretWhy) : [note ?? staged.hashReason, this.#sizeNote(staged.size)].filter((x) => x).join("; "),
+          ...(asRebuilt ? {} : { mtimeNs: staged.mtimeNs }),
+          note: secret ? `A secret file is in the folder: ${this.#rel(file)}; only its hash and size are kept` : staged.secret ? this.#noted(file, "", true, staged.secretWhy) : [asRebuilt ? "the state before the agent's first reported edit, rebuilt from that edit's old text" : undefined, note ?? staged.hashReason, this.#sizeNote(staged.size)].filter((x) => x).join("; "),
         });
         if (this.#claimed(file)) this.#remember(file, staged.sha, "the start of the task");
       } catch (error) {
@@ -2013,7 +2136,7 @@ class Context {
    * `hashOnly` keeps no bytes: the state is the file's fingerprint (a file past the scan caps). `secret` keeps no bytes either and
    * reads the file only to hash it (its SHA-256), for a secret file by name.
    */
-  async #capture(file: string, st: BigIntStats, hashOnly: boolean, secret = false): Promise<Staged> {
+  async #capture(file: string, st: BigIntStats, hashOnly: boolean, secret = false, bytes?: Uint8Array): Promise<Staged> {
     const stat0 = { mtimeNs: String(st.mtimeNs), ino: String(st.ino), ctimeNs: String(st.ctimeNs) };
     if (secret) {
       const sha = await sha256Stream(file);
@@ -2033,11 +2156,11 @@ class Context {
     // A claimed file is stat'ed on both sides of the read. Bytes read while the file moved (a writer still writing,
     // whatever the format) are not one state of it, so they are cut short: kept and credited, never a diff base, read again next sweep.
     const claimed = this.#claimed(file);
-    const before = claimed ? await stat(file, { bigint: true }).catch(() => undefined) : undefined;
-    const plain = await readFile(file);
-    this.#opts.fault?.(`capture-read:${file}`);
-    const after = claimed ? await stat(file, { bigint: true }).catch(() => undefined) : undefined;
-    const moved = claimed && (before === undefined || after === undefined || before.size !== after.size || before.mtimeNs !== after.mtimeNs || after.size !== BigInt(plain.length));
+    const before = claimed && bytes === undefined ? await stat(file, { bigint: true }).catch(() => undefined) : undefined;
+    const plain = bytes === undefined ? await readFile(file) : Buffer.from(bytes);
+    if (bytes === undefined) this.#opts.fault?.(`capture-read:${file}`);
+    const after = claimed && bytes === undefined ? await stat(file, { bigint: true }).catch(() => undefined) : undefined;
+    const moved = claimed && bytes === undefined && (before === undefined || after === undefined || before.size !== after.size || before.mtimeNs !== after.mtimeNs || after.size !== BigInt(plain.length));
     const sha = sha256Hex(plain);
     const size = plain.length;
     // A secret is also what the text holds: a value a gitleaks rule finds makes the file a secret, kept as its hash only, never stored.
@@ -2304,7 +2427,7 @@ class Context {
   #settleEvidence(): void {
     const byFile = new Map<string, { from: number; ids: string[] }>();
     for (const [id, call] of Object.entries(this.#state.open)) {
-      if (call.ended !== undefined || call.transcript === undefined || toolNeverWrites(call.tool)) continue;
+      if (call.ended !== undefined || call.transcript === undefined || toolNeverWrites(call.tool, this.#ev.host)) continue;
       const entry = byFile.get(call.transcript.file) ?? { from: call.transcript.from, ids: [] };
       entry.from = Math.min(entry.from, call.transcript.from);
       entry.ids.push(id);
@@ -2317,7 +2440,7 @@ class Context {
         const call = this.#state.open[id]!;
         // the next read goes on from here: what was read holds no end for this call (the result is never before its Pre)
         call.transcript = { file, from: Math.max(call.transcript!.from, next) };
-        if (ev === undefined || (runsOnAfterResult(call) && !neverRan(ev))) continue;
+        if (ev === undefined || (runsOnAfterResult(call, this.#ev.host) && !neverRan(ev))) continue;
         call.ended = ev;
         if (!neverRan(ev)) this.#endingNow.add(id);
       }
@@ -2336,13 +2459,13 @@ class Context {
     if (sf.refusedCommands === undefined) return;
     const threads = new Map<string, string[]>();
     for (const [id, call] of Object.entries(this.#state.open)) {
-      if (!isShellTool(call.tool) || call.command === "") continue;
+      if (!isShellTool(call.tool, this.#ev.host) || call.command === "") continue;
       const key = `${call.session}\u0000${call.agentId ?? ""}`;
       threads.set(key, [...(threads.get(key) ?? []), id]);
     }
     for (const ids of threads.values()) {
       const first = this.#state.open[ids[0]!]!;
-      const rollout = first.agentId === undefined ? sf.locate(first.session, first.at, this.#opts.codexSessions) : sf.locateHelper?.(first.session, first.agentId, first.at, this.#opts.codexSessions);
+      const rollout = first.agentId === undefined ? sf.locate(first.session, first.at, this.#opts.sessionsDir) : sf.locateHelper?.(first.session, first.agentId, first.at, this.#opts.sessionsDir);
       const refused = rollout === undefined ? undefined : sf.refusedCommands(rollout);
       if (refused === undefined || refused.length === 0) continue;
       for (const id of ids) {
@@ -2404,7 +2527,7 @@ class Context {
 
   /** A call whose command may leave an app running past its result stays a suspect after its Post (see `tails`). */
   #keepTail(id: string, call: OpenCall): void {
-    if (!runsOnAfterResult(call) || !Number.isFinite(call.at)) return;
+    if (!runsOnAfterResult(call, this.#ev.host) || !Number.isFinite(call.at)) return;
     const kept = (this.#state.tails ??= {});
     delete kept[id];
     // The open-call expiry, from the call's start: a tail never outlives the window the call would have had open (no clock read here).
@@ -2565,11 +2688,11 @@ class Context {
    * absolute cwd). With outside watching off no outside path is kept, so a scope that writes outside the folder is kept as unknown.
    */
   #scopeNow(): { scope?: WriteScope } {
-    if (!isShellTool(this.#ev.toolName)) return {};
+    if (!isShellTool(this.#ev.toolName, this.#ev.host)) return {};
     const raw = (this.#ev.toolInput as Record<string, unknown> | undefined)?.command;
     if (typeof raw !== "string") return {};
     // A PowerShell tool's command is read as PowerShell (win32 only, a bounded set of forms; unknown elsewhere, never excluded)
-    const shell = /^(powershell|pwsh)$/i.test(this.#ev.toolName ?? "") ? ("powershell" as const) : undefined;
+    const shell = shellDialectOf(this.#ev.toolName, this.#ev.host) === "powershell" ? ("powershell" as const) : undefined;
     // a helper's payload cwd is the main thread's, not its shell's: its relative paths count only after a cd to an absolute path
     const cwd = cleanId(this.#ev.agentId) === undefined && this.#ev.cwd && this.#guardKit.isAbs(this.#ev.cwd) ? this.#ev.cwd : null;
     const scope = writeScope(raw, cwd, { pre: (this.#probe ??= fsProbe(process.env, this.#guardKit)), kit: this.#guardKit, ...(shell ? { shell } : {}) });
@@ -2620,7 +2743,7 @@ class Context {
       if (c === undefined) return false;
       if (commandNamesFile(c.command, file)) return true;
       if (callText === undefined) return false;
-      const rollout = c.agentId === undefined ? sf.locate(c.session, this.#now(), this.#opts.codexSessions) : sf.locateHelper?.(c.session, c.agentId, this.#now(), this.#opts.codexSessions);
+      const rollout = c.agentId === undefined ? sf.locate(c.session, this.#now(), this.#opts.sessionsDir) : sf.locateHelper?.(c.session, c.agentId, this.#now(), this.#opts.sessionsDir);
       const text = rollout === undefined ? undefined : callText(rollout)?.get(id);
       return text !== undefined && textNamesBase(text, base);
     });
@@ -2628,7 +2751,7 @@ class Context {
     // nothing), and a call the tag evidence names as a writer of the file is never dropped for a name.
     if (callText === undefined) {
       const tagged = this.#state.writeEvidence?.byPath[file]?.calls ?? [];
-      const keep = named.length === 1 && ids.every((id) => isShellTool(this.#state.open[id]?.tool) && (id === named[0] || !tagged.includes(id)));
+      const keep = named.length === 1 && ids.every((id) => isShellTool(this.#state.open[id]?.tool, this.#ev.host) && (id === named[0] || !tagged.includes(id)));
       return keep ? named : ids;
     }
     return named.length > 0 ? named : ids;
@@ -2653,6 +2776,10 @@ class Context {
    */
   #hostEdit(rec: Pick<StateChange, "path" | "prev" | "sha">, credited: readonly string[], origin: string | undefined): boolean {
     if (origin === undefined || this.#phase() !== "Post" || this.#failure() !== null) return false;
+    // An outsider harness (loaded from the person's own folder) never proves a change: its credit stays inferred.
+    if (findProfile(this.#ev.host)?.trust === "outsider") return false;
+    // A before-state rebuilt from a reported edit's own old text would replay to the after-state by construction: it proves nothing.
+    if (rec.prev !== null && (this.#state.rebuilt ?? []).includes(rec.prev)) return false;
     const file = rec.path;
     const kit = pathKit();
     const sha256 = (x: string | Uint8Array): string => createHash("sha256").update(x).digest("hex");
@@ -2708,7 +2835,7 @@ class Context {
     const c = this.#state.open[id];
     // A read-only shell form never takes write credit, whatever else was open (its command was parsed with no redirect, writing pipe or in-place flag)
     if (c?.readOnly === true) return true;
-    if (!c || !isShellTool(c.tool) || c.scope === undefined || !c.scope.known) return false;
+    if (!c || !isShellTool(c.tool, this.#ev.host) || c.scope === undefined || !c.scope.known) return false;
     const unobserved = this.#state.writeEvidence?.unobserved ?? [];
     const facts = {
       tagged: c.tagged === true && this.#state.writeEvidence !== undefined,
@@ -2733,11 +2860,11 @@ class Context {
     const facts = (id: string) => {
       const c = this.#state.open[id];
       if (!c) return undefined;
-      const mayWrite = !isLauncherTool(c.tool) && !isWaitCall(c) && this.#mayCredit(id, file, undefined);
+      const mayWrite = !isLauncherTool(c.tool, this.#ev.host) && !isWaitCall(c, this.#ev.host) && this.#mayCredit(id, file, undefined);
       // "logged nothing" counts only for a call whose children provably carried the hook
       // per process: as many start records as the command starts hooked interpreters, of each kind
       const hooked = c.scope !== undefined && hooksProven(c.scope, c.hookStarts ?? []);
-      return { tool: c.tool, tagged: c.tagged === true, command: c.command, mayWrite, hooked };
+      return { tool: c.tool, host: this.#ev.host, tagged: c.tagged === true, command: c.command, mayWrite, hooked };
     };
     const writers = strictWriters(file, candidates, hit.calls, facts, new Set(st.unobserved ?? []));
     if (writers === undefined) return undefined;
@@ -2765,9 +2892,9 @@ class Context {
     // A call the transcript showed done is credited only by the sweep at which that was seen; one that never ran, by none.
     if (call.ended !== undefined && (neverRan(call.ended) || !this.#endingNow.has(id))) return false;
     // A launch is no suspect at a sweep where a call of the agent it launched is open
-    if (!launcherMayCredit(call.tool, Object.values(this.#state.open).some((c) => c.launchToolUseId === id || (c.linkedLaunch === true && c.session === call.session)))) return false;
+    if (!launcherMayCredit(call.tool, Object.values(this.#state.open).some((c) => c.launchToolUseId === id || (c.linkedLaunch === true && c.session === call.session)), this.#ev.host)) return false;
     const fp = call.toolLabel?.fields?.file_path;
-    return toolMayCredit(call.tool, typeof fp === "string" ? fp : null, file, (a, b) => samePath(a, b, true, this.#guardKit), this.#guardKit);
+    return toolMayCredit(call.tool, typeof fp === "string" ? fp : null, file, (a, b) => samePath(a, b, true, this.#guardKit), this.#guardKit, this.#ev.host);
   }
 
   /** Keeps a call's carried entries bounded: one per file (its first step, every note, a copy claim), however many sweeps found it. */
@@ -2810,15 +2937,96 @@ class Context {
     if (cleanId(this.#ev.agentId) === undefined) return all;
     return all.filter((id) => {
       const c = this.#state.open[id]!;
-      return !(c.agentId === undefined && isWaitCall(c));
+      return !(c.agentId === undefined && isWaitCall(c, this.#ev.host));
     });
   }
 
-  async pre(): Promise<void> {
+  /** True when this Pre names a call a per-action event of the same session already opened: it is that call. */
+  joinsActionCall(): boolean {
+    const id = this.#ev.toolUseId;
+    const open = id ? this.#state.open[id] : undefined;
+    return open !== undefined && open.fromAction === true && open.session === this.#ev.session;
+  }
+
+  /** A `shell-pre`: the Pre of a shell-class call, unless a call of this id and session is already open (then it is that call). */
+  async actionPre(): Promise<void> {
+    const id = this.#ev.toolUseId;
+    const open = id ? this.#state.open[id] : undefined;
+    if (open !== undefined && open.session === this.#ev.session) return;
+    await this.pre(true, true);
+  }
+
+  /**
+   * A `file-edit`: a file change the host reports after making it. With the id of a call of this session that is open, the edit is that
+   * call's own report: its edits join the call, whose Post proves them like a Write or Edit call's. Otherwise it is a call of its own (the id
+   * the host sent, or one made up) opened and closed here: the change since the last event is credited to the calls open, this one among them,
+   * and proven only by replaying the reported edit on the recorded state. The change is found by the sweep, so it is never credited to another session's call alone.
+   */
+  async fileEdit(): Promise<void> {
+    const id = this.#ev.toolUseId;
+    const open = id ? this.#state.open[id] : undefined;
+    if (open !== undefined && id && open.session === this.#ev.session) {
+      await this.#baseline();
+      const mine = this.#writeIntent();
+      open.writes = [...new Set([...(open.writes ?? []), ...(mine.writes ?? [])])];
+      open.edits = [...new Set([...(open.edits ?? []), ...(mine.edits ?? [])])];
+      const have = new Set((open.reported ?? []).map((r) => r.path));
+      const added = (mine.reported ?? []).filter((r) => !have.has(r.path));
+      if (added.length > 0) open.reported = [...(open.reported ?? []), ...added];
+      if (open.writes.length === 0) delete open.writes;
+      if (open.edits.length === 0) delete open.edits;
+      return;
+    }
+    const taken = id !== undefined && id !== "" && (id in this.#state.open || this.#state.closed.includes(id) || this.#state.expired.includes(id));
+    const own = id === undefined || id === "" || taken ? `file-edit-${++this.#state.seq}` : id;
+    this.#ev = { ...this.#ev, toolUseId: own, synthetic: own !== id, kind: "tool-pre" };
+    // The edit is the first event in the folder: the file already holds the new text. Its state before is the edit undone, so the baseline holds
+    // that and the sweep at this Post shows the change. A before-state that cannot be rebuilt exactly is not guessed.
+    if (!this.#state.init) this.#rebuilt = this.#rebuildBefore();
+    await this.pre(false, true);
+    // The session has no task yet: this edit may be the first thing the hook sees in the folder, already made, so the sweep has nothing to diff it
+    // against. The agent still made it: its op opens the session's task rather than waiting parked, and the change is never left to "outside the agents".
+    const opensTask = !this.#sessionHasWork(this.#ev.session);
+    const firstOp = this.#state.outbox.length;
+    this.#ev = { ...this.#ev, kind: "tool-post" };
+    await this.post();
+    if (opensTask) {
+      const input = this.#ev.toolInput as { file_path?: unknown } | null | undefined;
+      const file = typeof input?.file_path === "string" && input.file_path !== "" ? this.#rel(input.file_path) : undefined;
+      for (const op of this.#state.outbox.slice(firstOp)) {
+        if (!op.key.startsWith(`${own}#`)) continue;
+        op.opens = true;
+        // The op names the file the harness said it edited (never its content).
+        if (file !== undefined) op.args = { ...op.args, namedFiles: [...new Set([...(Array.isArray(op.args.namedFiles) ? (op.args.namedFiles as string[]) : []), file])] };
+      }
+    }
+  }
+
+  /** The reported edit's file as it was before the edit (see `revertEdits`), for a text file inside the folder; undefined when it cannot be rebuilt exactly. */
+  #rebuildBefore(): { file: string; bytes: Uint8Array } | undefined {
+    const input = this.#ev.toolInput as { file_path?: unknown; edits?: unknown } | null | undefined;
+    if (typeof input?.file_path !== "string" || input.file_path === "" || !Array.isArray(input.edits)) return undefined;
+    const file = path.resolve(this.#folder, input.file_path);
+    const edits = input.edits.map((e) => (typeof e === "object" && e !== null ? { old: (e as Record<string, unknown>).old_string, new: (e as Record<string, unknown>).new_string } : {}));
+    if (!edits.every((e): e is { old: string; new: string } => typeof e.old === "string" && typeof e.new === "string")) return undefined;
+    try {
+      const st = statSync(file);
+      if (!st.isFile() || st.size > RECONSTRUCT_MAX_BYTES) return undefined;
+      const now = readFileSync(file);
+      const text = now.toString("utf8");
+      if (!Buffer.from(text, "utf8").equals(now)) return undefined; // not UTF-8 text: the edit's strings cannot be placed in it
+      const before = revertEdits(text, edits);
+      return before === undefined ? undefined : { file, bytes: Buffer.from(before, "utf8") };
+    } catch {
+      return undefined;
+    }
+  }
+
+  async pre(sweepFirst = true, fromAction = false): Promise<void> {
     await this.#baseline();
     this.#expire();
     await this.#baselineOutside();
-    if (this.#opts.heldReplay !== true) {
+    if (this.#opts.heldReplay !== true && sweepFirst) {
       const changed = await this.#sweep();
       const open = this.#openCalls();
       // Calls are running: they share what moved, as at a Post. No call open: nobody made it, it is a hand edit.
@@ -2829,7 +3037,7 @@ class Context {
     if (!id) return;
     // This session's next call opens, so its app tails end (after this Pre's sweep, which they may still be credited at).
     this.#endTails(cleanId(this.#ev.session), null);
-    const call: OpenCall = { ...this.#callNow(), startSeq: ++this.#state.seq, ...this.#transcriptAt(), ...(this.#opts.taggedCall === true ? { tagged: true as const } : {}), ...this.#scopeNow() };
+    const call: OpenCall = { ...this.#callNow(), startSeq: ++this.#state.seq, ...this.#transcriptAt(), ...(this.#opts.taggedCall === true ? { tagged: true as const } : {}), ...this.#scopeNow(), ...(fromAction ? { fromAction: true as const } : {}) };
     // Claude Code writes the call's words to the transcript before its Pre; Codex writes the item after the call, so it is read at Post.
     if (this.#ev.narratesBeforeCall) this.#narrate(id, call, true);
     this.#state.open[id] = call;
@@ -2904,8 +3112,8 @@ class Context {
     if (typeof given === "string" && path.isAbsolute(given) && given.endsWith(".jsonl")) return given;
     const session = this.#ev.session;
     if (!this.#ev.sessionFileBySessionId || typeof session !== "string") return undefined;
-    // The host's own folder layout names the file; `codexSessions` (the option's name is kept) points a test at a temp tree.
-    return profileOf(this.#ev.host).sessionFile.locate(session, this.#now(), this.#opts.codexSessions);
+    // The host's own folder layout names the file; `sessionsDir` points a test at a temp tree.
+    return profileOf(this.#ev.host).sessionFile.locate(session, this.#now(), this.#opts.sessionsDir);
   }
 
   /**
@@ -2918,7 +3126,7 @@ class Context {
       const session = this.#ev.session;
       let file = this.#sessionFile();
       if (agentId !== undefined) {
-        file = this.#ev.helperTranscriptPath ?? (typeof session === "string" ? profileOf(this.#ev.host).sessionFile.locateHelper?.(session, agentId, this.#now(), this.#opts.codexSessions) : undefined);
+        file = this.#ev.helperTranscriptPath ?? (typeof session === "string" ? profileOf(this.#ev.host).sessionFile.locateHelper?.(session, agentId, this.#now(), this.#opts.sessionsDir) : undefined);
         if (file === undefined || !lstatSync(file).isFile()) return undefined;
       }
       if (file === undefined) return undefined;
@@ -2963,7 +3171,7 @@ class Context {
   #openLauncherOf(agentId: string): string | undefined {
     const earlier = Object.values(this.#state.open).find((c) => c.session === this.#ev.session && c.agentId === agentId && c.launchToolUseId !== undefined);
     if (earlier !== undefined) return earlier.launchToolUseId;
-    const launches = Object.entries(this.#state.open).filter(([, c]) => c.session === this.#ev.session && c.agentId === undefined && isLauncherTool(c.tool));
+    const launches = Object.entries(this.#state.open).filter(([, c]) => c.session === this.#ev.session && c.agentId === undefined && isLauncherTool(c.tool, this.#ev.host));
     // The helper's first prompt matched exactly one launch; its args key finds that launch among those open, even with several open.
     if (this.#ev.launchKey !== undefined) {
       const named = launches.filter(([, c]) => c.argsKey === this.#ev.launchKey);
@@ -2977,6 +3185,7 @@ class Context {
     const input = (this.#ev.toolInput ?? {}) as Record<string, unknown>;
     // A connector's command and description are input values, which are not stored.
     const own = !isMcpTool(this.#ev.toolName);
+    const callReason = profileOf(this.#ev.host).fields.callReason;
     const agentId = cleanId(this.#ev.agentId);
     const agentType = cleanId(this.#ev.agentType, true);
     const launchToolUseId = agentId === undefined ? undefined : agentLauncher(this.#ev.host, this.#ev.transcriptPath, this.#ev.session, agentId) ?? this.#openLauncherOf(agentId);
@@ -2987,13 +3196,13 @@ class Context {
       session: this.#ev.session,
       ...(agentId === undefined ? {} : { agentId, ...(agentType === undefined ? {} : { agentType }), ...(launchToolUseId === undefined ? {} : { launchToolUseId }), ...(this.#ev.launchKey !== undefined && launchToolUseId !== undefined ? { linkedLaunch: true as const } : {}) }),
       command: this.#redact(own && typeof input.command === "string" ? input.command : ""),
-      description: this.#redact(own && typeof input.description === "string" ? input.description : ""),
+      description: this.#redact(own && callReason !== undefined && typeof input[callReason] === "string" ? (input[callReason] as string) : ""),
       toolLabel: this.#label(),
       ...this.#turnPrompt(agentId),
       at: this.#now(),
       ...this.#reach(),
       ...(input.run_in_background === true ? { background: true } : {}),
-      ...(waitsOnHelpers(this.#ev.toolName, input) ? { waits: true as const } : {}),
+      ...(waitsOnHelpers(this.#ev.toolName, input, this.#ev.host) ? { waits: true as const } : {}),
       ...this.#writeIntent(),
     };
   }
@@ -3003,23 +3212,23 @@ class Context {
    * cwd, kept only inside the task folder, so no outside path is stored). `readOnly`: a shell command made only of known read-only forms.
    * Both are read from the input alone; an input the readers do not understand says nothing, which keeps today's credit.
    */
-  #writeIntent(): { writes?: string[]; readOnly?: true; patchRead?: OpenCall["patchRead"] } {
+  #writeIntent(): { writes?: string[]; edits?: string[]; reported?: OpenCall["reported"]; readOnly?: true; patchRead?: OpenCall["patchRead"] } {
     const input = this.#ev.toolInput;
     const rel = (p: string) => path.resolve(this.#cwd(), p);
-    const writes = [...new Set(writeTargetsOf(this.#ev.toolName, input).filter((p) => !p.startsWith("~")).map(rel).filter((p) => !this.#isOutside(p) && !isDeliveryPath(this.#folder, p) && !isHomePath(this.#opts.home, p)))];
+    const writes = [...new Set(writeTargetsOf(this.#ev.toolName, input, this.#ev.host).filter((p) => !p.startsWith("~")).map(rel).filter((p) => !this.#isOutside(p) && !isDeliveryPath(this.#folder, p) && !isHomePath(this.#opts.home, p)))];
     const command = typeof input === "object" && input !== null ? (input as { command?: unknown }).command : undefined;
-    const readOnly = isShellTool(this.#ev.toolName) && typeof command === "string" && isReadOnlyCommand(command);
-    const edits = editTargetsOf(this.#ev.toolName, input, (p) => pathKit().isAbs(p), rel)?.filter((p) => !this.#isOutside(p) && !isDeliveryPath(this.#folder, p) && !isHomePath(this.#opts.home, p));
-    const reported = edits === undefined ? [] : reportedEditsOf(this.#ev.toolName, input, (p) => pathKit().isAbs(p), (t) => createHash("sha256").update(t, "utf8").digest("hex"), rel).filter((c) => !this.#isOutside(c.path) && !isDeliveryPath(this.#folder, c.path) && !isHomePath(this.#opts.home, c.path));
+    const readOnly = isShellTool(this.#ev.toolName, this.#ev.host) && typeof command === "string" && isReadOnlyCommand(command);
+    const edits = editTargetsOf(this.#ev.toolName, input, (p) => pathKit().isAbs(p), rel, this.#ev.host)?.filter((p) => !this.#isOutside(p) && !isDeliveryPath(this.#folder, p) && !isHomePath(this.#opts.home, p));
+    const reported = edits === undefined ? [] : reportedEditsOf(this.#ev.toolName, input, (p) => pathKit().isAbs(p), (t) => createHash("sha256").update(t, "utf8").digest("hex"), rel, this.#ev.host).filter((c) => !this.#isOutside(c.path) && !isDeliveryPath(this.#folder, c.path) && !isHomePath(this.#opts.home, c.path));
     // The input is already scrubbed at the entry (normalize.ts): a withheld section has no replay, so that file keeps inferred credit.
     const kept = reported.filter((c) => !(c.sections ?? []).some((s) => isWithheldSection(s.lines)));
     const cwd = this.#ev.cwd;
-    const patchRead = isPatchTool(this.#ev.toolName)
+    const patchRead = isPatchTool(this.#ev.toolName, this.#ev.host)
       ? {
           input: input === undefined ? "none" : input === null ? "null" : Array.isArray(input) ? "array" : typeof input,
           quoted: typeof input === "string" && /^\s*"/.test(input),
           cwd: cwd === undefined || cwd === "" ? "absent" : /^[A-Za-z]:\\/.test(cwd) ? "drive-backslash" : /^[A-Za-z]:\//.test(cwd) ? "drive-slash" : cwd.startsWith("/") ? "posix" : /^\\\\/.test(cwd) ? "unc" : "other",
-          named: writeTargetsOf(this.#ev.toolName, input).length,
+          named: writeTargetsOf(this.#ev.toolName, input, this.#ev.host).length,
           inside: (edits ?? []).length,
           reported: kept.length,
         }
@@ -3066,7 +3275,7 @@ class Context {
 
   /** The call's safe label; with outside watching off, paths outside the folder and path-like words are masked first. */
   #label(): ToolLabel {
-    const text = (s: string) => (this.#ev.toolName?.toLowerCase() === "bash" ? this.#redact(s) : this.#redactWords(s));
+    const text = (s: string) => (shellDialectOf(this.#ev.toolName, this.#ev.host) === "bash" ? this.#redact(s) : this.#redactWords(s));
     const mask = (p: string) => {
       if (this.#on()) return p;
       if (p.startsWith("~")) return "[outside path]";
@@ -3123,7 +3332,7 @@ class Context {
     const rewrote = [...this.#rewrites].filter((r) => this.#mayCredit(id, path.join(this.#folder, r), id));
     if (rewrote.length > 0) call.sameBytes = [...new Set([...(call.sameBytes ?? []), ...rewrote])].sort();
     this.#narrate(id, call);
-    if (call.background && !isLauncherTool(call.tool)) {
+    if (call.background && !isLauncherTool(call.tool, this.#ev.host)) {
       // The job outlives its Post: keep it open, with what this Post found, so its later writes are joint with it.
       appendAll((this.#state.pending[id] ??= []), own);
       this.#foldPending(id);
@@ -3152,7 +3361,7 @@ class Context {
     const agent = call === undefined ? cleanId(ev.agentId) : call.agentId;
     // The call's own start time places the rollout's day folder; the clock is read only when there is no open call (reading it moves a test clock).
     const at = call?.at ?? this.#now();
-    const rollout = agent === undefined ? sf.locate(session, at, this.#opts.codexSessions) : sf.locateHelper?.(session, agent, at, this.#opts.codexSessions);
+    const rollout = agent === undefined ? sf.locate(session, at, this.#opts.sessionsDir) : sf.locateHelper?.(session, agent, at, this.#opts.sessionsDir);
     const hit = rollout === undefined ? undefined : sf.callExit(rollout)?.get(id);
     if (hit === undefined) return ev;
     return { ...ev, failure: { raw: exitFailureText(hit), interrupted: false, inferred: true } };

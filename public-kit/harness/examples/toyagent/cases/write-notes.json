@@ -1,0 +1,142 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "toyagent",
+  "description": "Toy Agent: a prompt, a read, a write that creates notes.txt, a shell call, then the closing message. Its payloads carry no call id, so the ids in the credit are the ones CoCheck makes up (one per call, in order).",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "userPrompt",
+      "stdin": "{\"sessionId\":\"toy-session-1\",\"workspace\":{\"roots\":[\"<folder>\"]},\"userText\":\"write the notes file\"}",
+      "argv": [
+        "--event",
+        "userPrompt"
+      ]
+    },
+    {
+      "event": "beforeTool",
+      "stdin": "{\"sessionId\":\"toy-session-1\",\"workspace\":{\"roots\":[\"<folder>\"]},\"tool\":{\"name\":\"read_file\",\"args\":\"{\\\"path\\\": \\\"<folder>/data.txt\\\"}\"}}",
+      "argv": [
+        "--event",
+        "beforeTool"
+      ]
+    },
+    {
+      "event": "afterTool",
+      "stdin": "{\"sessionId\":\"toy-session-1\",\"workspace\":{\"roots\":[\"<folder>\"]},\"tool\":{\"name\":\"read_file\",\"args\":\"{\\\"path\\\": \\\"<folder>/data.txt\\\"}\",\"result\":{\"text\":\"a,b,c\"}}}",
+      "argv": [
+        "--event",
+        "afterTool"
+      ]
+    },
+    {
+      "event": "beforeTool",
+      "stdin": "{\"sessionId\":\"toy-session-1\",\"workspace\":{\"roots\":[\"<folder>\"]},\"tool\":{\"name\":\"write_file\",\"args\":\"{\\\"path\\\": \\\"<folder>/notes.txt\\\", \\\"content\\\": \\\"hello from the toy agent\\\\n\\\"}\"}}",
+      "argv": [
+        "--event",
+        "beforeTool"
+      ]
+    },
+    {
+      "event": "afterTool",
+      "stdin": "{\"sessionId\":\"toy-session-1\",\"workspace\":{\"roots\":[\"<folder>\"]},\"tool\":{\"name\":\"write_file\",\"args\":\"{\\\"path\\\": \\\"<folder>/notes.txt\\\", \\\"content\\\": \\\"hello from the toy agent\\\\n\\\"}\",\"result\":{\"ok\":true}}}",
+      "argv": [
+        "--event",
+        "afterTool"
+      ]
+    },
+    {
+      "event": "beforeTool",
+      "stdin": "{\"sessionId\":\"toy-session-1\",\"workspace\":{\"roots\":[\"<folder>\"]},\"tool\":{\"name\":\"run_shell\",\"args\":\"{\\\"command\\\": \\\"cat data.txt\\\"}\"}}",
+      "argv": [
+        "--event",
+        "beforeTool"
+      ]
+    },
+    {
+      "event": "afterTool",
+      "stdin": "{\"sessionId\":\"toy-session-1\",\"workspace\":{\"roots\":[\"<folder>\"]},\"tool\":{\"name\":\"run_shell\",\"args\":\"{\\\"command\\\": \\\"cat data.txt\\\"}\",\"result\":{\"output\":\"a,b,c\"}}}",
+      "argv": [
+        "--event",
+        "afterTool"
+      ]
+    },
+    {
+      "event": "finished",
+      "stdin": "{\"sessionId\":\"toy-session-1\",\"workspace\":{\"roots\":[\"<folder>\"]},\"final\":{\"message\":\"Wrote notes.txt and read data.txt.\"}}",
+      "argv": [
+        "--event",
+        "finished"
+      ]
+    }
+  ],
+  "files": {
+    "before": {
+      "data.txt": "a,b,c\n"
+    },
+    "writes": [
+      {
+        "afterEvent": 4,
+        "path": "notes.txt",
+        "content": "hello from the toy agent\n"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "prompt",
+        "eventName": "userPrompt",
+        "session": "toy-session-1",
+        "prompt": "write the notes file"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "beforeTool",
+        "session": "toy-session-1",
+        "toolName": "read_file"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "afterTool",
+        "session": "toy-session-1",
+        "toolName": "read_file"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "beforeTool",
+        "session": "toy-session-1",
+        "toolName": "write_file"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "afterTool",
+        "session": "toy-session-1",
+        "toolName": "write_file"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "beforeTool",
+        "session": "toy-session-1",
+        "toolName": "run_shell"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "afterTool",
+        "session": "toy-session-1",
+        "toolName": "run_shell"
+      },
+      {
+        "kind": "stop",
+        "eventName": "finished",
+        "session": "toy-session-1",
+        "lastAssistantMessage": "Wrote notes.txt and read data.txt."
+      }
+    ],
+    "credit": {
+      "notes.txt": {
+        "creditedTo": "call:toyagent-toy-session-1-2",
+        "basis": "inferred"
+      }
+    }
+  }
+}

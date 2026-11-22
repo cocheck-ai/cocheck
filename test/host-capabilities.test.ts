@@ -7,7 +7,8 @@ import path from "node:path";
 import { runHook, type HookExit } from "../src/hook-cli.ts";
 import { runInstall } from "../src/install.ts";
 import { allProfiles, findProfile, hasCapability, isHostKey, knownHostLabel, registerHost, type HostProfile } from "../src/hosts/index.ts";
-import { codex } from "../src/hosts/codex.ts";
+import { profileOf } from "../src/hosts/index.ts";
+const codex = profileOf("codex");
 import { journalRecords, makeRig, type Rig } from "./hook-corpus.ts";
 
 // the core reads each host's capabilities record, never a host name. A fourth host is one registry line; a host that lacks a

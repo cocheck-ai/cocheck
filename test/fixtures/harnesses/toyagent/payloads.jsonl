@@ -1,0 +1,8 @@
+{"event": "userPrompt", "stdin": {"sessionId": "toy-session-1", "workspace": {"roots": ["<folder>"]}, "userText": "write the notes file"}}
+{"event": "beforeTool", "stdin": {"sessionId": "toy-session-1", "workspace": {"roots": ["<folder>"]}, "tool": {"name": "read_file", "args": "{\"path\": \"<folder>/data.txt\"}"}}}
+{"event": "afterTool", "stdin": {"sessionId": "toy-session-1", "workspace": {"roots": ["<folder>"]}, "tool": {"name": "read_file", "args": "{\"path\": \"<folder>/data.txt\"}", "result": {"text": "a,b,c"}}}}
+{"event": "beforeTool", "stdin": {"sessionId": "toy-session-1", "workspace": {"roots": ["<folder>"]}, "tool": {"name": "write_file", "args": "{\"path\": \"<folder>/notes.txt\", \"content\": \"hello from the toy agent\\n\"}"}}}
+{"event": "afterTool", "stdin": {"sessionId": "toy-session-1", "workspace": {"roots": ["<folder>"]}, "tool": {"name": "write_file", "args": "{\"path\": \"<folder>/notes.txt\", \"content\": \"hello from the toy agent\\n\"}", "result": {"ok": true}}}}
+{"event": "beforeTool", "stdin": {"sessionId": "toy-session-1", "workspace": {"roots": ["<folder>"]}, "tool": {"name": "run_shell", "args": "{\"command\": \"cat data.txt\"}"}}}
+{"event": "afterTool", "stdin": {"sessionId": "toy-session-1", "workspace": {"roots": ["<folder>"]}, "tool": {"name": "run_shell", "args": "{\"command\": \"cat data.txt\"}", "result": {"output": "a,b,c"}}}}
+{"event": "finished", "stdin": {"sessionId": "toy-session-1", "workspace": {"roots": ["<folder>"]}, "final": {"message": "Wrote notes.txt and read data.txt."}}}

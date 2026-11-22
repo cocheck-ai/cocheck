@@ -1,0 +1,72 @@
+{
+  "schema": "cocheck-harness/1",
+  "key": "myagent",
+  "displayName": "My Agent",
+  "fullName": "My Agent command-line tool",
+  "chip": "M",
+  "testedVersions": ["0.1"],
+  "events": {
+    "userPrompt": "prompt",
+    "beforeTool": "tool-pre",
+    "afterTool": "tool-post",
+    "toolFailed": "tool-failure",
+    "finished": "stop"
+  },
+  "eventFrom": { "arg": "--event" },
+  "unverifiedEvents": [],
+  "fields": {
+    "session": "sessionId",
+    "eventName": "eventName",
+    "cwd": "workspace.roots[0]",
+    "toolName": "tool.name",
+    "toolInput": "tool.args",
+    "toolResponse": "tool.result",
+    "agentId": "agent.id",
+    "agentType": "agent.type",
+    "transcriptPath": "transcriptPath",
+    "lastAssistantMessage": "final.message",
+    "prompt": "userText",
+    "parentSession": "parentSessionId",
+    "callReason": "reason"
+  },
+  "toolInputEncoding": "json-text",
+  "callId": { "payload": "tool.callId", "synthesized": true },
+  "extraFields": { "turnId": "turnId", "permissionMode": "permissionMode", "model": "model", "stopHookActive": "stopHookActive" },
+  "failure": {
+    "tool-failure": { "text": ["error.message"], "interrupt": "error.interrupted" },
+    "tool-post": { "flags": ["tool.result.isError"], "text": ["tool.result.error"], "inferred": true }
+  },
+  "refine": [{ "kinds": ["tool-post"], "becomes": "tool-failure", "whenPresent": "tool.result.error" }],
+  "toolNameStrip": { "prefix": "myagent_" },
+  "toolClasses": {
+    "read_file": { "class": "read" },
+    "write_file": { "class": "write", "pathFields": ["path"], "fileInput": true },
+    "edit_file": { "class": "edit", "pathFields": ["path"] },
+    "run_shell": { "class": "shell", "dialect": "bash", "backgroundable": true }
+  },
+  "narration": { "sources": [{ "kind": "closing-message", "readableAt": "post" }], "closingWaitMs": 0 },
+  "sessionFile": { "bySessionId": true, "defaultRoot": "{env:MYAGENT_HOME|{home}/.myagent}/sessions", "file": "{root}/{session}.jsonl" },
+  "capabilities": { "failureEvent": true, "helperSessions": false, "launchKey": false },
+  "readsConfigsOf": [],
+  "sessionEnv": "MYAGENT_SESSION_ID",
+  "perAction": { "fileEditTool": "edit_file", "shellTool": "run_shell", "fields": { "editPath": "tool.args.path", "command": "tool.args.command" } },
+  "hostOwnedFiles": [],
+  "hostOwnedWhat": "files My Agent writes itself",
+  "install": {
+    "format": "json",
+    "path": "{env:MYAGENT_HOME|{home}/.myagent}/hooks.json",
+    "mode": "owned",
+    "rootKey": "hooks",
+    "envelope": { "version": 1 },
+    "events": ["userPrompt", "beforeTool", "afterTool", "toolFailed", "finished"],
+    "entryTemplate": { "run": "{command}" },
+    "eventInCommand": true,
+    "skillRoot": ".myagent/skills",
+    "hostFlag": "myagent",
+    "folderFromPayloadCwd": true,
+    "notes": "Restart My Agent so it reads the new hooks.",
+    "checkPayload": { "payload": { "sessionId": "install-check", "workspace": { "roots": ["{folder}"] }, "tool": { "name": "run_shell", "args": "{\"command\":\"true\"}" } }, "event": "beforeTool" }
+  },
+  "extras": [],
+  "shape": {}
+}

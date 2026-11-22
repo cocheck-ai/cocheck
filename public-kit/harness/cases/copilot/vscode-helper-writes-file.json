@@ -1,0 +1,236 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "copilot",
+  "description": "Copilot in VS Code 1.140: three task calls start three helpers; the memo helper's apply_patch creates memo.md and it stops. The other helpers' calls and the notification events are left out.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "userPromptSubmitted",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792885962961,\"cwd\":\"<folder>\",\"prompt\":\"Start tracking (use the cocheck skill: run `cocheck track start` as its own command, by itself). Then delegate three helpers, each as its own sub-agent task, and let them work: (1) the built-in general-purpose agent builds model.xlsx in the current folder, a small 3-year revenue model with formulas, using python openpyxl if it is installed, else a CSV named model.csv (say which you used); (2) the custom agent memo-writer writes memo.md in the current folder, a 10-line memo explaining the model; (3) the built-in general-purpose agent builds deck.pptx in the current folder using python-pptx if it is installed, else a markdown outline named deck.md (say which you used). Do not do the helpers' work yourself. When all three are done, run this one command yourself: `ls /nonexistent_t151` (it is expected to fail). Finish with one closing sentence.\"}",
+      "argv": [
+        "--event",
+        "userPromptSubmitted"
+      ]
+    },
+    {
+      "event": "sessionStart",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792885963082,\"cwd\":\"<folder>\",\"source\":\"new\",\"initialPrompt\":\"Start tracking (use the cocheck skill: run `cocheck track start` as its own command, by itself). Then delegate three helpers, each as its own sub-agent task, and let them work: (1) the built-in general-purpose agent builds model.xlsx in the current folder, a small 3-year revenue model with formulas, using python openpyxl if it is installed, else a CSV named model.csv (say which you used); (2) the custom agent memo-writer writes memo.md in the current folder, a 10-line memo explaining the model; (3) the built-in general-purpose agent builds deck.pptx in the current folder using python-pptx if it is installed, else a markdown outline named deck.md (say which you used). Do not do the helpers' work yourself. When all three are done, run this one command yourself: `ls /nonexistent_t151` (it is expected to fail). Finish with one closing sentence.\"}",
+      "argv": [
+        "--event",
+        "sessionStart"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792885996088,\"cwd\":\"<folder>\",\"toolName\":\"task\",\"toolArgs\":{\"description\":\"Build revenue model workbook\",\"prompt\":\"In the current folder, build model.xlsx: a small 3-year revenue model with formulas. Use Python openpyxl if it is installed; otherwise create model.csv. Do all implementation yourself, and report which format/tool you used and the output path. Do not modify unrelated files.\",\"agent_type\":\"general-purpose\",\"name\":\"revenue-model\",\"mode\":\"background\"}}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792885996088,\"cwd\":\"<folder>\",\"toolName\":\"task\",\"toolArgs\":{\"description\":\"Write model memo\",\"prompt\":\"In the current folder, write memo.md containing exactly 10 lines explaining the revenue model. Do all implementation yourself, and report the output path. Do not modify unrelated files.\",\"agent_type\":\"memo-writer\",\"name\":\"model-memo\",\"mode\":\"background\"}}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792885996088,\"cwd\":\"<folder>\",\"toolName\":\"task\",\"toolArgs\":{\"description\":\"Build presentation deck\",\"prompt\":\"In the current folder, build deck.pptx using Python python-pptx if it is installed; otherwise create a markdown outline named deck.md. Do all implementation yourself, and report which format/tool you used and the output path. Do not modify unrelated files.\",\"agent_type\":\"general-purpose\",\"name\":\"model-deck\",\"mode\":\"background\"}}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "subagentStart",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792885996592,\"cwd\":\"<folder>\",\"agentName\":\"general-purpose\",\"agentId\":\"8e9f6ab3-fa3d-4c37-9d55-92d9fdd9f3bf\",\"agentType\":\"general-purpose\",\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "subagentStart"
+      ]
+    },
+    {
+      "event": "subagentStart",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792885996601,\"cwd\":\"<folder>\",\"agentName\":\"memo-writer\",\"agentDescription\":\"Writes short markdown memos into the workspace.\",\"agentId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "subagentStart"
+      ]
+    },
+    {
+      "event": "subagentStart",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792885996603,\"cwd\":\"<folder>\",\"agentName\":\"general-purpose\",\"agentId\":\"b478b89b-4f10-4348-972d-321b668531cb\",\"agentType\":\"general-purpose\",\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "subagentStart"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"timestamp\":1792886002417,\"cwd\":\"<folder>\",\"toolName\":\"apply_patch\",\"toolArgs\":\"*** Begin Patch\\n*** Add File: <folder>/memo.md\\n+Revenue Model Memo\\n+The business earns revenue by selling subscriptions to customers.\\n+Subscriptions are priced according to the selected service tier.\\n+Higher tiers provide additional features, capacity, or support.\\n+Revenue is calculated as active customers multiplied by average price.\\n+New customer additions increase the recurring revenue base.\\n+Customer churn reduces the number of customers retained each period.\\n+Upselling and price changes can increase revenue per customer.\\n+Gross revenue is tracked before deducting refunds, discounts, or taxes.\\n+The model forecasts revenue by period using customers, pricing, and churn assumptions.\\n*** End Patch\\n\",\"agentId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"sessionId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"timestamp\":1792886002574,\"cwd\":\"<folder>\",\"toolName\":\"apply_patch\",\"toolArgs\":\"*** Begin Patch\\n*** Add File: <folder>/memo.md\\n+Revenue Model Memo\\n+The business earns revenue by selling subscriptions to customers.\\n+Subscriptions are priced according to the selected service tier.\\n+Higher tiers provide additional features, capacity, or support.\\n+Revenue is calculated as active customers multiplied by average price.\\n+New customer additions increase the recurring revenue base.\\n+Customer churn reduces the number of customers retained each period.\\n+Upselling and price changes can increase revenue per customer.\\n+Gross revenue is tracked before deducting refunds, discounts, or taxes.\\n+The model forecasts revenue by period using customers, pricing, and churn assumptions.\\n*** End Patch\\n\",\"toolResult\":{\"resultType\":\"success\",\"textResultForLlm\":\"Added 1 file(s): <folder>/memo.md\"},\"agentId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "postToolUse"
+      ]
+    },
+    {
+      "event": "preToolUse",
+      "stdin": "{\"sessionId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"timestamp\":1792886004927,\"cwd\":\"<folder>\",\"toolName\":\"bash\",\"toolArgs\":{\"command\":\"wc -l memo.md\",\"description\":\"Verify memo line count\"},\"agentId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "preToolUse"
+      ]
+    },
+    {
+      "event": "postToolUse",
+      "stdin": "{\"sessionId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"timestamp\":1792886005101,\"cwd\":\"<folder>\",\"toolName\":\"bash\",\"toolArgs\":{\"command\":\"wc -l memo.md\",\"description\":\"Verify memo line count\"},\"toolResult\":{\"resultType\":\"success\",\"textResultForLlm\":\"10 memo.md\\n<shellId: 17 completed with exit code 0>\"},\"agentId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "postToolUse"
+      ]
+    },
+    {
+      "event": "agentStop",
+      "stdin": "{\"sessionId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"timestamp\":1792886006163,\"cwd\":\"<folder>\",\"stopReason\":\"end_turn\",\"stop_hook_active\":false,\"agentId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"agentType\":\"memo-writer\",\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "agentStop"
+      ]
+    },
+    {
+      "event": "subagentStop",
+      "stdin": "{\"sessionId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\",\"timestamp\":1792886006313,\"cwd\":\"<folder>\",\"agentId\":\"dda37b07-f3ee-474f-a234-09d957d5cf47\",\"agentType\":\"memo-writer\",\"agentName\":\"memo-writer\",\"response\":\"Created `<folder>/memo.md` with exactly 10 lines.\",\"stopReason\":\"end_turn\",\"stop_hook_active\":false,\"parentAgentId\":\"25ee9a7c-ca9a-4d10-bd2e-e53055cfac50\"}",
+      "argv": [
+        "--event",
+        "subagentStop"
+      ]
+    }
+  ],
+  "files": {
+    "writes": [
+      {
+        "afterEvent": 9,
+        "path": "memo.md",
+        "content": "stand-in for memo.md\n"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "prompt",
+        "eventName": "userPromptSubmitted",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "prompt": "Start tracking (use the cocheck skill: run `cocheck track start` as its own command, by itself). Then delegate three helpers, each as its own sub-agent task, and let them work: (1) the built-in general-purpose agent builds model.xlsx in the current folder, a small 3-year revenue model with formulas, using python openpyxl if it is installed, else a CSV named model.csv (say which you used); (2) the custom agent memo-writer writes memo.md in the current folder, a 10-line memo explaining the model; (3) the built-in general-purpose agent builds deck.pptx in the current folder using python-pptx if it is installed, else a markdown outline named deck.md (say which you used). Do not do the helpers' work yourself. When all three are done, run this one command yourself: `ls /nonexistent_t151` (it is expected to fail). Finish with one closing sentence."
+      },
+      {
+        "kind": "other",
+        "eventName": "sessionStart",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "toolName": "task"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "toolName": "task"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "toolName": "task"
+      },
+      {
+        "kind": "other",
+        "eventName": "subagentStart",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "agentId": "8e9f6ab3-fa3d-4c37-9d55-92d9fdd9f3bf",
+        "agentType": "general-purpose"
+      },
+      {
+        "kind": "other",
+        "eventName": "subagentStart",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "agentId": "dda37b07-f3ee-474f-a234-09d957d5cf47",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "other",
+        "eventName": "subagentStart",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "agentId": "b478b89b-4f10-4348-972d-321b668531cb",
+        "agentType": "general-purpose"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "toolName": "apply_patch",
+        "agentId": "dda37b07-f3ee-474f-a234-09d957d5cf47",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "toolName": "apply_patch",
+        "agentId": "dda37b07-f3ee-474f-a234-09d957d5cf47",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "preToolUse",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "toolName": "bash",
+        "agentId": "dda37b07-f3ee-474f-a234-09d957d5cf47",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "postToolUse",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "toolName": "bash",
+        "agentId": "dda37b07-f3ee-474f-a234-09d957d5cf47",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "other",
+        "eventName": "agentStop",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "agentId": "dda37b07-f3ee-474f-a234-09d957d5cf47",
+        "agentType": "memo-writer"
+      },
+      {
+        "kind": "subagent-stop",
+        "eventName": "subagentStop",
+        "session": "25ee9a7c-ca9a-4d10-bd2e-e53055cfac50",
+        "agentId": "dda37b07-f3ee-474f-a234-09d957d5cf47",
+        "agentType": "memo-writer",
+        "lastAssistantMessage": "Created `<folder>/memo.md` with exactly 10 lines."
+      }
+    ],
+    "credit": {
+      "memo.md": {
+        "creditedTo": "call:copilot-25ee9a7c-ca9a-4d10-bd2e-e53055cfac50-4",
+        "basis": "inferred"
+      }
+    }
+  }
+}

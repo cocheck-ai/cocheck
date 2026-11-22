@@ -58,9 +58,27 @@ The timeline read model that turns these records into one JSON document per task
 - A journal that cannot be written changes nothing: same exit code, same ledger ops. One line on stderr and a `journal.degraded` file in the home say so.
 - `src/normalize.ts` is the only code that reads a host's raw payload. `normalize(host, raw)` returns a `NormalizedEvent` (`v: 1`; an unknown version is refused); `hook-adapter.ts` consumes only that. `handleHook(rawPayload, options)` remains as a wrapper. The hosts wired are the profiles registered in `src/hosts/index.ts`: Claude Code, Codex and Copilot.
 
+## Canonical event (v1)
+
+The contract inside CoCheck is `NormalizedEvent` with `v: 1` (`src/normalize.ts`). Claude Code's hook payload is the shape the other hosts are mapped onto; each host's profile (`src/hosts/`) says which payload key feeds each field. `normalize(host, raw)` copies values through unchanged (never coerced), and `assertNormalized` refuses any other `v`. The adapter reads only this event.
+
+Kinds (`EventKind`, `src/hosts/types.ts`): `tool-pre` (before a call), `tool-post` (after a call), `tool-failure` (the host's own failed-call event), `stop` (the main agent finished a turn), `subagent-stop` (a helper finished), `prompt` (the user submitted a prompt), and `other` (an event name the adapter does not act on, or one the profile's `refineKind` demotes, for example a helper's own prompt).
+
+Per-action kinds, for a harness that reports each action on its own event instead of as a tool call (additive and optional: no host wired today maps an event to them, and the shape stays v1). `file-edit` (a file the harness changed: the path and the edits as `{ old_string, new_string }` pairs, or the file's whole new content), `shell-pre` and `shell-post` (a shell run before and after: the command, the cwd, and on the post the exit code and output when sent), `session-start` and `session-end` (recognised and carried; the adapter records nothing for them yet). A profile with `perAction` names the tool each is a call of in its own `toolClasses` and the payload keys that feed it; `normalize` then sets `toolName`, `toolInput` (`{ file_path, edits }`, `{ file_path, content }` or `{ command }`) and, for a shell post, `toolResponse` (`{ exit_code, output }`), so the credit rules read it as a call of that class. A `shell-pre` is a tool Pre and a `shell-post` a tool Post for every rule after the entry. A `file-edit` is a call whose Pre and Post happen together: the change found since the last event is credited as for any call, and it is proven (`host-reported-edit`) only when the reported edit replays on the recorded state, exactly as for a Write or Edit call.
+
+Join rules: an event carrying the call id of a call already open in the same session is that call. A `shell-pre` with the id of an open call opens nothing; a tool Pre whose id a `shell-pre` opened opens nothing; a second Post of a closed call adds no op. A `file-edit` with the id of an open call of its session adds its edits to that call (its Post proves them); with no id, an id already used, or another session's id, it opens a call of its own (id `file-edit-<n>`, `synthetic` true) in the session that sent it. Bound: a harness whose first event in a folder is a file edit has no earlier state to replay it on, so that change is found only as already present.
+
+Always present on the object: `v`, `host`, `kind`, `eventName` (the host's own event name; a host with `eventFromArg` is told it by the hook command's `--event`), `session` (a helper's event under its own session id carries the main session's id when the profile names a `parentSession` key), `narratesBeforeCall` (true when the host writes the call's words to its session file before the Pre), `sessionFileBySessionId` (the session file can be found from the session id alone), `extra`, `proof` and `synthetic`. `session` is typed as a string but passes through unchecked, so an odd payload yields an odd value.
+
+Optional (undefined when the payload lacks the key): `cwd`, `toolName` (namespace removed by the profile), `toolInput` (parsed when the host sends JSON text, and scrubbed of withheld patch contents), `toolResponse` (a post event's result, kept only to scan an MCP call's response), `toolUseId`, `agentId`, `agentType`, `launchKey` (Copilot only: set by `src/copilot-helpers.ts`, never sent by the host), `failure` (`raw`, `interrupted`, and `inferred` when read from output text; present when the event reports a failed call), `transcriptPath`, `helperTranscriptPath` (only for a host that keeps a helper transcript beside the session file), `lastAssistantMessage`, `prompt`.
+
+`extra` holds `turnId`, `permissionMode`, `model`, `stopHookActive` when the host sends them. `proof` is empty and `synthetic` is false for every host wired today.
+
+The per-call reason is not a field of the event: it is read from the tool input at the key the profile names in `fields.callReason` (`description` for Claude Code, Codex and Copilot alike, from `SHARED_FIELDS`).
+
 ## Which hosts get wired
 
-`cocheck install` with no `--for` wires Claude Code, Codex and Copilot, each only if its config folder exists in the home (`~/.claude`, `~/.codex`, `~/.copilot`, or the host's own folder variable); `--for` names hosts explicitly, and a host not named or not present is never edited. The rule and the command are in [install.md](install.md). Each host's hook events, payloads and recordings are under `platforms/` (`platforms/README.md`, then `claude-code`, `codex`, `copilot-cli`, `copilot-vscode`). Every session starts untracked: hooks record nothing until a session starts tracking (`cocheck track start|stop`, which the hook recognises by the command on a Pre and keys by the hook's own session id). `cocheck track start` refuses a home folder, a filesystem root or a folder that contains the home.
+`cocheck install` with no `--for` wires Claude Code, Codex and Copilot (the built-in harnesses), each only if its config folder exists in the home (`~/.claude`, `~/.codex`, `~/.copilot`, or the host's own folder variable); `--for` names hosts explicitly, and a host not named or not present is never edited. The rule and the command are in [install.md](install.md). Each host's hook events, payloads and recordings are under `platforms/` (`platforms/README.md`, then `claude-code`, `codex`, `copilot-cli`, `copilot-vscode`, `cursor`, `antigravity`). Every session starts untracked: hooks record nothing until a session starts tracking (`cocheck track start|stop`, which the hook recognises by the command on a Pre and keys by the hook's own session id). `cocheck track start` refuses a home folder, a filesystem root or a folder that contains the home.
 
 ## Wiring: Claude Code
 
@@ -88,7 +106,9 @@ The installer writes one file, `$COPILOT_HOME/hooks/cocheck.json` (default `~/.c
 
 Each platform's sourced capabilities, hook events and recordings live in `platforms/` (see `platforms/README.md`); read the platform's folder there before writing its profile.
 
-Everything CoCheck knows about one host lives in one profile under `src/hosts/` (`claude.ts`, `codex.ts`, `copilot.ts`), behind the `HostProfile` interface in `src/hosts/types.ts` and the registry line in `src/hosts/index.ts`. The rest of the code asks the profile and never tests a host name. A profile is plain TypeScript in this repo; nothing is loaded from outside it.
+A new agent is usually a manifest and no code: see "Harnesses" below. The rest of this section is the profile a manifest compiles to, and the first-party code behind Codex and Copilot's extras.
+
+Everything CoCheck knows about one host lives in one profile, behind the `HostProfile` interface in `src/hosts/types.ts`. Claude Code's is the manifest `harnesses/claude/cocheck-harness.json`; `codex.ts` and `copilot.ts` are modules under `src/hosts/` beside their manifests. The rest of the code asks the profile and never tests a host name.
 
 A profile declares:
 
@@ -102,6 +122,52 @@ A profile declares:
 - `shape`: the fields each event is expected to carry. Not read yet.
 
 Display names come from the profiles (`knownHostLabel`). Two host strings stay outside `src/hosts/` on purpose: `MAIN_LANE` in `src/timeline/attribution.ts`, the stored lane key that existing ledgers and pages carry, and the narrator's `claude` binary lookup.
+
+## Harness manifest (v1)
+
+A harness can be described by data alone: one `cocheck-harness.json` with `"schema": "cocheck-harness/1"`. The TypeScript type is `HarnessManifest` in `src/hosts/manifest.ts` (every field is documented there, and `validateManifest` names the field of any error, for example `toyagent/cocheck-harness.json: events.beforeTool: unknown kind "tool-pree"`). `compileManifest` (`src/hosts/compile.ts`) turns it into a `HostProfile`. A manifest holds no code: a payload path is `a.b` or `a[0].b`, a failure or refine rule is data, and behaviour that is not data is first-party code the manifest opts into by name (`"extras": [...]`, the table in `src/hosts/extras.ts`; an unknown name fails validation). A failure rule reads the failure's words from `text` (the first path holding text; with `nonEmpty`, a `tool-post` rule takes words there as the failure itself) and, when a `flags` path is `true` and `text` gave none, from `flaggedText` (a path, or `{ "path": ..., "blocks": true }` for a list of `{ "text" }` blocks joined by line breaks). A payload that keeps every field at a top-level key is read as it is. Claude Code ships this way (`harnesses/claude/`; its transcript readers are the extras `claude-transcript-narration`, `transcript-helpers`, `transcript-coverage`, `claude-reveal` and `claude-session-title`, in `src/hosts/claude.ts`). `callId` is `{ "payload": <path> }` (the host's id), `{ "synthesized": true }` (made up) or both together (the host's id when it sends one, else made up; Copilot). `install.notes` is a note printed after install (`{launcherDir}` and `{home}` are filled in). `install.editorExtra` names the first-party extra that supplies the config editor when the generic JSON editor does not fit (Codex's TOML editor, `codex-toml-editor`). `install.path` takes `{home}`, `{project}` (the task folder, for a workspace hook file), `{env:NAME}` and `{env:NAME|fallback}`, checked when the manifest loads. `install.entryTemplates` gives some events their own entry shape, falling back to `install.entryTemplate`. `install.skillRoot` is written with `/` and joined for the platform, so Windows gets `.claude\skills`. Every manifest pattern, built-in ones included, must pass the structural bound `patternProblem` (no lookaround, backreference or nested repetition), so a rule that needs "not this" is written as an earlier rule that keeps the kind, as Copilot's notification rule does.
+
+The first-party extras each shipped host names (`extras` in its manifest):
+- claude: `claude-transcript-narration`, `transcript-helpers`, `transcript-coverage`, `claude-reveal`, `claude-session-title`, `install-default`.
+- codex: `codex-rollout-narration`, `codex-rollout-locate`, `codex-helper-rollout-lookup`, `codex-rollout-call-readers`, `codex-display-text`, `codex-session-title`, `codex-failure-read` (the failure read from the session file), `codex-tool-name` (the reported tool name's strip), `codex-trust-probe`.
+- copilot: `copilot-events-narration`, `copilot-events-locate`, `helper-linker`, `copilot-session-title`.
+
+Where manifests live: the ones that ship with CoCheck are under `harnesses/<key>/` at the repo root (data, copied to `dist/harnesses/` by the build, so they ship wherever `dist/` does). A person trying a new harness puts one at `<CoCheck data home>/harnesses/<key>/cocheck-harness.json` (`$COCHECK_HARNESS_DIR` replaces that folder, for tests); to ship it built in, add it to the first folder by a pull request. The folder name is the key, and a manifest may not reuse the key of a host that exists.
+
+What a harness loaded from the person's folder may not do: its events never prove more than "inferred" (a change is still credited to that harness's call, never to "outside the agents"); it may not tag shell calls (`argvTag`); and `cocheck install --for <key>` prints the config path and the hook entries to add instead of editing the harness's config. A manifest that does not load is skipped with one line in `cocheck status` (and in `<data home>/harness-skipped.txt` from the hook); every other host keeps recording.
+
+A harness that also runs other hosts' hooks (Cursor runs the hooks of `~/.claude/settings.json`) declares `capabilities.readsForeignHooks` and a `foreignHookFingerprint`, the payload shape of such a run. A built-in harness's fingerprint decides on shape alone: another host's hook that gets a matching payload records nothing, because the reading harness's own entry records it (Copilot). An outsider's fingerprint has the same effect only while the outsider's own CoCheck hook is installed for the payload's folder: its config file (the `install.path` with `{project}` set to the folder the payload names through `fields.cwd`) exists and carries CoCheck's hook for every event its install block lists, the same test `cocheck status` uses for "installed". Otherwise the payload is recorded as before, so a fingerprint can never make a run go unrecorded. The check reads that one config file, and only for a payload that already matched the fingerprint. `cocheck status` names each fingerprint in force, for example `Claude hook skips payloads from Cursor (its CoCheck hook is in <folder>/.cursor/hooks.json)`, looking in the install's folder and the watched folders.
+
+The pass bar is `test/harness-toy.test.ts`: a toy harness with a payload shape unlike any built-in one, written only as a manifest plus recorded payloads, records a session end to end with no change under `src/`. The full public specification comes with the conformance kit.
+
+## Harnesses
+
+Every agent CoCheck reads is a harness: one data file, `cocheck-harness.json` (schema `cocheck-harness/1`), that says how the agent's hook payloads look. The full specification is `public-kit/harness/spec/v1.md`; the step-by-step guide is `public-kit/harness/GUIDE.md`. The manifest fields and their checks are described under "Harness manifest (v1)" above.
+
+Where manifests live:
+
+| Place | What is there | How CoCheck treats it |
+| --- | --- | --- |
+| `harnesses/<key>/` at the repo root | The built-in harnesses: `claude`, `codex`, `copilot`. The build copies the folder to `dist/harnesses/`. Their cases are in `public-kit/harness/cases/<key>/`. | Built in. May earn the stronger credit bases (`host-reported-edit`, `argv-tag`). `cocheck install` edits the agent's config. |
+| `public-kit/harness/harnesses/<key>/` | Harnesses that are not built in: `cursor` and `antigravity`. Each has its manifest, its recording and its cases. | Not loaded by default. Copy the folder to `<data home>/harnesses/<key>/` to use it; it then loads as an outsider. |
+| `<data home>/harnesses/<key>/` | A harness you are trying. `$COCHECK_HARNESS_DIR` replaces this folder. | Outsider. See "Trying a harness from your data home" below. |
+
+What a manifest says, in short:
+
+- **Events.** `events` maps each event name the agent sends to a kind (`prompt`, `tool-pre`, `tool-post`, `tool-failure`, `stop`, `subagent-stop`, and others). `eventFrom` says where the name is: a payload path, or the hook command's `--event` argument. A name mapped to `other` is carried and not acted on. `unverifiedEvents` lists events the agent documents that no recording shows; they are never mapped or installed.
+- **Credit by inference for unlisted tools.** `toolClasses` says what each tool does. A tool not listed is unknown: CoCheck reads nothing from its input, but a change found in the folder while its call is open is still credited to that call, on the basis `inferred`. List a tool as `never-credited` (or `read`, `read-only`) to say it does not write.
+- **`{project}` in `install.path`.** The task folder, for an agent whose hook file sits in the workspace, for example `{project}/.cursor/hooks.json`. `cocheck install` uses `--folder`, else the folder it runs from; `cocheck harness record` uses its scratch folder.
+- **`install.envelope`.** Extra top-level keys for a config file CoCheck creates, for example `{ "version": 1 }`. A file that already exists keeps its own keys and gets none added. A harness in your own folder gets the same keys in the entries that install prints.
+- **Per-event `entryTemplates`.** `install.entryTemplates` gives some events their own entry shape, for an agent whose config takes a group for some events and a plain handler for the rest. Every other event uses `install.entryTemplate`. Install, uninstall and the missing-hook check read each event in its own shape.
+- **`failure["tool-post"].nonEmpty`.** For an agent whose Post carries an error field that is empty when the call worked: with `text` naming that field, the call failed when the field holds words.
+
+### Trying a harness from your data home
+
+1. Copy the folder that holds `cocheck-harness.json` to `<data home>/harnesses/<key>/`. The folder name is the key. A key that already exists is refused.
+2. Run `cocheck install --for <key>`. For a harness in your own folder, install prints the config path and the hook entries to add, and does not edit the agent's config. Add them yourself.
+3. Run the agent on a small task, then `cocheck open`. `cocheck status` shows the last event seen from each harness, and names any manifest that was skipped and why. The hook keeps the same list in `<data home>/harness-skipped.txt`.
+
+An outsider's events never prove more than `inferred`, and it may not tag shell calls (`argvTag`). Its `foreignHookFingerprint` makes other agents' hooks skip a payload only while its own CoCheck hook is installed for that folder (see "Harnesses" above). A harness that works and has its cases can be shipped built in by a pull request: see "Add a harness by PR" in [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Limits
 

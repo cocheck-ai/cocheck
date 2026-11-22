@@ -22,7 +22,7 @@
 //  - That holds across turns: the Stop that cut the ledger's turn does not decide it. An agent's calls that run on after a
 //    Stop stay with the request that launched it, not the prompt that wakes the session later.
 import { pathKit } from "../paths.ts";
-import { reportsFailureEvents, toolNameOf } from "../hosts/index.ts";
+import { reportsFailureEvents, resumesHelper, toolEntryOf, toolNameOf } from "../hosts/index.ts";
 import type { ToolLabel, WithheldRecord } from "../tool-label.ts";
 import { isLauncherTool, type CallEvidence, type EvidenceKind } from "../credit-guard.ts";
 
@@ -421,10 +421,10 @@ function markWakes(events: Event[], calls: Map<string, Call>): void {
         if (w === null) continue;
         const launcher = calls.get(w.toolUseId);
         if (launcher === undefined || launcher.session !== e.session) continue;
-        if (!(isLauncherTool(launcher.tool) || launcher.tool === "SendMessage" || named.has(launcher.session + "\u0000" + launcher.id))) continue;
+        if (!(isLauncherTool(launcher.tool, launcher.host) || resumesHelper(launcher.host, launcher.tool) || named.has(launcher.session + "\u0000" + launcher.id))) continue;
         const agent = [...calls.values()].filter((c) => c.session === e.session && c.agentId !== null && c.launchId === w.toolUseId).sort((x, y) => (x.startSeq ?? Infinity) - (y.startSeq ?? Infinity) || x.firstOp - y.firstOp)[0];
         // A SendMessage that resumed an agent is no Agent call, so no agent carries its id; the notification's task id names the agent.
-        const woken = agent?.agentId ?? (launcher.tool === "SendMessage" ? w.taskId : null);
+        const woken = agent?.agentId ?? (resumesHelper(launcher.host, launcher.tool) ? w.taskId : null);
         wakes.push({ session: e.session, seq: t.seq, at: t.at, toolUseId: w.toolUseId, launcher, agentId: woken, status: w.status, summary: w.summary });
       }
       if (wakes.length === 0) continue;
@@ -438,8 +438,8 @@ function markWakes(events: Event[], calls: Map<string, Call>): void {
 // ---- the record, normalised ----
 
 /** An Agent or Task call whose input says `run_in_background: true` is a background launch (the meta-file case is read in agent-transcripts.ts). */
-function launchedInBackground(tool: unknown, input: unknown): boolean {
-  return (tool === "Agent" || tool === "Task") && typeof input === "object" && input !== null && (input as { run_in_background?: unknown }).run_in_background === true;
+function launchedInBackground(tool: unknown, input: unknown, host: string | null): boolean {
+  return toolEntryOf(host, typeof tool === "string" ? tool : null)?.backgroundFlag === true && typeof input === "object" && input !== null && (input as { run_in_background?: unknown }).run_in_background === true;
 }
 
 export function readRecord(ops: RawOp[], fileStates: RawState[]): { calls: Map<string, Call>; events: Event[]; states: State[] } {
@@ -515,7 +515,7 @@ export function readRecord(ops: RawOp[], fileStates: RawState[]): { calls: Map<s
         closedBy: typeof a.closedBy === "string" ? a.closedBy : null,
         error: a.closedBy === "failure" && typeof a.error === "string" && a.error !== "" ? a.error : null,
         errorInferred: a.closedBy === "failure" && a.errorInferred === true,
-        background: a.background === true || launchedInBackground(tool, a.tool_input ?? a.toolInput ?? a.input),
+        background: a.background === true || launchedInBackground(tool, a.tool_input ?? a.toolInput ?? a.input, typeof a.host === "string" ? a.host : null),
         ...(a.waits === true ? { waits: true } : {}),
         ended: endedOf(a.ended),
         narration: (a.narration as Narration | undefined) ?? null,
@@ -595,10 +595,10 @@ export function readRecord(ops: RawOp[], fileStates: RawState[]): { calls: Map<s
     if (!list.includes(send)) resumes.set(key, [...list, send]);
   };
   for (const c of calls.values()) {
-    const to = c.tool === "SendMessage" && typeof c.input === "object" && c.input !== null ? plainId((c.input as { to?: unknown }).to) : null;
+    const to = resumesHelper(c.host, c.tool) && typeof c.input === "object" && c.input !== null ? plainId((c.input as { to?: unknown }).to) : null;
     noteResume(c.session, to, c);
   }
-  for (const e of events) if (e.type === "prompt") for (const t of e.texts) for (const w of t.wakes ?? []) if (w.launcher.tool === "SendMessage") noteResume(w.session, w.agentId, w.launcher);
+  for (const e of events) if (e.type === "prompt") for (const t of e.texts) for (const w of t.wakes ?? []) if (resumesHelper(w.launcher.host, w.launcher.tool)) noteResume(w.session, w.agentId, w.launcher);
   const startedBefore = (a: Call, b: Call): boolean => {
     if (a.startSeq != null && b.startSeq != null) return a.startSeq < b.startSeq;
     if (a.openedAt != null && b.openedAt != null && a.openedAt !== b.openedAt) return a.openedAt < b.openedAt;
@@ -700,7 +700,7 @@ function requestsBySeq(session: string | null, segs: Seg[]): Request[] | null {
     let j = -1;
     while (j + 1 < wakes.length && wakes[j + 1]!.seq! < at) j++;
     // Not for a helper's launch or work: those belong to the latest real request before the launching call, never to a notification.
-    const helperWork = c.agentId !== null || isLauncherTool(c.tool) || c.tool === "SendMessage";
+    const helperWork = c.agentId !== null || isLauncherTool(c.tool, c.host) || resumesHelper(c.host, c.tool);
     if (!helperWork && j >= 0 && wakes[j]!.seq! > (i < 0 ? Number.NEGATIVE_INFINITY : texts[i]!.t.seq!)) r = ownerOf.get(wakes[j]!.launcher) ?? r;
     r.calls.push(c);
     r.firstOp = Math.min(r.firstOp ?? c.firstOp, c.firstOp);

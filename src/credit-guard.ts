@@ -24,6 +24,7 @@ import path from "node:path";
 import { createPathKit, type PathKit } from "./paths.ts";
 import { platform, platformFor, type Platform } from "./platform/index.ts";
 import type { PatchSection, ReportedEdit } from "./attribution/reconstruct.ts";
+import { toolEntryOf } from "./hosts/index.ts";
 
 /**
  * The path kit the credit guards compare with. Windows folds case; a Mac volume compares exactly in `PathKit`, but the credit
@@ -80,21 +81,8 @@ export function isInternalAgentCall(call: { agentId: string | null | undefined; 
   return call.agentId != null && call.agentType == null && call.launchId == null;
 }
 
-/**
- * Tools that cannot write a file in the folder. The guard adds the launcher (an Agent or Task call: its agent's own calls carry its work), the web
- * tools (they write only the host's own tool-results cache), the host's bookkeeping tools, and reads of a background shell.
- */
-const NO_CREDIT_TOOLS = new Set([
-  "Read", "Glob", "Grep", "SendMessage", "LS", "NotebookRead",
-  "WebFetch", "WebSearch", "ToolSearch", "Skill", "TodoWrite", "TodoRead",
-  "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "TaskOutput", "BashOutput", "AskUserQuestion", "ExitPlanMode", "EnterPlanMode",
-  "ListMcpResourcesTool", "ReadMcpResourceTool",
-  // Copilot's read-only tools, as named in the recorded 1.0.103 run (platforms/copilot-cli/versions/1.0.103/hook-calls.jsonl)
-  "glob", "rg", "view",
-  // Codex's helper bookkeeping, by the tools' own names (the Codex profile takes its namespace off): a message to a helper, the helper list.
-  "send_message", "list_agents",
-]);
-const FILE_TOOLS = new Set(["Write", "Edit", "MultiEdit"]);
+// Which tools cannot write a file in the folder, write one by path, run a shell, launch a helper or wait is each host's own table
+// (`HostProfile.toolClasses`); every rule here asks it through the call's host. A record with no host reads the built-in tables together.
 
 /** An MCP tool's own name (`mcp__<server>__<tool>`) that only reads: a read verb first, and no write verb anywhere in it. */
 const MCP_READ_VERB = /^(get|list|search|read|query|fetch|find|describe|count|aggregate|view|show|lookup|inspect|check|validate|preview|export)(_|-|$)/i;
@@ -108,34 +96,49 @@ export function isReadOnlyMcpTool(tool: string): boolean {
 }
 
 /** A tool that can never write a file: never credited with any change. */
-export function toolNeverWrites(tool: string | null | undefined): boolean {
-  return tool != null && (NO_CREDIT_TOOLS.has(tool) || isReadOnlyMcpTool(tool));
+export function toolNeverWrites(tool: string | null | undefined, host?: string | null): boolean {
+  if (tool == null) return false;
+  const c = toolEntryOf(host, tool)?.class;
+  return c === "read" || c === "read-only" || c === "never-credited" || isReadOnlyMcpTool(tool);
 }
 
 /**
  * Whether the call's own tool allows it to be credited with a change to `file`. `filePath` is the call's file_path input, when known;
  * `same` compares two paths; `kit` says what an absolute path is on this platform. A file tool with no usable path (absent, relative, masked) stays creditable: unknown is the safe direction.
  */
-export function toolMayCredit(tool: string | null | undefined, filePath: string | null | undefined, file: string, same: (a: string, b: string) => boolean, kit: PathKit = guardKit()): boolean {
-  if (toolNeverWrites(tool)) return false;
-  if (tool != null && FILE_TOOLS.has(tool) && typeof filePath === "string" && kit.isAbs(filePath) && kit.isAbs(file)) return same(filePath, file);
+export function toolMayCredit(tool: string | null | undefined, filePath: string | null | undefined, file: string, same: (a: string, b: string) => boolean, kit: PathKit = guardKit(), host?: string | null): boolean {
+  if (toolNeverWrites(tool, host)) return false;
+  if (tool != null && toolEntryOf(host, tool)?.pathChecked === true && typeof filePath === "string" && kit.isAbs(filePath) && kit.isAbs(file)) return same(filePath, file);
   return true;
 }
 
-/** The host tool names that run a shell command (Claude Code and Codex `Bash`, Copilot `bash`, Claude Code `PowerShell`, Copilot `powershell`, `pwsh`). The one set hook-cli, src/timeline/describe.ts and `isShellTool` all read. */
-export const SHELL_TOOLS = /^(bash|shell|sh|zsh|exec|exec_command|local_shell|container\.exec|run_shell_command|terminal|powershell|pwsh)$/i;
-export const isShellTool = (tool: string | null | undefined): boolean => tool != null && SHELL_TOOLS.test(tool);
+/** Whether the tool runs a shell command, by the host's own table (in any letter case). The one predicate hook-cli, src/timeline/describe.ts and the adapter read. */
+export const isShellTool = (tool: string | null | undefined, host?: string | null): boolean => toolEntryOf(host, tool, true)?.class === "shell";
+/** The dialect a shell tool's command is written in, when the host's table names one. */
+export const shellDialectOf = (tool: string | null | undefined, host?: string | null): "bash" | "powershell" | undefined => {
+  const e = toolEntryOf(host, tool, true);
+  return e?.class === "shell" ? e.dialect : undefined;
+};
+/** A shell tool whose command can leave a process running past its result (the host's main shell tool). */
+export const isBackgroundableShell = (tool: string | null | undefined, host?: string | null): boolean => toolEntryOf(host, tool)?.backgroundable === true;
+/** A tool whose class is read: it names the file it looked at in its own input. */
+export const isReadTool = (tool: string | null | undefined, host?: string | null): boolean => toolEntryOf(host, tool)?.class === "read";
+/** A tool that carries a patch, by the host's table (any letter case). */
+export const isPatchClass = (tool: string | null | undefined, host?: string | null): boolean => toolEntryOf(host, tool, true)?.class === "patch";
+/** A tool whose input has the file-tool shape (`file_path` plus content, old or new strings): the timeline's write and read signals read these. */
+export const hasFileInput = (tool: string | null | undefined, host?: string | null): boolean => toolEntryOf(host, tool)?.fileInput === true;
+/** The input fields that name the file a write, edit or notebook-edit tool changes, in order (any letter case). */
+const pathFieldsOf = (tool: string, host: string | null | undefined): readonly string[] | undefined => toolEntryOf(host, tool, true)?.pathFields;
 
-/** Tools whose own input names the file they write, by the field that holds it: Claude Write/Edit/MultiEdit, Copilot create/edit (`path`). */
-const WRITE_PATH_FIELD: Record<string, readonly string[]> = { write: ["file_path", "path"], edit: ["file_path", "path"], multiedit: ["file_path"], create: ["path", "file_path"], notebookedit: ["notebook_path"] };
 /**
  * The absolute paths a host file-edit call's own input reports (unresolved), or undefined when the tool is not one that names its file
  * (a shell call, anything unlisted) or any target is not absolute (a relative path proves nothing). `isAbs` is the path kit's.
  */
-export function editTargetsOf(tool: string | null | undefined, input: unknown, isAbs: (p: string) => boolean, resolveRel?: (p: string) => string): string[] | undefined {
-  if (tool == null || !(tool.toLowerCase() in WRITE_PATH_FIELD) && !FILE_TOOLS.has(tool) && !/^(apply_patch|patch)$/i.test(tool)) return undefined;
-  const isPatch = /^(apply_patch|patch)$/i.test(tool);
-  const targets = writeTargetsOf(tool, input).map((p) => (isPatch && resolveRel !== undefined && !isAbs(p) && !p.startsWith("~") ? resolveRel(p) : p));
+export function editTargetsOf(tool: string | null | undefined, input: unknown, isAbs: (p: string) => boolean, resolveRel?: (p: string) => string, host?: string | null): string[] | undefined {
+  if (tool == null) return undefined;
+  const isPatch = isPatchClass(tool, host);
+  if (pathFieldsOf(tool, host) === undefined && !isPatch) return undefined;
+  const targets = writeTargetsOf(tool, input, host).map((p) => (isPatch && resolveRel !== undefined && !isAbs(p) && !p.startsWith("~") ? resolveRel(p) : p));
   return targets.length > 0 && targets.every(isAbs) ? targets : undefined;
 }
 const EDIT_CAP = 64 * 1024;
@@ -146,13 +149,12 @@ const EDIT_CAP = 64 * 1024;
  * A file the input does not describe exactly (a field missing, a move, a delete, a relative path), or a call whose strings pass the size cap,
  * gets nothing: it stays inferred. A relative apply_patch header is resolved with `resolveRel` (the host's cwd) when given. Bound: read from the input only.
  */
-export function reportedEditsOf(tool: string | null | undefined, input: unknown, isAbs: (p: string) => boolean, sha256: (text: string) => string, resolveRel?: (p: string) => string): ReportedEdit[] {
+export function reportedEditsOf(tool: string | null | undefined, input: unknown, isAbs: (p: string) => boolean, sha256: (text: string) => string, resolveRel?: (p: string) => string, host?: string | null): ReportedEdit[] {
   if (tool == null || input == null) return [];
-  const t = tool.toLowerCase();
   const rec = typeof input === "object" ? (input as Record<string, unknown>) : undefined;
   const str = (v: unknown): string | undefined => (typeof v === "string" ? v : undefined);
   const out: ReportedEdit[] = [];
-  if (t === "apply_patch" || t === "patch") {
+  if (isPatchClass(tool, host)) {
     const text = typeof input === "string" ? input : rec === undefined ? "" : (["input", "patch", "command", "diff"].map((k) => rec[k]).find((v) => typeof v === "string") as string | undefined) ?? "";
     let cur: ReportedEdit | undefined;
     let section: PatchSection | undefined;
@@ -183,7 +185,7 @@ export function reportedEditsOf(tool: string | null | undefined, input: unknown,
     return limit(out.filter((e) => !dropped.has(e.path) && e.sections!.every((s) => s.lines.length > 0)));
   }
   if (rec === undefined) return [];
-  const target = writeTargetsOf(tool, input)[0];
+  const target = writeTargetsOf(tool, input, host)[0];
   if (target === undefined || !isAbs(target)) return [];
   const content = str(rec.content) ?? str(rec.file_text);
   if (content !== undefined) return [{ path: target, sha: sha256(content) }];
@@ -210,11 +212,10 @@ const PATCH_HEADER = /^\*\*\* (?:Add File|Update File|Delete File|Move to):[ \t]
  * whether the input is the patch text itself (Copilot) or an object holding it. Bound: read from the call's input only, never from a shell
  * command; a tool or shape not listed names nothing.
  */
-export function writeTargetsOf(tool: string | null | undefined, input: unknown): string[] {
+export function writeTargetsOf(tool: string | null | undefined, input: unknown, host?: string | null): string[] {
   if (tool == null) return [];
-  const t = tool.toLowerCase();
   const out: string[] = [];
-  const fields = WRITE_PATH_FIELD[t];
+  const fields = pathFieldsOf(tool, host);
   if (fields !== undefined && typeof input === "object" && input !== null) {
     for (const f of fields) {
       const v = (input as Record<string, unknown>)[f];
@@ -224,7 +225,7 @@ export function writeTargetsOf(tool: string | null | undefined, input: unknown):
       }
     }
   }
-  if (t === "apply_patch" || t === "patch") {
+  if (isPatchClass(tool, host)) {
     const texts: string[] = typeof input === "string" ? [input] : typeof input === "object" && input !== null ? ["input", "patch", "command", "diff"].map((k) => (input as Record<string, unknown>)[k]).filter((v): v is string => typeof v === "string") : [];
     for (const text of texts) for (const m of text.matchAll(PATCH_HEADER)) out.push(m[1]!);
   }
@@ -232,23 +233,25 @@ export function writeTargetsOf(tool: string | null | undefined, input: unknown):
 }
 
 /**
- * The one launcher predicate, by the tool's own name (a host's namespace is taken off at ingest and on read, `HostProfile.toolName`): Claude
- * Code's `Agent` and `Task`, Copilot's `task`, Codex's `spawn_agent`. A name that merely contains "task" or "agent" (`TaskCreate`, `TodoWrite`,
- * `read_agent`, `wait_agent`) is not a launch.
+ * The one launcher predicate, by the tool's own name in the host's table (a host's namespace is taken off at ingest and on read,
+ * `HostProfile.toolName`). A name that merely contains "task" or "agent" (`TaskCreate`, `TodoWrite`, `read_agent`, `wait_agent`) is not a launch.
  */
-export const isLauncherTool = (tool: string | null | undefined): boolean => tool === "Agent" || tool === "Task" || tool === "task" || tool === "spawn_agent";
+export const isLauncherTool = (tool: string | null | undefined, host?: string | null): boolean => toolEntryOf(host, tool)?.class === "launcher";
 
-/** Codex's `wait_agent`, by its own name: a call whose only work is waiting on helpers. */
-export const isWaitTool = (tool: string | null | undefined): boolean => tool === "wait_agent";
+/** A tool that waits on helpers whatever its input says: a call whose only work is waiting. */
+export const isWaitTool = (tool: string | null | undefined, host?: string | null): boolean => {
+  const e = toolEntryOf(host, tool);
+  return e?.class === "wait" && e.waitFlag === undefined;
+};
 
 /**
- * Whether a call waits on helpers and so writes nothing: Codex `wait_agent`, or Copilot's `read_agent` called with `wait: true`
- * (`read_agent` without it is a status read, which keeps today's credit). The adapter records the answer on the call (`waits`) because the
- * timeline's tool label keeps field names, never values.
+ * Whether a call waits on helpers and so writes nothing: a wait tool, or one that waits only with its flag set (a status read without it,
+ * which keeps today's credit). The adapter records the answer on the call (`waits`) because the timeline's tool label keeps field names, never values.
  */
-export function waitsOnHelpers(tool: string | null | undefined, input: unknown): boolean {
-  if (isWaitTool(tool)) return true;
-  return tool === "read_agent" && typeof input === "object" && input !== null && (input as { wait?: unknown }).wait === true;
+export function waitsOnHelpers(tool: string | null | undefined, input: unknown, host?: string | null): boolean {
+  const e = toolEntryOf(host, tool);
+  if (e?.class !== "wait") return false;
+  return e.waitFlag === undefined || (typeof input === "object" && input !== null && (input as Record<string, unknown>)[e.waitFlag] === true);
 }
 
 /**
@@ -256,8 +259,8 @@ export function waitsOnHelpers(tool: string | null | undefined, input: unknown):
  * the agent's work and is the suspect. With none of its helper's calls open (between them, or a helper whose hooks never fired) the launch
  * stays a suspect, so a change found then is never narrowed to someone else alone.
  */
-export function launcherMayCredit(tool: string | null | undefined, helperOpen: boolean): boolean {
-  return !(isLauncherTool(tool) && helperOpen);
+export function launcherMayCredit(tool: string | null | undefined, helperOpen: boolean, host?: string | null): boolean {
+  return !(isLauncherTool(tool, host) && helperOpen);
 }
 
 /**
@@ -265,9 +268,9 @@ export function launcherMayCredit(tool: string | null | undefined, helperOpen: b
  * setsid, disown), an osascript or `open` (the app it drives keeps going), or a result saying the host moved it to the background. Such a
  * call is never closed on transcript evidence. When unsure, it runs on.
  */
-export function runsOnAfterResult(call: { tool: string | null | undefined; command?: string | null; background?: boolean }): boolean {
+export function runsOnAfterResult(call: { tool: string | null | undefined; command?: string | null; background?: boolean }, host?: string | null): boolean {
   if (call.background) return true;
-  if (call.tool !== "Bash") return false;
+  if (!isBackgroundableShell(call.tool, host)) return false;
   const cmd = call.command ?? "";
   if (/(^|[^&|>])&\s*($|[;\n)]|\bdone\b|\bfi\b)/.test(cmd.replace(/&&|\|&|&>|>&\d?|\d>&\d/g, " "))) return true;
   return /(^|[\s;&|(`$])(nohup|setsid|disown|osascript|open)(\s|$)/.test(cmd);

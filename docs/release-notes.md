@@ -1,5 +1,12 @@
 # Release notes
 
+## 0.4.1 Preview
+
+- **Agents as data.** Each supported agent is now described by a manifest file instead of code. Claude Code, Codex and Copilot ship built in. Cursor and Antigravity CLI work through the harness kit: `cocheck install --for cursor` prints the hooks to add. See [hooks.md](hooks.md).
+- **Add an agent without touching CoCheck's code.** `cocheck harness create`, `record` and `test` take you from a recording of an agent's hooks to a tested manifest. Try one from your data folder, or send it by pull request ([CONTRIBUTING.md](../CONTRIBUTING.md)).
+- **Agents that run other agents' hooks.** Cursor also runs Claude Code's hooks. A harness can now declare this, so CoCheck credits Cursor's work to Cursor, not to Claude, once Cursor's own hook is installed.
+- **Fixes.** Files already in a folder are no longer listed as "Created" when tracking starts. A session's task stops collecting changes after "stop tracking". Copilot events are read under their real event names. An edit reported as a folder's first event now shows its change. A tool call that reuses an earlier call's id is kept as its own call, so its changes are credited to it.
+
 ## 0.4.0 Preview (first public release)
 
 The first public build of CoCheck. It works, and it has bugs: please open an issue when something breaks or reads wrong.

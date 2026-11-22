@@ -1,0 +1,160 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "codex",
+  "description": "Codex 0.164 (run 2): the main thread starts a helper, the helper's shell call writes b.txt, the helper stops. The model-request events, the main thread's own calls and the rollout files are left out.",
+  "level": "L2",
+  "recording": [
+    {
+      "event": "SessionStart",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"cwd\":\"<folder>\",\"hook_event_name\":\"SessionStart\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"source\":\"startup\"}",
+      "argv": []
+    },
+    {
+      "event": "UserPromptSubmit",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"UserPromptSubmit\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"prompt\":\"Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence.\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"collaborationspawn_agent\",\"tool_input\":{\"task_name\":\"create_b\",\"message\":\"gAAAAABq3St1WPeg4RdKLK5ngx4tygsHKBreQRibOfJWzE0X0rTM51r27Znn90xOyyzEzAuNxb1WiCC9teA5Kp-N2vAVFuN0GikHxFPGjKVHHeDWRYT0ani1op4N6gP0mgZm8sBJsjiHITiEVm-GTVWnnW2l-DyWiweh34neCdBC5_xPlHdsbk8jsMirdO7skkUXH8Q3RwAZIHniK39LJKttybtt50tUKw5XnecKjbHS2YRp37T_uTg=\"},\"tool_use_id\":\"call_f44b8fc254824f7ab6b0bd7319965296\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"collaborationspawn_agent\",\"tool_input\":{\"task_name\":\"create_b\",\"message\":\"gAAAAABq3St1WPeg4RdKLK5ngx4tygsHKBreQRibOfJWzE0X0rTM51r27Znn90xOyyzEzAuNxb1WiCC9teA5Kp-N2vAVFuN0GikHxFPGjKVHHeDWRYT0ani1op4N6gP0mgZm8sBJsjiHITiEVm-GTVWnnW2l-DyWiweh34neCdBC5_xPlHdsbk8jsMirdO7skkUXH8Q3RwAZIHniK39LJKttybtt50tUKw5XnecKjbHS2YRp37T_uTg=\"},\"tool_response\":\"{\\\"task_name\\\":\\\"/root/create_b\\\"}\",\"tool_use_id\":\"call_f44b8fc254824f7ab6b0bd7319965296\"}",
+      "argv": []
+    },
+    {
+      "event": "SubagentStart",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-c280-75f2-80d0-59ef0607bf06\",\"cwd\":\"<folder>\",\"hook_event_name\":\"SubagentStart\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"agent_id\":\"01a16ff1-c26a-7f03-80e7-465fcf0b0f19\",\"agent_type\":\"default\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"collaborationwait_agent\",\"tool_input\":{\"timeout_ms\":30000},\"tool_use_id\":\"call_ed2e9b64a60941f3a492b16612f06a82\"}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-c280-75f2-80d0-59ef0607bf06\",\"agent_id\":\"01a16ff1-c26a-7f03-80e7-465fcf0b0f19\",\"agent_type\":\"default\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PreToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"printf beta > b.txt\"},\"tool_use_id\":\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-c280-75f2-80d0-59ef0607bf06\",\"agent_id\":\"01a16ff1-c26a-7f03-80e7-465fcf0b0f19\",\"agent_type\":\"default\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"printf beta > b.txt\"},\"tool_response\":\"\",\"tool_use_id\":\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a\"}",
+      "argv": []
+    },
+    {
+      "event": "SubagentStop",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-c280-75f2-80d0-59ef0607bf06\",\"agent_transcript_path\":\"<root>/home/sessions/2026/10/24/rollout-2026-10-24T18-04-37-01a16ff1-c26a-7f03-80e7-465fcf0b0f19.jsonl\",\"cwd\":\"<folder>\",\"hook_event_name\":\"SubagentStop\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"stop_hook_active\":false,\"agent_id\":\"01a16ff1-c26a-7f03-80e7-465fcf0b0f19\",\"agent_type\":\"default\",\"last_assistant_message\":\"Created b.txt containing exactly beta.\"}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"PostToolUse\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"tool_name\":\"collaborationwait_agent\",\"tool_input\":{\"timeout_ms\":30000},\"tool_response\":\"{\\\"message\\\":\\\"Wait completed.\\\",\\\"timed_out\\\":false}\",\"tool_use_id\":\"call_ed2e9b64a60941f3a492b16612f06a82\"}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"turn_id\":\"01a16ff1-ade4-7102-abe3-deaf3b6d0700\",\"cwd\":\"<folder>\",\"hook_event_name\":\"Stop\",\"model\":\"gpt-6.1-sol\",\"permission_mode\":\"bypassPermissions\",\"stop_hook_active\":false,\"last_assistant_message\":\"Created a.txt with alpha, ran the expected failing command, and waited for the helper to create b.txt with beta.\"}",
+      "argv": []
+    }
+  ],
+  "files": {
+    "writes": [
+      {
+        "afterEvent": 7,
+        "path": "b.txt",
+        "content": "beta"
+      }
+    ]
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "other",
+        "eventName": "SessionStart",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279"
+      },
+      {
+        "kind": "prompt",
+        "eventName": "UserPromptSubmit",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "prompt": "Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence."
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "spawn_agent",
+        "callId": "call_f44b8fc254824f7ab6b0bd7319965296"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "spawn_agent",
+        "callId": "call_f44b8fc254824f7ab6b0bd7319965296"
+      },
+      {
+        "kind": "other",
+        "eventName": "SubagentStart",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "agentId": "01a16ff1-c26a-7f03-80e7-465fcf0b0f19",
+        "agentType": "default"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "wait_agent",
+        "callId": "call_ed2e9b64a60941f3a492b16612f06a82"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "Bash",
+        "callId": "exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a",
+        "agentId": "01a16ff1-c26a-7f03-80e7-465fcf0b0f19",
+        "agentType": "default"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "Bash",
+        "callId": "exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a",
+        "agentId": "01a16ff1-c26a-7f03-80e7-465fcf0b0f19",
+        "agentType": "default"
+      },
+      {
+        "kind": "subagent-stop",
+        "eventName": "SubagentStop",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "agentId": "01a16ff1-c26a-7f03-80e7-465fcf0b0f19",
+        "agentType": "default",
+        "lastAssistantMessage": "Created b.txt containing exactly beta."
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "toolName": "wait_agent",
+        "callId": "call_ed2e9b64a60941f3a492b16612f06a82"
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "01a16ff1-ac5d-78f1-a588-6ff46ea9e279",
+        "lastAssistantMessage": "Created a.txt with alpha, ran the expected failing command, and waited for the helper to create b.txt with beta."
+      }
+    ],
+    "credit": {
+      "b.txt": {
+        "creditedTo": "call:exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a",
+        "basis": "inferred"
+      }
+    }
+  }
+}

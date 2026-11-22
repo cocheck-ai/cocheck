@@ -1,0 +1,211 @@
+{
+  "schema": "cocheck-harness-case/1",
+  "harness": "antigravity",
+  "description": "Antigravity CLI 1.5.14: two shell calls the headless permission check denied (a PreToolUse with no PostToolUse and no Stop after it), then `echo shell-ok` (exit 0) and `cat missing.txt` (exit 1). The failed command's PostToolUse has an empty `error` and no result or exit code, so it reads as a call that worked. No credit: no call wrote a file.",
+  "level": "L1",
+  "recording": [
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":11,\"invocationNum\":0,\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok > out.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok > out.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":13,\"toolCall\":{\"args\":{\"CommandLine\":\"echo shell-ok > out.txt\",\"WaitMsBeforeAsync\":5000,\"toolSummary\":\"Write shell-ok to out.txt\"},\"id\":\"call_3625523412236189924\",\"name\":\"run_command\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":15,\"invocationNum\":0,\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok > out.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok > out.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":17,\"toolCall\":{\"args\":{\"CommandLine\":\"echo shell-ok > out.txt\",\"WaitMsBeforeAsync\":5000,\"toolSummary\":\"Write shell-ok to out.txt\"},\"id\":\"call_7504157474929434860\",\"name\":\"run_command\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":19,\"invocationNum\":0,\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":22,\"toolCall\":{\"args\":{\"CommandLine\":\"echo shell-ok\",\"WaitMsBeforeAsync\":5000,\"toolSummary\":\"Echo shell-ok\"},\"id\":\"call_11179024411799172756\",\"name\":\"run_command\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"error\":\"\",\"hookEventName\":\"PostToolUse\",\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":22,\"toolCall\":{\"args\":{\"CommandLine\":\"echo shell-ok\",\"WaitMsBeforeAsync\":5000,\"toolSummary\":\"Echo shell-ok\"},\"id\":\"call_11179024411799172756\",\"name\":\"run_command\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":19,\"invocationNum\":0,\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":23,\"invocationNum\":1,\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":23,\"invocationNum\":1,\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"continuationActive\":false,\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"error\":\"\",\"executionNum\":0,\"fullyIdle\":true,\"hookEventName\":\"Stop\",\"lastUserInput\":\"Run exactly this one shell command and nothing else: echo shell-ok\",\"modelName\":\"gemini-3.8-flash-medium\",\"terminationReason\":\"NO_TOOL_CALL\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":25,\"invocationNum\":0,\"lastUserInput\":\"Run exactly this one shell command and nothing else, even if it fails: cat missing.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreToolUse\",\"lastUserInput\":\"Run exactly this one shell command and nothing else, even if it fails: cat missing.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":27,\"toolCall\":{\"args\":{\"CommandLine\":\"cat missing.txt\",\"WaitMsBeforeAsync\":5000,\"toolSummary\":\"Cat missing.txt\"},\"id\":\"call_10750150322497914145\",\"name\":\"run_command\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostToolUse",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"error\":\"\",\"hookEventName\":\"PostToolUse\",\"lastUserInput\":\"Run exactly this one shell command and nothing else, even if it fails: cat missing.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"stepIdx\":27,\"toolCall\":{\"args\":{\"CommandLine\":\"cat missing.txt\",\"WaitMsBeforeAsync\":5000,\"toolSummary\":\"Cat missing.txt\"},\"id\":\"call_10750150322497914145\",\"name\":\"run_command\"},\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":25,\"invocationNum\":0,\"lastUserInput\":\"Run exactly this one shell command and nothing else, even if it fails: cat missing.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PreInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PreInvocation\",\"initialNumSteps\":28,\"invocationNum\":1,\"lastUserInput\":\"Run exactly this one shell command and nothing else, even if it fails: cat missing.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "PostInvocation",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"hookEventName\":\"PostInvocation\",\"initialNumSteps\":28,\"invocationNum\":1,\"lastUserInput\":\"Run exactly this one shell command and nothing else, even if it fails: cat missing.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    },
+    {
+      "event": "Stop",
+      "stdin": "{\"artifactDirectoryPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"continuationActive\":false,\"conversationId\":\"9ad8b8c6-e007-414f-89ed-c58731436fc2\",\"cwd\":\"<folder>\",\"error\":\"\",\"executionNum\":0,\"fullyIdle\":true,\"hookEventName\":\"Stop\",\"lastUserInput\":\"Run exactly this one shell command and nothing else, even if it fails: cat missing.txt\",\"modelName\":\"gemini-3.8-flash-medium\",\"terminationReason\":\"NO_TOOL_CALL\",\"transcriptPath\":\"<root>/antigravity-cli/brain/9ad8b8c6-e007-414f-89ed-c58731436fc2/.system_generated/logs/transcript_full.jsonl\",\"workspacePaths\":[\"<folder>\"]}",
+      "argv": []
+    }
+  ],
+  "files": {
+    "before": {
+      "notes.txt": "goodbye from agy\n"
+    },
+    "writes": []
+  },
+  "expect": {
+    "normalized": [
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2",
+        "toolName": "run_command",
+        "callId": "call_3625523412236189924"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2",
+        "toolName": "run_command",
+        "callId": "call_7504157474929434860"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2",
+        "toolName": "run_command",
+        "callId": "call_11179024411799172756"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2",
+        "toolName": "run_command",
+        "callId": "call_11179024411799172756"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "tool-pre",
+        "eventName": "PreToolUse",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2",
+        "toolName": "run_command",
+        "callId": "call_10750150322497914145"
+      },
+      {
+        "kind": "tool-post",
+        "eventName": "PostToolUse",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2",
+        "toolName": "run_command",
+        "callId": "call_10750150322497914145"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "other",
+        "eventName": "PreInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "other",
+        "eventName": "PostInvocation",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      },
+      {
+        "kind": "stop",
+        "eventName": "Stop",
+        "session": "9ad8b8c6-e007-414f-89ed-c58731436fc2"
+      }
+    ],
+    "credit": {}
+  }
+}

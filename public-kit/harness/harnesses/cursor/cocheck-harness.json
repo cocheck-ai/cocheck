@@ -1,0 +1,67 @@
+{
+  "schema": "cocheck-harness/1",
+  "key": "cursor",
+  "displayName": "Cursor",
+  "chip": "U",
+  "testedVersions": ["3.31.15"],
+  "events": {
+    "sessionStart": "other",
+    "beforeSubmitPrompt": "prompt",
+    "preToolUse": "tool-pre",
+    "postToolUse": "tool-post",
+    "postToolUseFailure": "tool-failure",
+    "beforeShellExecution": "other",
+    "afterShellExecution": "other",
+    "afterFileEdit": "other",
+    "subagentStart": "other",
+    "subagentStop": "subagent-stop",
+    "afterAgentResponse": "other",
+    "stop": "stop"
+  },
+  "eventFrom": { "payload": "hook_event_name" },
+  "unverifiedEvents": ["sessionEnd", "afterTabFileEdit", "beforeReadFile", "beforeMCPExecution", "afterMCPExecution", "preCompact", "afterAgentThought"],
+  "fields": {
+    "session": "conversation_id",
+    "cwd": "workspace_roots[0]",
+    "toolName": "tool_name",
+    "toolInput": "tool_input",
+    "toolResponse": "tool_output",
+    "prompt": "prompt",
+    "parentSession": "parent_agent_id",
+    "callReason": "description"
+  },
+  "toolInputEncoding": "json-text",
+  "callId": { "payload": "tool_use_id", "synthesized": true },
+  "failure": {
+    "tool-failure": { "text": ["error_message"], "interrupt": "is_interrupt" }
+  },
+  "toolClasses": {
+    "Read": { "class": "read" },
+    "Write": { "class": "write", "pathFields": ["file_path"], "pathChecked": true, "fileInput": true },
+    "Shell": { "class": "shell", "dialect": "bash" },
+    "Task": { "class": "launcher" }
+  },
+  "capabilities": { "failureEvent": true, "argvTag": false, "helperSessions": false, "launchKey": false, "readsForeignHooks": true },
+  "foreignHookFingerprint": { "present": ["cursor_version", "workspace_roots"], "strings": ["cursor_version", "conversation_id", "hook_event_name"], "absent": [] },
+  "readsConfigsOf": ["claude"],
+  "install": {
+    "skillRoot": ".cursor/skills",
+    "hostFlag": "cursor",
+    "projectDirEnv": "CURSOR_PROJECT_DIR",
+    "folderFromPayloadCwd": true,
+    "promptContext": false,
+    "afterInstall": "Cursor runs project hooks only in a trusted workspace: trust the folder when Cursor asks, or CoCheck records nothing from it.",
+    "checkPayload": {
+      "payload": { "conversation_id": "install-check", "hook_event_name": "preToolUse", "workspace_roots": ["{folder}"], "tool_name": "Shell", "tool_input": { "command": "true" }, "tool_use_id": "install-check" },
+      "event": "preToolUse"
+    },
+    "format": "json",
+    "path": "{project}/.cursor/hooks.json",
+    "mode": "merge",
+    "rootKey": "hooks",
+    "envelope": { "version": 1 },
+    "events": ["beforeSubmitPrompt", "preToolUse", "postToolUse", "postToolUseFailure", "subagentStop", "stop"],
+    "entryTemplate": { "command": "{command}", "timeout": 30 },
+    "failOpenEvents": ["preToolUse"]
+  }
+}

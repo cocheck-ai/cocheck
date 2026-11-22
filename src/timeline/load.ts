@@ -203,15 +203,15 @@ export interface Loaded {
 
 /**
  * `transcripts` is where Claude Code keeps its project folders; with it, calls recorded before subagent lanes were stored get their subagent lanes back from the
- * session's subagent transcripts (in memory only). Without it the ops are read as stored. `codexSessions` points the Codex rollout reads at a
+ * session's subagent transcripts (in memory only). Without it the ops are read as stored. `sessionsDir` points the host's session-file reads at a
  * temp tree.
  */
-export function loadRows(ledger: Ledger, taskId: number, build: string, transcripts?: { transcriptsRoot: string; codexSessions?: string }): Loaded {
+export function loadRows(ledger: Ledger, taskId: number, build: string, transcripts?: { transcriptsRoot: string; sessionsDir?: string }): Loaded {
   const rows = readRows(ledger, taskId);
   const { fileStates } = rows;
   const source: AgentSource | null = transcripts === undefined ? null : { root: transcripts.transcriptsRoot, folder: ledger.home === undefined ? null : taskFolderOf(ledger, ledger.home, taskId) };
   // With the host's session files in reach, a call whose failure reached them after its Post is read as failed (in memory only).
-  const ops = source === null ? rows.ops : markFailedFromSessionFile(backfillAgentLanes(rows.ops, source), transcripts!.codexSessions);
+  const ops = source === null ? rows.ops : markFailedFromSessionFile(backfillAgentLanes(rows.ops, source), transcripts!.sessionsDir);
   const evidence = source === null ? undefined : callEvidenceOf(ops, source);
   const valuesExpiredAt = ledger.valuesExpiredAt(taskId) ?? null;
   const removals = ledger.stateRemovalsForTask(taskId);

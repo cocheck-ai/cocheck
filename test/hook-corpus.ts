@@ -7,7 +7,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { zipSync } from "fflate";
 import { guardEnv } from "./helpers/child-env.ts";
-import { handleHook, type HookHost, type HookPayload } from "../src/hook-adapter.ts";
+import { handleEvent, type HookHost, type HookPayload } from "../src/hook-adapter.ts";
+import { normalize } from "../src/normalize.ts";
 import { PRODUCTION_BUILTIN_CONNECTORS, setBuiltinConnectorsForTest } from "../src/connector/builtins.ts";
 import { removeHome } from "./helpers/remove-home.ts";
 
@@ -45,14 +46,40 @@ export function book(cells: Record<string, number>): Uint8Array {
 
 export interface CorpusEvent {
   payload: Record<string, unknown>;
+  /** The hook command's `--event` argument, for a host whose payload names no event (Copilot). */
+  event?: string;
   /** Written to model.xlsx right before the event is sent. */
   write?: Record<string, number>;
 }
 
 const SID: Record<HookHost, string> = { claude: "7c1f0a52-4b7e-4f06-9a53-1d2f6c0e9b11", codex: "019a0000-0000-4000-8000-00000000c0de", copilot: "a192d0a1-4f6c-4619-a1fa-51d2fff6e1b0" };
 
+/**
+ * A Claude-shaped hook payload as the host sends it on the wire, with the `--event` argument its hook command carries. Claude and Codex
+ * take it as is. Copilot CLI sends camelCase fields and no event name or call id (shapes copied from the 1.0.103 and 1.0.98 recordings:
+ * `sessionId`, `timestamp`, `toolName`, `toolArgs`, `toolResult: {resultType, textResultForLlm}`, `transcriptPath`, and for a helper its own id as
+ * `sessionId` with `agentId`, `agentType` and `parentAgentId`); keys with no Copilot counterpart pass through unchanged.
+ */
+export function wireFor(host: HookHost, p: Record<string, unknown>): { payload: Record<string, unknown>; event?: string } {
+  if (host !== "copilot") return { payload: p };
+  const EVENTS: Record<string, string> = { UserPromptSubmit: "userPromptSubmitted", PreToolUse: "preToolUse", PostToolUse: "postToolUse", PostToolUseFailure: "postToolUseFailure", Stop: "agentStop", SubagentStop: "subagentStop", Notification: "notification" };
+  const { hook_event_name, session_id, cwd, transcript_path, tool_name, tool_input, tool_response, tool_use_id: _dropped, agent_id, agent_type, permission_mode: _mode, error, ...rest } = p as Record<string, any>;
+  const out: Record<string, unknown> = { sessionId: agent_id ?? session_id, timestamp: 1_792_885_640_000, cwd };
+  if (agent_id !== undefined) Object.assign(out, { agentId: agent_id, agentType: agent_type, parentAgentId: session_id });
+  if (tool_name !== undefined) out.toolName = tool_name === "Bash" ? "bash" : tool_name;
+  if (tool_input !== undefined) out.toolArgs = tool_input;
+  if (tool_response !== undefined) out.toolResult = { resultType: "success", textResultForLlm: typeof tool_response?.stdout === "string" ? tool_response.stdout : JSON.stringify(tool_response) };
+  if (error !== undefined) out.error = error;
+  if (transcript_path !== undefined) out.transcriptPath = transcript_path;
+  return { payload: { ...out, ...rest }, event: EVENTS[hook_event_name as string] ?? (typeof hook_event_name === "string" ? hook_event_name : undefined) };
+}
+
+/** The hook command's `--event` arguments for a wire form. */
+export const eventArgs = (w: { event?: string }): string[] => (w.event === undefined ? [] : ["--event", w.event]);
+
 /** One multi-event session for the host: prompt, two edited calls, one failed call (Claude only), a hand edit found at Stop. */
 export function sessionFor(host: HookHost, folder: string): CorpusEvent[] {
+  if (host === "copilot") return copilotSession(folder);
   const base = { session_id: SID[host], cwd: folder, transcript_path: `/x/${host}.jsonl`, ...(host === "codex" ? { turn_id: "turn-1", model: "gpt-5-codex" } : { permission_mode: "default" }) };
   const call = (name: string, id: string, command: string, extra: Record<string, unknown> = {}) => ({ ...base, hook_event_name: name, tool_name: "Bash", tool_use_id: id, tool_input: { command, description: "edit the model" }, ...extra });
   const events: CorpusEvent[] = [
@@ -70,6 +97,25 @@ export function sessionFor(host: HookHost, folder: string): CorpusEvent[] {
   events.push({ payload: { ...base, hook_event_name: "Notification", message: "unhandled event name" } });
   events.push({ write: { A1: 10, A2: 20, A3: 30 }, payload: { ...base, hook_event_name: "Stop", stop_hook_active: false, last_assistant_message: "Done." } });
   return events;
+}
+
+/** Copilot CLI's session: camelCase fields, the event named by the hook command, no call id (the adapter makes one). Line shapes are the 1.0.103 and 1.0.98 recordings'. */
+function copilotSession(folder: string): CorpusEvent[] {
+  const base = { sessionId: SID.copilot, cwd: folder };
+  let t = 1_792_885_640_000;
+  const at = () => ({ timestamp: (t += 100) });
+  const bash = (command: string) => ({ ...base, ...at(), toolName: "bash", toolArgs: { command, description: "edit the model" } });
+  const result = { resultType: "success", textResultForLlm: "ok\n<shellId: 3 completed with exit code 0>" };
+  return [
+    { event: "userPromptSubmitted", payload: { ...base, ...at(), prompt: "Raise every price by 5 percent" } },
+    { event: "preToolUse", payload: bash("python3 bump.py A1") },
+    { event: "postToolUse", write: { A1: 10, A2: 2, A3: 3 }, payload: { ...bash("python3 bump.py A1"), toolResult: result } },
+    { event: "preToolUse", payload: bash("python3 bump.py A2") },
+    { event: "postToolUse", write: { A1: 10, A2: 20, A3: 3 }, payload: { ...bash("python3 bump.py A2"), toolResult: result } },
+    // An event the adapter does not record (kind "other"): it logs nothing.
+    { event: "userPromptTransformed", payload: { ...base, ...at(), prompt: "Raise every price by 5 percent", transformedPrompt: "Raise every price by 5 percent" } },
+    { event: "agentStop", write: { A1: 10, A2: 20, A3: 30 }, payload: { ...base, ...at(), transcriptPath: `${folder}/events.jsonl`, stopReason: "end_turn", stop_hook_active: false } },
+  ];
 }
 
 /** A prompt, a Pre and Post pair that carry no tool_use_id (the adapter keys no call on them), one call with an id, then a Stop; the id'd call, the prompt and the closing claim give it ops. Claude only. */
@@ -140,7 +186,18 @@ export async function makeRig(): Promise<Rig> {
   const folder = await realpath(await mkdtemp(path.join(tmpdir(), "cocheck-hook-folder-")));
   await writeFile(path.join(folder, "model.xlsx"), book({ A1: 1, A2: 2, A3: 3 }));
   await mkdir(home, { recursive: true });
-  return { home, folder, cleanup: () => removeHome(home, folder) };
+  // Copilot's session files are found under COPILOT_HOME; under the test runner the adapter refuses to fall back to the real one.
+  const before = process.env.COPILOT_HOME;
+  process.env.COPILOT_HOME = path.join(home, ".copilot");
+  return {
+    home,
+    folder,
+    cleanup: async () => {
+      if (before === undefined) delete process.env.COPILOT_HOME;
+      else process.env.COPILOT_HOME = before;
+      await removeHome(home, folder);
+    },
+  };
 }
 
 /** Drives the host's session through handleHook with a pinned clock; returns the scrubbed ledger. */
@@ -153,7 +210,7 @@ export async function runCorpus(host: HookHost, variant: "main" | "noid" = "main
     const opts = { host, home: rig.home, folder: rig.folder, now: () => (clock += 1000) };
     for (const ev of (variant === "noid" ? sessionNoId : sessionFor)(host, rig.folder)) {
       if (ev.write) await writeFile(path.join(rig.folder, "model.xlsx"), book(ev.write));
-      await handleHook(ev.payload as unknown as HookPayload, opts);
+      await handleEvent(normalize(host, ev.payload as unknown as HookPayload, ev.event), opts);
     }
     return goldenView(dumpLedger(rig.home, rig.folder));
   } finally {
@@ -176,7 +233,7 @@ export function spawnHook(rig: Rig, args: string[], input: Buffer | string): Pro
   // A session records only once started, so the spawned hook's session is started first.
   startFromPayload(rig.home, args, input);
   return new Promise((resolve, reject) => {
-    const env = { PATH: process.env.PATH, HOME: rig.home, COCHECK_HOME: rig.home, NODE_ENV: "test", ...guardEnv() } as NodeJS.ProcessEnv;
+    const env = { PATH: process.env.PATH, HOME: rig.home, COCHECK_HOME: rig.home, COPILOT_HOME: path.join(rig.home, ".copilot"), NODE_ENV: "test", ...guardEnv() } as NodeJS.ProcessEnv;
     const child = spawn(process.execPath, [script, ...args], { env, stdio: ["pipe", "pipe", "pipe"] });
     let stdout = "";
     let stderr = "";

@@ -1,6 +1,6 @@
 # CoCheck platform knowledge base: format (v1, 2026-10-18)
 
-Each platform gets one folder, `platforms/<key>/`. The keys are `claude-code`, `codex`, `copilot-cli`, `chatgpt-work` and `claude-cowork`. The folder holds:
+Each platform gets one folder, `platforms/<key>/`. The keys are `claude-code`, `codex`, `copilot-cli`, `copilot-vscode`, `cursor`, `antigravity`, `chatgpt-work` and `claude-cowork`. The folder holds:
 
 - `capabilities.json`: the machine-readable facts, in the shape below.
 - `guide.md`: plain-language state of the platform. Sections, in order:

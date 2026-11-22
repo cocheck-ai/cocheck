@@ -10,9 +10,8 @@
 // with a variable in the path text, a glob or `..` in it, or a full path in another folder, is no match. When unsure the answer is "no signal", and the
 // caller leaves the change joint: a joint change claims no maker, a wrong narrowing claims the wrong one.
 
-export type CallText = { tool?: string | null; command?: string | null; input?: unknown };
+export type CallText = { tool?: string | null; command?: string | null; input?: unknown; /** The call's host, for its tool table; absent reads every built-in host. */ host?: string | null };
 
-const WRITE_TOOLS = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 export const SCRIPT_RUNNERS = /^(python[\d.]*|node|nodejs|ruby|perl|php|deno|bun|Rscript|osascript|tsx|ts-node(?:-esm|-script)?)$/;
 const SCRIPT_FLAGS = new Set(["-c", "-e", "-E", "-p", "--eval", "--command"]);
 const DEST_ALL = new Set(["touch"]);
@@ -20,6 +19,8 @@ const DEST_LAST = new Set(["cp", "mv", "install", "ln", "rsync", "scp"]);
 
 /** Whether a path as written in a command or script (`token`) is the file `file` (an absolute path). */
 import { pathKit } from "../paths.ts";
+import { toolEntryOf } from "../hosts/index.ts";
+import { hasFileInput } from "../credit-guard.ts";
 function pathIs(token: string, file: string): boolean {
   const kit = pathKit();
   // A backslash is a separator where the platform says so (Windows), and a quoting character elsewhere.
@@ -275,7 +276,7 @@ const baseOf = (p: string): string => p.slice(p.lastIndexOf("/") + 1);
 export function scriptsWrittenBy(call: CallText): Array<{ name: string; text: string }> {
   const out: Array<{ name: string; text: string }> = [];
   const input = call.input as Record<string, unknown> | null | undefined;
-  if (call.tool === "Write" && input && typeof input === "object" && typeof input.file_path === "string" && typeof input.content === "string") out.push({ name: baseOf(input.file_path), text: input.content });
+  if (toolEntryOf(call.host, call.tool)?.class === "write" && hasFileInput(call.tool, call.host) && input && typeof input === "object" && typeof input.file_path === "string" && typeof input.content === "string") out.push({ name: baseOf(input.file_path), text: input.content });
   const commands = [call.command ?? "", ...(input && typeof input === "object" && typeof input.command === "string" ? [input.command] : [])];
   for (const text of commands) {
     const parsed = parseShell(text);
@@ -303,7 +304,7 @@ export function scriptsRun(words: string[]): string[] {
 /** Whether the call's own command or input text shows it writing `file`. `lookup` gives the text of script files the call may run. */
 export function callWritesFile(call: CallText, file: string, lookup?: ScriptLookup): boolean {
   const input = call.input as Record<string, unknown> | null | undefined;
-  if (call.tool && WRITE_TOOLS.has(call.tool) && input && typeof input === "object") {
+  if (call.tool && hasFileInput(call.tool, call.host) && input && typeof input === "object") {
     for (const k of ["file_path", "notebook_path", "path"]) if (typeof input[k] === "string" && pathIs(input[k] as string, file)) return true;
   }
   const commands = [call.command ?? "", ...(input && typeof input === "object" && typeof input.command === "string" ? [input.command] : [])];

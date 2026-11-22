@@ -1,0 +1,296 @@
+{
+  "schema": "cocheck-harness/1",
+  "key": "copilot",
+  "displayName": "Copilot",
+  "chip": "P",
+  "testedVersions": [
+    "1.0.93",
+    "1.0.98",
+    "1.140.0"
+  ],
+  "events": {
+    "userPromptSubmitted": "prompt",
+    "sessionStart": "other",
+    "sessionEnd": "other",
+    "preToolUse": "tool-pre",
+    "postToolUse": "tool-post",
+    "postToolUseFailure": "tool-failure",
+    "agentStop": "stop",
+    "subagentStart": "other",
+    "subagentStop": "subagent-stop",
+    "userPromptTransformed": "other",
+    "permissionRequest": "other",
+    "notification": "other"
+  },
+  "eventFrom": {
+    "arg": "--event"
+  },
+  "unverifiedEvents": [
+    "errorOccurred",
+    "preCompact"
+  ],
+  "fields": {
+    "session": "sessionId",
+    "cwd": "cwd",
+    "toolName": "toolName",
+    "toolInput": "toolArgs",
+    "toolResponse": "toolResult",
+    "agentId": "agentId",
+    "agentType": "agentType",
+    "transcriptPath": "transcriptPath",
+    "lastAssistantMessage": "response",
+    "prompt": "prompt",
+    "parentSession": "parentAgentId",
+    "callReason": "description"
+  },
+  "toolInputEncoding": "json-text",
+  "callId": {
+    "payload": "toolCallId",
+    "synthesized": true
+  },
+  "extraFields": {
+    "stopHookActive": "stop_hook_active"
+  },
+  "failure": {
+    "tool-failure": {
+      "text": [
+        "error"
+      ]
+    },
+    "tool-post": {
+      "exitCode": {
+        "from": "toolResult.textResultForLlm",
+        "pattern": "<shellId:\\s*[^>]*?completed with exit code (-?\\d+)>"
+      }
+    }
+  },
+  "refine": [
+    {
+      "kinds": [
+        "prompt",
+        "stop"
+      ],
+      "becomes": "other",
+      "whenPresent": "agentId"
+    },
+    {
+      "kinds": [
+        "prompt"
+      ],
+      "becomes": "prompt",
+      "whenMatches": {
+        "path": "prompt",
+        "pattern": "^<system_notification>[\\s\\S]*(?:<system_notification>|<\\/system_notification>)[\\s\\S]*<\\/system_notification>$"
+      }
+    },
+    {
+      "kinds": [
+        "prompt"
+      ],
+      "becomes": "other",
+      "whenMatches": {
+        "path": "prompt",
+        "pattern": "^<system_notification>[\\s\\S]*<\\/system_notification>$"
+      }
+    }
+  ],
+  "toolClasses": {
+    "glob": {
+      "class": "read-only"
+    },
+    "rg": {
+      "class": "read-only"
+    },
+    "view": {
+      "class": "read-only"
+    },
+    "list_agents": {
+      "class": "never-credited"
+    },
+    "Read": {
+      "class": "read"
+    },
+    "Edit": {
+      "class": "edit",
+      "pathFields": [
+        "file_path",
+        "path"
+      ],
+      "pathChecked": true,
+      "fileInput": true,
+      "anyCase": true
+    },
+    "Bash": {
+      "class": "shell",
+      "dialect": "bash",
+      "backgroundable": true,
+      "anyCase": true
+    },
+    "create": {
+      "class": "write",
+      "pathFields": [
+        "path",
+        "file_path"
+      ],
+      "anyCase": true
+    },
+    "edit": {
+      "class": "edit",
+      "pathFields": [
+        "file_path",
+        "path"
+      ],
+      "anyCase": true
+    },
+    "apply_patch": {
+      "class": "patch",
+      "anyCase": true
+    },
+    "patch": {
+      "class": "patch",
+      "anyCase": true
+    },
+    "task": {
+      "class": "launcher"
+    },
+    "read_agent": {
+      "class": "wait",
+      "waitFlag": "wait"
+    },
+    "bash": {
+      "class": "shell",
+      "dialect": "bash",
+      "anyCase": true
+    },
+    "powershell": {
+      "class": "shell",
+      "dialect": "powershell",
+      "anyCase": true
+    },
+    "pwsh": {
+      "class": "shell",
+      "dialect": "powershell",
+      "anyCase": true
+    }
+  },
+  "narration": {
+    "sources": [
+      {
+        "kind": "commentary-before-call",
+        "readableAt": "pre",
+        "reason": true
+      },
+      {
+        "kind": "closing-message",
+        "readableAt": "post"
+      }
+    ],
+    "closingWaitMs": 1000
+  },
+  "capabilities": {
+    "failureEvent": false,
+    "argvTag": false,
+    "helperSessions": true,
+    "launchKey": true,
+    "readsForeignHooks": true
+  },
+  "foreignHookFingerprint": {
+    "present": [
+      "timestamp"
+    ],
+    "strings": [
+      "hook_event_name"
+    ],
+    "absent": [
+      "permission_mode",
+      "tool_use_id",
+      "turn_id"
+    ]
+  },
+  "readsConfigsOf": [
+    "claude"
+  ],
+  "install": {
+    "skillRoot": ".copilot/skills",
+    "hostFlag": "copilot",
+    "folderFromPayloadCwd": true,
+    "ownsFile": true,
+    "promptContext": false,
+    "afterInstall": "Copilot trust step for user-level hooks: unverified. Repo hooks need a trusted folder; whether hooks in ~/.copilot/hooks ask for trust too is not known yet. If Copilot asks, trust them once, or CoCheck records nothing from it.",
+    "notes": "If you turn on Copilot's sandbox (copilot --sandbox, or /sandbox enable), its hooks stop working unless settings.json grants them access: add {launcherDir} and {home} to sandbox.userPolicy.filesystem.readwritePaths. CoCheck does not edit your Copilot settings.",
+    "checkPayload": {
+      "payload": {
+        "sessionId": "install-check",
+        "cwd": "{folder}",
+        "toolName": "bash",
+        "toolArgs": {
+          "command": "true"
+        }
+      },
+      "event": "preToolUse"
+    },
+    "format": "json",
+    "path": "{env:COPILOT_HOME|{home}/.copilot}/hooks/cocheck.json",
+    "mode": "owned",
+    "rootKey": "hooks",
+    "envelope": {
+      "version": 1
+    },
+    "events": [
+      "userPromptSubmitted",
+      "preToolUse",
+      "postToolUse",
+      "postToolUseFailure",
+      "agentStop",
+      "subagentStop"
+    ],
+    "entryTemplate": {
+      "type": "command",
+      "bash": "{command}",
+      "timeoutSec": 30
+    },
+    "eventInCommand": true,
+    "failOpenEvents": [
+      "preToolUse"
+    ],
+    "windowsCommandKey": "powershell"
+  },
+  "extras": [
+    "copilot-events-narration",
+    "copilot-events-locate",
+    "helper-linker",
+    "copilot-session-title"
+  ],
+  "shape": {
+    "preToolUse": [
+      "sessionId",
+      "cwd",
+      "toolName",
+      "toolArgs"
+    ],
+    "postToolUse": [
+      "sessionId",
+      "cwd",
+      "toolName",
+      "toolArgs",
+      "toolResult"
+    ],
+    "postToolUseFailure": [
+      "sessionId",
+      "cwd",
+      "toolName",
+      "toolArgs",
+      "error"
+    ],
+    "agentStop": [
+      "sessionId",
+      "cwd",
+      "transcriptPath"
+    ],
+    "userPromptSubmitted": [
+      "sessionId",
+      "cwd",
+      "prompt"
+    ]
+  }
+}

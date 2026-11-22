@@ -12,9 +12,9 @@ import { knownHostLabel } from "../hosts/index.ts";
 /**
  * The rail's lane ids. A helper's lane is `agent:<n>`, numbered by the rail in the order helpers appear.
  * MAIN_LANE is a stored key, not a host decision: existing ledgers and pages carry the main lane as "claude" whatever host ran, so the
- * value stays and the lane's shown name comes from the task's host profile (`hostName`).
+ * value stays and the lane's shown name comes from the task's host profile (`hostName`). Legacy key kept on purpose: never rename it.
  */
-export const MAIN_LANE = "claude";
+export const MAIN_LANE = "claude"; // legacy key kept on purpose: stored in ledger rows and the rail
 export const OUTSIDE_LANE = "other";
 export const UNSURE_LANE = "unsure";
 export const HELPER_LANE = "agent:";

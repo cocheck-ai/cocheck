@@ -8,6 +8,8 @@ import { createHash } from "node:crypto";
 import { appendFileSync, chmodSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { scrubPayloadBytes } from "./patch-secrets.ts";
+import { isHostKey } from "./hosts/index.ts";
+import { normalize } from "./normalize.ts";
 
 const JOURNAL_VERSION = 1;
 const FIELD_MAX = 128;
@@ -36,8 +38,30 @@ function line(home: string, session: string, record: Record<string, unknown>): v
   appendFileSync(fileOf(home, session), `${JSON.stringify({ v: JOURNAL_VERSION, ...record })}\n`, { mode: 0o600 });
 }
 
-/** Writes the index record (never a body) for the raw bytes of one event. `host` is the --host argument, or "unknown". Parses the bytes only to name the record. */
-export function journalEvent(home: string, raw: Buffer, host: string, now: () => number): JournalRef {
+/**
+ * The event name, session and call id of a parsed payload, as the host's own normalizer reads them (a host with camelCase fields, or
+ * one whose hook command names the event, has none of Claude's keys). A field it finds nothing in, a host it does not know and a payload it refuses are read by Claude's keys.
+ */
+function namesOf(obj: Record<string, unknown>, host: string, eventArg: string | undefined): { event: unknown; session: unknown; id: unknown } {
+  let named: { event?: unknown; session?: unknown; id?: unknown } = {};
+  if (isHostKey(host)) {
+    try {
+      const ev = normalize(host, obj, eventArg);
+      named = { event: ev.eventName, session: ev.session, id: ev.toolUseId };
+    } catch {
+      // read by the raw keys below
+    }
+  }
+  // A field the normalizer finds nothing in (no `--event` argument given, a Claude-shaped payload under another host) is read by Claude's key, as before.
+  return {
+    event: typeof named.event === "string" ? named.event : obj.hook_event_name,
+    session: typeof named.session === "string" && named.session !== "" ? named.session : obj.session_id,
+    id: typeof named.id === "string" && named.id !== "" ? named.id : obj.tool_use_id,
+  };
+}
+
+/** Writes the index record (never a body) for the raw bytes of one event. `host` is the --host argument, or "unknown"; `eventArg` is the --event argument of a host whose payload names no event. Parses the bytes only to name the record. */
+export function journalEvent(home: string, raw: Buffer, host: string, now: () => number, eventArg?: string): JournalRef {
   // Idempotent: the hook entry already scrubbed these bytes, and a caller that did not still never gets a patch body on disk.
   const bytes = scrubPayloadBytes(raw);
   mkdirSync(journalDir(home), { recursive: true, mode: 0o700 });
@@ -50,9 +74,10 @@ export function journalEvent(home: string, raw: Buffer, host: string, now: () =>
     event = "unknown";
     session = "unknown";
     if (obj !== null && typeof obj === "object") {
-      if (typeof obj.hook_event_name === "string") event = clip(obj.hook_event_name);
-      if (typeof obj.session_id === "string" && obj.session_id !== "") session = sha(obj.session_id).slice(0, 16);
-      if (typeof obj.tool_use_id === "string" && obj.tool_use_id !== "") id = clip(obj.tool_use_id);
+      const named = namesOf(obj, host, eventArg);
+      if (typeof named.event === "string") event = clip(named.event);
+      if (typeof named.session === "string" && named.session !== "") session = sha(named.session).slice(0, 16);
+      if (typeof named.id === "string" && named.id !== "") id = clip(named.id);
     }
   } catch {
     // unparseable: the record says so
@@ -87,11 +112,14 @@ export function readJournalSession(home: string, session: string): Array<Record<
   return out;
 }
 
-/** The journal stem of the session a raw event names, or "-" when its bytes name none. */
-export function sessionKeyOfBytes(bytes: Buffer): string {
+/** The journal stem of the session a raw event names (read as `journalEvent` reads it), or "-" when its bytes name none. */
+export function sessionKeyOfBytes(bytes: Buffer, host = "unknown", eventArg?: string): string {
   try {
     const o = JSON.parse(bytes.toString("utf8")) as Record<string, unknown> | null;
-    if (o !== null && typeof o === "object" && typeof o.session_id === "string" && o.session_id !== "") return journalSessionKey(o.session_id);
+    if (o !== null && typeof o === "object") {
+      const { session } = namesOf(o, host, eventArg);
+      if (typeof session === "string" && session !== "") return journalSessionKey(session);
+    }
   } catch {
     // no session
   }

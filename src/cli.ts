@@ -16,12 +16,11 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { homedir } from "node:os";
 import { installStatus, readInstallRecord, runInstall } from "./install.ts";
-import { allProfiles } from "./hosts/index.ts";
-import { readCodexHooksList } from "./hosts/codex-trust.ts";
+import { allProfiles, installableKeys } from "./hosts/index.ts";
 import { listTracked } from "./tracking.ts";
 import type { OpenChoice } from "./open-pick.ts";
 
-const USAGE = `usage:
+const usage = (): string => `usage:
   cocheck open [task]
   cocheck status
   cocheck track start|stop|status
@@ -29,11 +28,15 @@ const USAGE = `usage:
   cocheck connector test <dir> --cases [<casesDir>]
   cocheck connector auth <id> --name <credential> [--delete]
   cocheck connector create <dir> --id <id>
+  cocheck harness create <key> [--dir <path>]
+  cocheck harness record <key> --manifest <path> --out <dir> [--timeout <seconds>] [-- <harness command...>]
+  cocheck harness record --stop <scratch>
+  cocheck harness test --cases <dir> [--manifest <path>]
   cocheck connector doctor [<id>]
   cocheck connector list
   cocheck connector enable|disable <id> <file ending>
-  cocheck install --home <dir> [--folder <dir>] [--for claude|codex|copilot|both|all|none, or a comma list]
-  cocheck uninstall [--for claude|codex|copilot|both|all, or a comma list]
+  cocheck install --home <dir> [--folder <dir>] [--for ${installableKeys().join("|")}|both|all|none, or a comma list]
+  cocheck uninstall [--for ${installableKeys().join("|")}|both|all, or a comma list]
   cocheck --help
   cocheck --version`;
 
@@ -72,8 +75,8 @@ export interface CliResult {
 
 /** `cocheck open`: names "not recording" with its reason first, then opens the page. A page that cannot open is still an error. */
 export async function runOpen(run: OpenRun, task: string | undefined): Promise<CliResult> {
-  if (task !== undefined && !/^[1-9][0-9]*$/.test(task)) return { exitCode: 1, stdout: "", stderr: `task must be a plain decimal id (e.g. 12), got ${JSON.stringify(task)}\n${USAGE}\n` };
-  const status = installStatus(run.env, run.userHome, readCodexHooksList);
+  if (task !== undefined && !/^[1-9][0-9]*$/.test(task)) return { exitCode: 1, stdout: "", stderr: `task must be a plain decimal id (e.g. 12), got ${JSON.stringify(task)}\n${usage()}\n` };
+  const status = installStatus(run.env, run.userHome, "live");
   if (status.record === undefined) return { exitCode: 1, stdout: "", stderr: status.text };
   const notice = status.recording && (status.hostProblems ?? []).length === 0 ? "" : status.text;
   let url: string;
@@ -152,11 +155,11 @@ export async function connectorHome(userHome: string, env: NodeJS.ProcessEnv = p
 
 export async function main(argv: string[]): Promise<CliResult> {
   const [command, ...rest] = argv;
-  if (command === "--help" || command === "-h" || command === "help") return { exitCode: 0, stdout: `${USAGE}\n`, stderr: "" };
+  if (command === "--help" || command === "-h" || command === "help") return { exitCode: 0, stdout: `${usage()}\n`, stderr: "" };
   if (command === "--version" || command === "-v" || command === "version") return { exitCode: 0, stdout: versionText(), stderr: "" };
   const userHome = process.env.HOME || homedir();
   if (command === "open") {
-    if (rest.length > 1) return { exitCode: 1, stdout: "", stderr: `open takes at most one task\n${USAGE}\n` };
+    if (rest.length > 1) return { exitCode: 1, stdout: "", stderr: `open takes at most one task\n${usage()}\n` };
     const { pickOpenChoice, reviewIndexUrl, openReviewUrl } = await import("./review-server.ts");
     return runOpen(
       {
@@ -172,10 +175,26 @@ export async function main(argv: string[]): Promise<CliResult> {
     );
   }
   if (command === "status") {
-    const status = installStatus(process.env, userHome, readCodexHooksList);
+    const status = installStatus(process.env, userHome, "live");
     return { exitCode: status.recording && (status.hostProblems ?? []).length === 0 ? 0 : 1, stdout: status.text, stderr: "" };
   }
   if (command === "track") return runTrack(rest, userHome, process.stdin.isTTY === true && process.stdout.isTTY === true);
+  if (command === "harness") {
+    const { runHarnessCommand } = await import("./harness-cmd/index.ts");
+    const out: string[] = [];
+    const err: string[] = [];
+    const abort = new AbortController();
+    const onSignal = (): void => abort.abort();
+    process.on("SIGINT", onSignal);
+    process.on("SIGTERM", onSignal);
+    try {
+      const exitCode = await runHarnessCommand(rest, { out: (l) => out.push(l), err: (l) => err.push(l), env: process.env, cwd: process.cwd(), signal: abort.signal });
+      return { exitCode: exitCode === 0 ? 0 : 1, stdout: out.map((l) => `${l}\n`).join(""), stderr: err.map((l) => `${l}\n`).join("") };
+    } finally {
+      process.off("SIGINT", onSignal);
+      process.off("SIGTERM", onSignal);
+    }
+  }
   if (command === "connector" && rest[0] === "test") {
     const { runConnectorTest } = await import("./connector-test-cli.ts");
     return runConnectorTest(rest.slice(1), { home: await connectorHome(userHome) });
@@ -200,5 +219,5 @@ export async function main(argv: string[]): Promise<CliResult> {
   if (command === "install" || command === "uninstall") {
     return runInstall({ argv: ["node", "install.ts", ...(command === "uninstall" ? ["--uninstall"] : []), ...rest], env: process.env, cwd: process.cwd() });
   }
-  return { exitCode: 1, stdout: "", stderr: `${USAGE}\n` };
+  return { exitCode: 1, stdout: "", stderr: `${usage()}\n` };
 }

@@ -42,4 +42,11 @@ it("the packed tarball installed under a temp prefix runs `connector create` and
   console.log(`installed: cocheck connector test ${dir}\n${tested.stdout}`);
   assert.equal(tested.status, 0, tested.stderr + tested.stdout);
   assert.match(tested.stdout, /passed/);
+  // The shipped harness cases run against the installed package, in the temp layout (nothing of the person's own data home is read).
+  for (const [cases, extra] of [["cases/claude", []], ["cases/codex", []], ["cases/copilot", []], ["examples/toyagent/cases", ["--manifest", path.join(pkg, "public-kit", "harness", "examples", "toyagent", "cocheck-harness.json")]]] as const) {
+    const ran = cocheck("harness", "test", "--cases", path.join(pkg, "public-kit", "harness", cases), ...extra);
+    console.log(`installed: cocheck harness test --cases ${cases}\n${ran.stdout}`);
+    assert.equal(ran.status, 0, ran.stderr + ran.stdout);
+    assert.match(ran.stdout, /cases passed/);
+  }
 });

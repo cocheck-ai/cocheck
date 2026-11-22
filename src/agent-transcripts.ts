@@ -2,7 +2,11 @@
 // (the launching call's `toolUseId`) and `agent-<agent_id>.jsonl` (the agent's own transcript). Only ids are read from them, never words.
 import { closeSync, constants, lstatSync, openSync, readdirSync, readFileSync, readSync } from "node:fs";
 import path from "node:path";
-import { defaultProfile } from "./hosts/index.ts";
+import { profileWithExtra, toolEntryOf } from "./hosts/index.ts";
+
+/** The host whose helpers keep transcripts and meta files beside the session's, read by this module. */
+const helperHost = () => profileWithExtra("transcript-helpers");
+import { isBackgroundableShell } from "./credit-guard.ts";
 import type { RawOp } from "./timeline/runs.ts";
 import { classifyToolResult, neverRan, resultRunsOn, type CallEvidence } from "./credit-guard.ts";
 
@@ -31,7 +35,7 @@ const CHUNK = 1024 * 1024;
 function readMeta(subagentsDir: string, agentId: string): { launcher: string | undefined; background: boolean } {
   const none = { launcher: undefined, background: false };
   try {
-    const file = path.join(subagentsDir, defaultProfile().helpers!.metaFile(agentId));
+    const file = path.join(subagentsDir, helperHost().helpers!.metaFile(agentId));
     const st = lstatSync(file);
     if (!st.isFile() || st.size > AGENT_META_MAX_BYTES) return none;
     const fd = openSync(file, constants.O_RDONLY | constants.O_NOFOLLOW);
@@ -56,7 +60,7 @@ export function readLauncher(subagentsDir: string, agentId: string): string | un
  * (`NODE_TEST_CONTEXT` is set in every test process) the `~/.claude` default is refused, so a test cannot read the real transcripts.
  */
 export function defaultTranscriptsRoot(): string {
-  return defaultProfile().helpers!.projectsRoot();
+  return helperHost().helpers!.projectsRoot();
 }
 
 const isRealDir = (p: string): boolean => {
@@ -81,12 +85,12 @@ function realDirUnder(root: string, ...parts: string[]): string | null {
 /** The `subagents` folder of one session under the transcripts root: the task folder's project dir first, then any project dir that holds the session. */
 function subagentsDirOf(root: string, folder: string | null, session: string): string | null {
   if (folder !== null) {
-    const direct = realDirUnder(root, folder.replace(/[^A-Za-z0-9]/g, "-"), session, defaultProfile().helpers!.folderName);
+    const direct = realDirUnder(root, folder.replace(/[^A-Za-z0-9]/g, "-"), session, helperHost().helpers!.folderName);
     if (direct !== null) return direct;
   }
   try {
     for (const name of readdirSync(root).slice(0, MAX_PROJECT_DIRS)) {
-      const candidate = realDirUnder(root, name, session, defaultProfile().helpers!.folderName);
+      const candidate = realDirUnder(root, name, session, helperHost().helpers!.folderName);
       if (candidate !== null) return candidate;
     }
   } catch {
@@ -233,7 +237,7 @@ function markBackgroundLaunchers(ops: RawOp[], source: AgentSource): RawOp[] {
       const session = cleanId(a?.session_id);
       const tool = typeof a?.tool_name === "string" ? a.tool_name : op.tool;
       if (a === null || typeof a !== "object" || session === undefined || typeof a.tool_use_id !== "string" || a.background === true) return;
-      if (tool !== "Agent" && tool !== "Task") return;
+      if (toolEntryOf(typeof a.host === "string" ? a.host : null, tool)?.backgroundFlag !== true) return;
       wanted.set(session, [...(wanted.get(session) ?? []), { at, id: a.tool_use_id, a }]);
     } catch {
       // not a call op
@@ -246,13 +250,13 @@ function markBackgroundLaunchers(ops: RawOp[], source: AgentSource): RawOp[] {
     if (dir === null) continue;
     let names: string[];
     try {
-      names = readdirSync(dir).filter((n) => defaultProfile().helpers!.metaName.test(n)).sort().slice(0, MAX_AGENT_FILES);
+      names = readdirSync(dir).filter((n) => helperHost().helpers!.metaName.test(n)).sort().slice(0, MAX_AGENT_FILES);
     } catch {
       continue;
     }
     const background = new Set<string>();
     for (const name of names) {
-      const agentId = cleanId(defaultProfile().helpers!.idOfMeta(name));
+      const agentId = cleanId(helperHost().helpers!.idOfMeta(name));
       if (agentId === undefined) continue;
       const m = readMeta(dir, agentId);
       if (m.background && m.launcher !== undefined) background.add(m.launcher);
@@ -285,14 +289,14 @@ function backfillAgentIds(ops: RawOp[], source: AgentSource): RawOp[] {
     if (dir === null) continue;
     let names: string[];
     try {
-      names = readdirSync(dir).filter((n) => defaultProfile().helpers!.transcriptName.test(n)).sort().slice(0, MAX_AGENT_FILES);
+      names = readdirSync(dir).filter((n) => helperHost().helpers!.transcriptName.test(n)).sort().slice(0, MAX_AGENT_FILES);
     } catch {
       continue;
     }
     const owner = new Map<string, string | null>();
     const budget = { left: MAX_SESSION_BYTES };
     for (const name of names) {
-      const agentId = cleanId(defaultProfile().helpers!.idOfTranscript(name));
+      const agentId = cleanId(helperHost().helpers!.idOfTranscript(name));
       if (agentId === undefined) continue;
       for (const id of toolUseIds(path.join(dir, name), session, budget) ?? []) owner.set(id, owner.has(id) && owner.get(id) !== agentId ? null : agentId);
     }
@@ -344,7 +348,7 @@ export class EvidenceCollector {
         const id = b?.type === "tool_use" ? cleanId(b.id) : undefined;
         if (id === undefined || this.#uses.has(id)) continue;
         const input = (b.input ?? {}) as { run_in_background?: unknown };
-        this.#uses.set(id, { msg, at, lane, background: b.name === "Bash" && input?.run_in_background === true });
+        this.#uses.set(id, { msg, at, lane, background: isBackgroundableShell(typeof b.name === "string" ? b.name : null, helperHost().key) && input?.run_in_background === true });
       }
       return;
     }
@@ -486,7 +490,7 @@ export function callEvidenceOf(ops: RawOp[], source: AgentSource): Map<string, C
     if (dir === null) continue;
     let names: string[];
     try {
-      names = readdirSync(dir).filter((n) => defaultProfile().helpers!.transcriptName.test(n)).sort().slice(0, MAX_AGENT_FILES);
+      names = readdirSync(dir).filter((n) => helperHost().helpers!.transcriptName.test(n)).sort().slice(0, MAX_AGENT_FILES);
     } catch {
       continue;
     }

@@ -1,0 +1,201 @@
+{
+ "tasks": [
+  {
+   "id": 1,
+   "created_at": "<ts>",
+   "title": null,
+   "client": "codex-hook:<folder>"
+  }
+ ],
+ "ops": [
+  {
+   "id": 1,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "hook",
+   "args_json": "{\"hookOpKey\":\"prompt#2\",\"hookAdapter\":1,\"hookEvent\":\"UserPromptSubmit\",\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"at\":1792843202000,\"earlier\":0,\"prompts\":[\"Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence.\"],\"requests\":[{\"seq\":1,\"at\":1792843201000,\"firstStep\":null}]}",
+   "intent": "user prompt",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": -1,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 2,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "hook",
+   "args_json": "{\"hookOpKey\":\"firststep#1\",\"hookAdapter\":1,\"hookEvent\":\"RequestFirstStep\",\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"requests\":[{\"seq\":1,\"at\":1792843201000,\"firstStep\":1}]}",
+   "intent": "request first step",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": -1,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 3,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "Bash",
+   "args_json": "{\"hookOpKey\":\"exec-de551eab-320d-46a7-ab70-6433dab6dda3#4\",\"hookAdapter\":1,\"tool_use_id\":\"exec-de551eab-320d-46a7-ab70-6433dab6dda3\",\"closedBy\":\"post\",\"background\":false,\"openedAt\":1792843204000,\"startSeq\":3,\"closedAt\":1792843206000,\"wallMs\":2000,\"processingMs\":<n>,\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"tool_name\":\"Bash\",\"jointWith\":[\"exec-de551eab-320d-46a7-ab70-6433dab6dda3\"],\"steps\":[1],\"namedFiles\":[],\"ownPaths\":[],\"outsideWatching\":true,\"description\":\"\",\"reasonFallback\":\"Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence.\",\"toolLabel\":{\"fields\":{\"command\":\"printf alpha > a.txt\"}},\"narration\":{\"source\":\"none\",\"text\":\"no narration recorded\"}}",
+   "intent": "printf alpha > a.txt",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": 0,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 4,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "Bash",
+   "args_json": "{\"hookOpKey\":\"exec-9f48ad11-5e70-43ae-b212-0f8d4672e4e1#6\",\"hookAdapter\":1,\"tool_use_id\":\"exec-9f48ad11-5e70-43ae-b212-0f8d4672e4e1\",\"closedBy\":\"failure\",\"error\":\"ls: /nonexistent_t147: No such file or directory\",\"errorInferred\":true,\"background\":false,\"openedAt\":1792843208000,\"startSeq\":5,\"closedAt\":1792843210000,\"wallMs\":2000,\"processingMs\":<n>,\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"tool_name\":\"Bash\",\"jointWith\":[\"exec-9f48ad11-5e70-43ae-b212-0f8d4672e4e1\"],\"steps\":[],\"namedFiles\":[],\"ownPaths\":[],\"outsideWatching\":true,\"description\":\"\",\"reasonFallback\":\"Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence.\",\"toolLabel\":{\"fields\":{\"command\":\"ls /nonexistent_t147\"}},\"narration\":{\"source\":\"none\",\"text\":\"no narration recorded\"},\"outsideRefs\":[\"/nonexistent_t147\"]}",
+   "intent": "ls /nonexistent_t147",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": 0,
+   "result_code": "TOOL_FAILED",
+   "error_text": "ls: /nonexistent_t147: No such file or directory"
+  },
+  {
+   "id": 5,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "spawn_agent",
+   "args_json": "{\"hookOpKey\":\"call_f44b8fc254824f7ab6b0bd7319965296#8\",\"hookAdapter\":1,\"tool_use_id\":\"call_f44b8fc254824f7ab6b0bd7319965296\",\"closedBy\":\"post\",\"background\":false,\"openedAt\":1792843212000,\"startSeq\":7,\"closedAt\":1792843214000,\"wallMs\":2000,\"processingMs\":<n>,\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"tool_name\":\"spawn_agent\",\"jointWith\":[\"call_f44b8fc254824f7ab6b0bd7319965296\"],\"steps\":[],\"namedFiles\":[],\"ownPaths\":[],\"outsideWatching\":true,\"description\":\"\",\"reasonFallback\":\"Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence.\",\"toolLabel\":{\"fields\":{\"task_name\":\"create_b\"},\"dropped\":{\"message\":\"encrypted by the host, not recorded\"}},\"narration\":{\"source\":\"none\",\"text\":\"no narration recorded\"},\"pathUnknown\":true}",
+   "intent": "spawn_agent",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": 0,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 6,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "Bash",
+   "args_json": "{\"hookOpKey\":\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a#11\",\"hookAdapter\":1,\"tool_use_id\":\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a\",\"closedBy\":\"post\",\"background\":false,\"openedAt\":1792843218000,\"startSeq\":10,\"closedAt\":1792843222000,\"wallMs\":4000,\"processingMs\":<n>,\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"tool_name\":\"Bash\",\"agent_id\":\"01a16ff1-c26a-7f03-80e7-465fcf0b0f19\",\"agent_type\":\"default\",\"jointWith\":[\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a\"],\"steps\":[2],\"namedFiles\":[],\"ownPaths\":[],\"outsideWatching\":true,\"description\":\"\",\"toolLabel\":{\"fields\":{\"command\":\"printf beta > b.txt\"}},\"narration\":{\"source\":\"none\",\"text\":\"no narration recorded\"}}",
+   "intent": "printf beta > b.txt",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": 0,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 7,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "hook",
+   "args_json": "{\"hookOpKey\":\"finish#12\",\"hookAdapter\":1,\"hookEvent\":\"SubagentStop\",\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"agent_id\":\"01a16ff1-c26a-7f03-80e7-465fcf0b0f19\",\"agent_type\":\"default\",\"at\":1792843224000,\"seq\":12,\"finish\":{\"text\":\"Created b.txt containing exactly beta.\"}}",
+   "intent": "helper finished",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": -1,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 8,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "wait_agent",
+   "args_json": "{\"hookOpKey\":\"call_ed2e9b64a60941f3a492b16612f06a82#13\",\"hookAdapter\":1,\"tool_use_id\":\"call_ed2e9b64a60941f3a492b16612f06a82\",\"closedBy\":\"post\",\"background\":false,\"waits\":true,\"openedAt\":1792843216000,\"startSeq\":9,\"closedAt\":1792843226000,\"wallMs\":10000,\"processingMs\":<n>,\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"tool_name\":\"wait_agent\",\"jointWith\":[\"call_ed2e9b64a60941f3a492b16612f06a82\"],\"steps\":[],\"namedFiles\":[],\"ownPaths\":[],\"outsideWatching\":true,\"description\":\"\",\"reasonFallback\":\"Do these in order. 1) Create a file a.txt containing the word alpha. 2) Run the shell command: ls /nonexistent_t147 (it will fail; that is expected). 3) Spawn a helper subagent (use your spawn_agent tool if you have one) and have it create file b.txt containing beta, wait for it. If you have no subagent tool, say so. 4) Finish with one short sentence.\",\"toolLabel\":{\"fields\":{},\"inputFields\":[\"timeout_ms\"]},\"narration\":{\"source\":\"none\",\"text\":\"no narration recorded\"},\"pathUnknown\":true}",
+   "intent": "wait_agent",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": 0,
+   "result_code": "OK",
+   "error_text": null
+  },
+  {
+   "id": 9,
+   "task_id": 1,
+   "ts": "<ts>",
+   "tool": "hook",
+   "args_json": "{\"hookOpKey\":\"closing#14\",\"hookAdapter\":1,\"hookEvent\":\"Stop\",\"host\":\"codex\",\"session_id\":\"01a16ff1-ac5d-78f1-a588-6ff46ea9e279\",\"at\":1792843228000,\"closing\":{\"source\":\"agent\",\"label\":\"the agent's own words\",\"text\":\"Created a.txt with alpha, ran the expected failing command, and waited for the helper to create b.txt with beta.\"}}",
+   "intent": "agent closing claim",
+   "client_name": "codex-hook:<folder>",
+   "client_version": null,
+   "duration_ms": -1,
+   "result_code": "OK",
+   "error_text": null
+  }
+ ],
+ "events": [],
+ "steps": [
+  {
+   "id": 1,
+   "task_id": 1,
+   "client": "codex-hook:<folder>",
+   "seq": 1,
+   "phase": "Post",
+   "ts": "<ts>",
+   "calls_open_json": "[\"exec-de551eab-320d-46a7-ab70-6433dab6dda3\"]",
+   "credited_json": "[\"exec-de551eab-320d-46a7-ab70-6433dab6dda3\"]"
+  },
+  {
+   "id": 2,
+   "task_id": 1,
+   "client": "codex-hook:<folder>",
+   "seq": 2,
+   "phase": "Post",
+   "ts": "<ts>",
+   "calls_open_json": "[\"call_ed2e9b64a60941f3a492b16612f06a82\",\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a\"]",
+   "credited_json": "[\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a\"]"
+  }
+ ],
+ "file_states": [
+  {
+   "id": 1,
+   "step_id": 1,
+   "task_id": 1,
+   "file_path": "<folder>/a.txt",
+   "sha256": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+   "prev_sha256": null,
+   "phase": "Post",
+   "calls_open_json": "[\"exec-de551eab-320d-46a7-ab70-6433dab6dda3\"]",
+   "credited_json": "[\"exec-de551eab-320d-46a7-ab70-6433dab6dda3\"]",
+   "size": 5,
+   "kept": "whole",
+   "note": "",
+   "changes_sha256": null,
+   "before_basis": null
+  },
+  {
+   "id": 2,
+   "step_id": 2,
+   "task_id": 1,
+   "file_path": "<folder>/b.txt",
+   "sha256": "f44e64e75f3948e9f73f8dfa94721c4ce8cbb4f265c4790c702b2d41cfbf2753",
+   "prev_sha256": null,
+   "phase": "Post",
+   "calls_open_json": "[\"call_ed2e9b64a60941f3a492b16612f06a82\",\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a\"]",
+   "credited_json": "[\"exec-1d9ab71c-c499-4b28-ad5b-d3baafc5bb4a\"]",
+   "size": 4,
+   "kept": "whole",
+   "note": "",
+   "changes_sha256": null,
+   "before_basis": null
+  }
+ ],
+ "rounds": [
+  {
+   "id": 1,
+   "task_id": 1,
+   "seq": 1,
+   "ts": "<ts>",
+   "intent": "turn closed by the Stop hook",
+   "client_name": "codex-hook:<folder>",
+   "final": 0,
+   "last_op_id": 9
+  }
+ ],
+ "round_results": [],
+ "review_rows": [],
+ "state_removals": []
+}

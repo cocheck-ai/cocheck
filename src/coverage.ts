@@ -13,7 +13,10 @@
 import { closeSync, constants, fstatSync, lstatSync, openSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { AGENT_TRANSCRIPT_MAX_BYTES, cleanId } from "./agent-transcripts.ts";
-import { defaultProfile, findProfile } from "./hosts/index.ts";
+import { findProfile, profileWithExtra } from "./hosts/index.ts";
+
+/** The host whose transcripts hold the helper files read here. */
+const helperHost = () => profileWithExtra("transcript-coverage");
 import { journalDegraded, journalSessionKey, readJournalSession } from "./hook-journal.ts";
 import type { CoverageStatus, Ledger, SessionCoverageRow } from "./ledger.ts";
 
@@ -96,10 +99,10 @@ export function readClaudeCalls(transcriptPath: unknown, sessionId: string): Tra
     idsOfFile(transcriptPath, ids, rejected, files);
     const sid = cleanId(sessionId);
     if (sid !== undefined) {
-      const dir = defaultProfile().helpers!.dirOf(transcriptPath, sid);
+      const dir = helperHost().helpers!.dirOf(transcriptPath, sid);
       let names: string[] = [];
       try {
-        names = readdirSync(dir).filter((n) => defaultProfile().helpers!.transcriptName.test(n));
+        names = readdirSync(dir).filter((n) => helperHost().helpers!.transcriptName.test(n));
       } catch {
         // no subagents
       }

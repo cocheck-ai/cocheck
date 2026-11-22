@@ -1,16 +1,16 @@
-// Copilot helpers (subagents) whose inner hook calls arrive under a session id CoCheck has never seen. VS Code 1.140.0 sends no
-// `agentId` on a helper's calls: they run under the helper's own `sessionId`, and the link to the main session appears only at the
-// main session's `subagentStop` (its `agentId` is that inner sessionId). With tracking off by default, those calls must neither be
-// recorded as an untracked session's nor lost. The rules, in order, for a Copilot event whose session is not tracked:
+// Helpers (subagents) whose inner hook calls arrive under a session id CoCheck has never seen (a host with `capabilities.helperSessions`).
+// Such a host may send no agent id on a helper's calls: they run under the helper's own session id, and the link to the main session
+// appears only at the main session's helper-stop event (its agent id is that inner session id). With tracking off by default, those calls must neither be
+// recorded as an untracked session's nor lost. The rules, in order, for an event whose session is not tracked:
 //   1. a link is on file (the helper's id -> its main session): the event is that helper's call, rewritten to name both;
-//   2. the event is a helper's first prompt and its text equals the `prompt` of a `task` call a tracked session has open: exact text, one
+//   2. the event is a helper's first prompt and its text equals the `prompt` of a launcher call a tracked session has open: exact text, one
 //      match per launch, makes the link (the same evidence the CLI gives with `agentId`);
-//   3. a tracked session has a `task` call open and the event is a tool call: it is held (raw bytes, 0600, under the data home), to be
+//   3. a tracked session has a launcher call open and the event is a tool call: it is held (raw bytes, 0600, under the data home), to be
 //      replayed when the link appears. The bound: held until the launching session's `subagentStop` names the helper, or HELD_TTL_MS
 //      after the launch, whichever comes first; then it is deleted unrecorded. A held call of a session whose parent stops tracking is
 //      deleted the same way;
 //   4. nothing tracked has a launch open: the event is dropped, as every untracked session's events are.
-// Only a tracked session's `task` calls open a launch, so an untracked session leaves nothing here.
+// Only a tracked session's launcher calls open a launch, so an untracked session leaves nothing here.
 import { createHash } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { scrubPayloadBytes } from "./patch-secrets.ts";
@@ -19,7 +19,8 @@ import path from "node:path";
 import { withFileLock } from "./file-lock.ts";
 import { trackingOf, type Tracking } from "./tracking.ts";
 import type { NormalizedEvent } from "./normalize.ts";
-import { profileOf } from "./hosts/index.ts";
+import { allProfiles, profileOf, type PayloadFields } from "./hosts/index.ts";
+import { isLauncherTool } from "./credit-guard.ts";
 
 /** How long a launch stays open, and so how long a held call waits for its helper's link. */
 const HELD_TTL_MS = 15 * 60_000;
@@ -54,9 +55,13 @@ export interface Held {
   bytes: Buffer;
 }
 
-const STORE = "copilot-helpers.json";
-const HELD = "copilot-held";
-const lockOf = (home: string) => path.join(home, "copilot-helpers.lock");
+// The three names below are files in the data home that installs already hold: legacy key kept on purpose.
+const STORE = "copilot-helpers.json"; // legacy key kept on purpose
+const HELD = "copilot-held"; // legacy key kept on purpose
+const lockOf = (home: string) => path.join(home, "copilot-helpers.lock"); // legacy key kept on purpose
+
+/** True when some host that links helper sessions tracks `session`. */
+const trackedByHelperHost = (home: string, session: string): boolean => allProfiles().some((p) => p.capabilities.helperSessions && trackingOf(home, p.key, session) !== undefined);
 const heldFile = (home: string, session: string) => path.join(home, HELD, createHash("sha256").update(session).digest("hex").slice(0, 40) + ".jsonl");
 
 let lastRead = "";
@@ -81,8 +86,8 @@ function write(home: string, store: Store, before?: string): void {
 
 /** Drops what is past its bound, and the launches whose main session is no longer tracked; deletes held files nothing waits for. */
 function prune(home: string, store: Store, now: number): void {
-  store.launches = store.launches.filter((l) => now - l.at < HELD_TTL_MS && trackingOf(home, "copilot", l.parent) !== undefined).slice(-MAX_LAUNCHES);
-  for (const [id, link] of Object.entries(store.links)) if (now - link.at >= LINK_TTL_MS || trackingOf(home, "copilot", link.parent) === undefined) delete store.links[id];
+  store.launches = store.launches.filter((l) => now - l.at < HELD_TTL_MS && trackedByHelperHost(home, l.parent)).slice(-MAX_LAUNCHES);
+  for (const [id, link] of Object.entries(store.links)) if (now - link.at >= LINK_TTL_MS || !trackedByHelperHost(home, link.parent)) delete store.links[id];
   let names: string[] = [];
   try {
     names = readdirSync(path.join(home, HELD));
@@ -112,7 +117,7 @@ export async function pruneHelperState(home: string, now: number): Promise<void>
   });
 }
 
-/** A tracked session's `task` call opened: a helper may start under a session id of its own. */
+/** A tracked session's launcher call opened: a helper may start under a session id of its own. */
 async function noteLaunch(home: string, parent: string, prompt: unknown, agentType: unknown, now: number, key?: string): Promise<void> {
   if (typeof prompt !== "string" || prompt.trim() === "") return;
   await withFileLock(lockOf(home), async () => {
@@ -133,19 +138,21 @@ interface GateResult {
   replay: Held[];
 }
 
-/** The payload as the CLI sends a helper's event: the helper's id as `agentId`, the main session as `parentAgentId`. The event keeps everything else. */
-function relink(bytes: Buffer, helper: string, link: Link): Buffer {
+/** The payload as the host sends a helper's event: the helper's id as the agent id, the main session as the parent session. The event keeps everything else. */
+function relink(bytes: Buffer, helper: string, link: Link, f: PayloadFields): Buffer {
+  if (f.parentSession === undefined || f.launchKey === undefined) return bytes;
   const p = JSON.parse(bytes.toString("utf8"));
-  delete p.cocheckLaunchKey;
-  return Buffer.from(JSON.stringify({ ...p, agentId: helper, parentAgentId: link.parent, ...(link.launchKey === undefined ? {} : { cocheckLaunchKey: link.launchKey }), ...(link.agentType === undefined || typeof p.agentType === "string" ? {} : { agentType: link.agentType }) }));
+  delete p[f.launchKey];
+  return Buffer.from(JSON.stringify({ ...p, [f.agentId]: helper, [f.parentSession]: link.parent, ...(link.launchKey === undefined ? {} : { [f.launchKey]: link.launchKey }), ...(link.agentType === undefined || typeof p[f.agentType] === "string" ? {} : { [f.agentType]: link.agentType }) }));
 }
 
 /** An event of the host cannot carry the key itself: it is CoCheck's, put on by the gate. */
-function stripLaunchKey(bytes: Buffer): Buffer {
+function stripLaunchKey(bytes: Buffer, f: PayloadFields): Buffer {
+  if (f.launchKey === undefined) return bytes;
   try {
     const p = JSON.parse(bytes.toString("utf8"));
-    if (p === null || typeof p !== "object" || !("cocheckLaunchKey" in p)) return bytes;
-    delete p.cocheckLaunchKey;
+    if (p === null || typeof p !== "object" || !(f.launchKey in p)) return bytes;
+    delete p[f.launchKey];
     return Buffer.from(JSON.stringify(p));
   } catch {
     return bytes;
@@ -155,16 +162,19 @@ function stripLaunchKey(bytes: Buffer): Buffer {
 const isToolKind = (k: string) => k === "tool-pre" || k === "tool-post" || k === "tool-failure";
 
 /**
- * The gate for a Copilot event after the tracking switch was read (`started`). A tracked session's event goes on (a `task` call also opens a
+ * The gate for an event of a host with helper sessions after the tracking switch was read (`started`). A tracked session's event goes on (a launcher call also opens a
  * launch, and a `subagentStop` links its helper and releases what was held for it). An untracked session's event follows the four rules above.
  */
 export async function helperGate(home: string, started: Tracking | undefined, ev: NormalizedEvent, bytes: Buffer, eventName: string, now: number): Promise<GateResult> {
   const go = (b: Buffer, s: Tracking | undefined, replay: Held[] = []): GateResult => ({ stop: false, bytes: b, started: s, replay });
   const stop: GateResult = { stop: true, bytes, started, replay: [] };
   if (typeof ev.session !== "string" || ev.session === "") return go(bytes, started);
+  const profile = profileOf(ev.host);
+  const f = profile.fields;
+  const promptEvents = Object.entries(profile.eventKinds).filter(([, k]) => k === "prompt").map(([n]) => n);
   const input = ev.toolInput !== null && typeof ev.toolInput === "object" ? (ev.toolInput as Record<string, unknown>) : {};
   if (started !== undefined) {
-    if (ev.kind === "tool-pre" && ev.toolName === "task" && ev.agentId === undefined) await noteLaunch(home, ev.session, input.prompt, input.agent_type, now, profileOf("copilot").calls?.argsKey(ev.toolInput));
+    if (ev.kind === "tool-pre" && isLauncherTool(ev.toolName, ev.host) && ev.agentId === undefined) await noteLaunch(home, ev.session, input.prompt, input.agent_type, now, profile.calls?.argsKey(ev.toolInput));
     if (typeof ev.agentId === "string" && ev.agentId !== "" && ev.kind !== "subagent-stop" && existsSync(path.join(home, STORE))) {
       // A helper's first prompt (the CLI sends agentId on it) is matched, word for word, to the one open launch carrying that prompt;
       // its later calls name that launch. Two launches with the same prompt make no link; the helper's calls then name no launch.
@@ -172,7 +182,7 @@ export async function helperGate(home: string, started: Tracking | undefined, ev
         const store = read(home);
         const before = lastRead;
         const agent = ev.agentId!;
-        if (ev.eventName === "userPromptSubmitted" && typeof ev.prompt === "string" && store.links[agent] === undefined) {
+        if (ev.eventName !== undefined && promptEvents.includes(ev.eventName) && typeof ev.prompt === "string" && store.links[agent] === undefined) {
           const same = store.launches.filter((l) => l.parent === ev.session && l.prompt === ev.prompt!.trim());
           if (same.length === 1 && same[0]!.key !== undefined) {
             store.launches.splice(store.launches.indexOf(same[0]!), 1);
@@ -181,7 +191,7 @@ export async function helperGate(home: string, started: Tracking | undefined, ev
         }
         const link = store.links[agent];
         write(home, store, before);
-        return go(link?.launchKey !== undefined && link.parent === ev.session ? relink(bytes, agent, link) : stripLaunchKey(bytes), started);
+        return go(link?.launchKey !== undefined && link.parent === ev.session ? relink(bytes, agent, link, f) : stripLaunchKey(bytes, f), started);
       });
     }
     if (ev.kind === "subagent-stop" && typeof ev.agentId === "string") {
@@ -191,7 +201,7 @@ export async function helperGate(home: string, started: Tracking | undefined, ev
         const i = linked !== undefined && linked.parent === ev.session ? -1 : store.launches.findIndex((l) => l.parent === ev.session && (ev.agentType === undefined || l.agentType === undefined || l.agentType === ev.agentType));
         const launch = i >= 0 ? store.launches.splice(i, 1)[0] : undefined;
         const link: Link = linked !== undefined && linked.parent === ev.session ? { ...linked, at: now } : { parent: ev.session, ...(launch?.agentType !== undefined ? { agentType: launch.agentType } : {}), at: now };
-        const held = takeHeldLocked(home, ev.agentId!, link, now);
+        const held = takeHeldLocked(home, ev.agentId!, link, now, f);
         store.links[ev.agentId!] = link;
         prune(home, store, now);
         write(home, store);
@@ -208,9 +218,9 @@ export async function helperGate(home: string, started: Tracking | undefined, ev
     prune(home, store, now);
     const link = store.links[ev.session];
     if (link !== undefined) {
-      const parent = trackingOf(home, "copilot", link.parent);
+      const parent = trackingOf(home, ev.host, link.parent);
       write(home, store, before);
-      return parent === undefined ? stop : go(relink(bytes, ev.session, link), parent);
+      return parent === undefined ? stop : go(relink(bytes, ev.session, link, f), parent);
     }
     // A helper's first prompt carrying a tracked session's open launch prompt, word for word.
     if (ev.kind === "prompt" && typeof ev.prompt === "string") {
@@ -221,7 +231,7 @@ export async function helperGate(home: string, started: Tracking | undefined, ev
         const made: Link = { parent: launch.parent, ...(launch.agentType === undefined ? {} : { agentType: launch.agentType }), ...(launch.key === undefined ? {} : { launchKey: launch.key }), at: now };
         store.links[ev.session] = made;
         write(home, store);
-        return go(relink(bytes, ev.session, made), trackingOf(home, "copilot", made.parent));
+        return go(relink(bytes, ev.session, made, f), trackingOf(home, ev.host, made.parent));
       }
     }
     if (ev.kind === "subagent-stop" && typeof ev.agentId === "string") rmSync(heldFile(home, ev.agentId), { force: true });
@@ -249,7 +259,7 @@ function hold(home: string, session: string, event: string, bytes: Buffer, now: 
 }
 
 /** The held events of `helper`, relinked to its main session, oldest first; the file goes. */
-function takeHeldLocked(home: string, helper: string, link: Link, now: number): Held[] {
+function takeHeldLocked(home: string, helper: string, link: Link, now: number, f: PayloadFields): Held[] {
   const file = heldFile(home, helper);
   let text = "";
   try {
@@ -262,7 +272,7 @@ function takeHeldLocked(home: string, helper: string, link: Link, now: number): 
   for (const line of text.split("\n").filter(Boolean)) {
     try {
       const v = JSON.parse(line);
-      if (typeof v?.event === "string" && typeof v?.body === "string" && typeof v?.at === "number" && now - v.at < HELD_TTL_MS) out.push({ event: v.event, bytes: relink(Buffer.from(v.body), helper, link) });
+      if (typeof v?.event === "string" && typeof v?.body === "string" && typeof v?.at === "number" && now - v.at < HELD_TTL_MS) out.push({ event: v.event, bytes: relink(Buffer.from(v.body), helper, link, f) });
     } catch {
       // a half-written line is not an event
     }

@@ -1,0 +1,344 @@
+{
+  "schema": "cocheck-harness/1",
+  "key": "claude",
+  "displayName": "Claude",
+  "fullName": "Claude Code",
+  "chip": "C",
+  "testedVersions": [],
+  "events": {
+    "PreToolUse": "tool-pre",
+    "PostToolUse": "tool-post",
+    "PostToolUseFailure": "tool-failure",
+    "Stop": "stop",
+    "SubagentStop": "subagent-stop",
+    "UserPromptSubmit": "prompt"
+  },
+  "eventFrom": {
+    "payload": "hook_event_name"
+  },
+  "fields": {
+    "session": "session_id",
+    "eventName": "hook_event_name",
+    "cwd": "cwd",
+    "toolName": "tool_name",
+    "toolInput": "tool_input",
+    "toolResponse": "tool_response",
+    "agentId": "agent_id",
+    "agentType": "agent_type",
+    "transcriptPath": "transcript_path",
+    "lastAssistantMessage": "last_assistant_message",
+    "prompt": "prompt",
+    "callReason": "description"
+  },
+  "callId": {
+    "payload": "tool_use_id"
+  },
+  "extraFields": {
+    "turnId": "turn_id",
+    "permissionMode": "permission_mode",
+    "model": "model",
+    "stopHookActive": "stop_hook_active"
+  },
+  "failure": {
+    "tool-failure": {
+      "flags": [
+        "tool_response.is_error",
+        "tool_response.isError"
+      ],
+      "text": [
+        "error"
+      ],
+      "flaggedText": [
+        {
+          "path": "tool_response.content",
+          "blocks": true
+        },
+        "tool_response.error"
+      ],
+      "interrupt": "is_interrupt"
+    },
+    "tool-post": {
+      "flags": [
+        "tool_response.is_error",
+        "tool_response.isError"
+      ],
+      "text": [
+        "error"
+      ],
+      "flaggedText": [
+        {
+          "path": "tool_response.content",
+          "blocks": true
+        },
+        "tool_response.error"
+      ],
+      "interrupt": "is_interrupt"
+    }
+  },
+  "toolClasses": {
+    "Read": {
+      "class": "read"
+    },
+    "Glob": {
+      "class": "read-only"
+    },
+    "Grep": {
+      "class": "read-only"
+    },
+    "LS": {
+      "class": "read-only"
+    },
+    "NotebookRead": {
+      "class": "read-only"
+    },
+    "WebFetch": {
+      "class": "never-credited"
+    },
+    "WebSearch": {
+      "class": "never-credited"
+    },
+    "ToolSearch": {
+      "class": "never-credited"
+    },
+    "Skill": {
+      "class": "never-credited"
+    },
+    "TodoWrite": {
+      "class": "never-credited"
+    },
+    "TodoRead": {
+      "class": "never-credited"
+    },
+    "TaskCreate": {
+      "class": "never-credited"
+    },
+    "TaskUpdate": {
+      "class": "never-credited"
+    },
+    "TaskList": {
+      "class": "never-credited"
+    },
+    "TaskGet": {
+      "class": "never-credited"
+    },
+    "TaskOutput": {
+      "class": "never-credited"
+    },
+    "BashOutput": {
+      "class": "never-credited"
+    },
+    "AskUserQuestion": {
+      "class": "never-credited"
+    },
+    "ExitPlanMode": {
+      "class": "never-credited"
+    },
+    "EnterPlanMode": {
+      "class": "never-credited"
+    },
+    "ListMcpResourcesTool": {
+      "class": "never-credited"
+    },
+    "ReadMcpResourceTool": {
+      "class": "never-credited"
+    },
+    "SendMessage": {
+      "class": "never-credited",
+      "resumesHelper": true
+    },
+    "Write": {
+      "class": "write",
+      "pathFields": [
+        "file_path",
+        "path"
+      ],
+      "pathChecked": true,
+      "fileInput": true,
+      "anyCase": true
+    },
+    "Edit": {
+      "class": "edit",
+      "pathFields": [
+        "file_path",
+        "path"
+      ],
+      "pathChecked": true,
+      "fileInput": true,
+      "anyCase": true
+    },
+    "MultiEdit": {
+      "class": "edit",
+      "pathFields": [
+        "file_path"
+      ],
+      "pathChecked": true,
+      "fileInput": true,
+      "anyCase": true
+    },
+    "NotebookEdit": {
+      "class": "notebook-edit",
+      "pathFields": [
+        "notebook_path"
+      ],
+      "fileInput": true,
+      "anyCase": true
+    },
+    "apply_patch": {
+      "class": "patch",
+      "anyCase": true
+    },
+    "patch": {
+      "class": "patch",
+      "anyCase": true
+    },
+    "Agent": {
+      "class": "launcher",
+      "backgroundFlag": true
+    },
+    "Task": {
+      "class": "launcher",
+      "backgroundFlag": true
+    },
+    "Bash": {
+      "class": "shell",
+      "dialect": "bash",
+      "backgroundable": true,
+      "anyCase": true
+    },
+    "PowerShell": {
+      "class": "shell",
+      "dialect": "powershell",
+      "anyCase": true
+    },
+    "pwsh": {
+      "class": "shell",
+      "dialect": "powershell",
+      "anyCase": true
+    }
+  },
+  "narration": {
+    "sources": [
+      {
+        "kind": "text-before-call",
+        "readableAt": "pre"
+      },
+      {
+        "kind": "closing-message",
+        "readableAt": "post"
+      }
+    ]
+  },
+  "sessionFile": {
+    "bySessionId": false
+  },
+  "capabilities": {
+    "failureEvent": true,
+    "argvTag": true
+  },
+  "argvTag": {
+    "tool": "Bash",
+    "preOutput": {
+      "hookSpecificOutput": {
+        "hookEventName": "{event}",
+        "updatedInput": "{input}"
+      }
+    },
+    "envFileVar": "CLAUDE_ENV_FILE",
+    "shellEnv": "CLAUDE_CODE_SHELL",
+    "sessionStartEvent": "SessionStart"
+  },
+  "sessionEnv": "CLAUDE_CODE_SESSION_ID",
+  "hostOwnedFiles": [
+    ".claude/settings.local.json"
+  ],
+  "hostOwnedWhat": "the Claude app saving your permission choices",
+  "install": {
+    "skillRoot": ".claude/skills",
+    "inBothAlias": true,
+    "timingLabel": "Claude Code",
+    "hostFlag": "claude",
+    "projectDirEnv": "CLAUDE_PROJECT_DIR",
+    "checkPayload": {
+      "payload": {
+        "session_id": "install-check",
+        "cwd": "{folder}",
+        "hook_event_name": "PreToolUse",
+        "tool_name": "Bash",
+        "tool_use_id": "install-check-1",
+        "tool_input": {
+          "command": "true"
+        }
+      }
+    },
+    "afterInstall": "Restart Claude Code so it reads the new settings.",
+    "format": "json",
+    "path": "{env:CLAUDE_CONFIG_DIR|{home}/.claude}/settings.json",
+    "mode": "merge",
+    "rootKey": "hooks",
+    "events": [
+      "PreToolUse",
+      "PostToolUse",
+      "PostToolUseFailure",
+      "Stop",
+      "SubagentStop",
+      "UserPromptSubmit"
+    ],
+    "extraEvents": [
+      "SessionStart"
+    ],
+    "entryTemplate": {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "{command}"
+        }
+      ]
+    },
+    "matcherEvents": {
+      "PreToolUse": "*",
+      "PostToolUse": "*",
+      "PostToolUseFailure": "*"
+    },
+    "managedHost": "claude"
+  },
+  "extras": [
+    "claude-transcript-narration",
+    "transcript-helpers",
+    "transcript-coverage",
+    "claude-reveal",
+    "claude-session-title",
+    "install-default"
+  ],
+  "shape": {
+    "PreToolUse": [
+      "session_id",
+      "tool_name",
+      "tool_use_id",
+      "tool_input"
+    ],
+    "PostToolUse": [
+      "session_id",
+      "tool_name",
+      "tool_use_id",
+      "tool_input",
+      "tool_response"
+    ],
+    "PostToolUseFailure": [
+      "session_id",
+      "tool_name",
+      "tool_use_id",
+      "error"
+    ],
+    "Stop": [
+      "session_id"
+    ],
+    "SubagentStop": [
+      "session_id",
+      "agent_id"
+    ],
+    "UserPromptSubmit": [
+      "session_id",
+      "prompt"
+    ]
+  }
+}

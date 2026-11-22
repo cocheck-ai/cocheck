@@ -9,7 +9,8 @@ import { runHook, type HookExit } from "../src/hook-cli.ts";
 import { setTracking } from "../src/tracking.ts";
 import { loadRows } from "../src/timeline/load.ts";
 import { buildTimeline } from "../src/timeline/timeline.ts";
-import { copilot } from "../src/hosts/copilot.ts";
+import { profileOf } from "../src/hosts/index.ts";
+const copilot = profileOf("copilot");
 import { newCursor } from "../src/narration.ts";
 
 // A Copilot `<system_notification>` prompt is the host's, not the user's: it opens no request, and the closing of a request is the

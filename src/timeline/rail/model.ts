@@ -1,11 +1,11 @@
 import { pathKit } from "../../paths.ts";
-import { defaultProfile } from "../../hosts/index.ts";
+import { findProfile, resumesHelper } from "../../hosts/index.ts";
 import { isSecretPath, secretLine } from "../../secret-files.ts";
 import { HELPER_LANE, MAIN_LANE, OUTSIDE_LANE_ACTOR, UNSURE_LANE, UNSURE_LANE_ACTOR, byOf, hostName, laneKeyOf, laneOf, railActor, sideText, speakAs, type By } from "../attribution.ts";
 import { SAME_CONTENT_AS, moreText } from "../notes.ts";
 import type { Change, Timeline, TimelineCall, TimelineRequest, TimelineWake } from "../timeline.ts";
 import { NOTICE_LABEL } from "../timeline.ts";
-import { isLauncherTool, isReadOnlyMcpTool } from "../../credit-guard.ts";
+import { isLauncherTool, isReadOnlyMcpTool, isReadTool } from "../../credit-guard.ts";
 import { callFailed, callFailedAndUnopenable, callFailedShared, couldNotOpen } from "../broken.ts";
 import { attachFailureLines, type Failure, type FailureInput } from "./failure-line.ts";
 import { baseOf, dirName, isOutside, treeRows, type TreeRow } from "./files-model.ts";
@@ -46,7 +46,7 @@ const HELPER_COLORS = ["#e0a458", "#58b09c", "#d9777f", "#8aa6e0", "#b5c75b"];
 /** The fixed lanes. The main lane's name and chip are the task's host; "Claude" here is only the default. */
 export const ACTORS: readonly RailActor[] = [
   { id: "you", name: "You", chip: "Y", color: "#1c2740", fromStart: true },
-  { id: MAIN_LANE, name: defaultProfile().displayName, chip: defaultProfile().chip, color: "#6fb0e3", main: true, fromStart: true },
+  { id: MAIN_LANE, name: findProfile(MAIN_LANE)?.displayName ?? "Agent", chip: findProfile(MAIN_LANE)?.chip ?? "A", color: "#6fb0e3", main: true, fromStart: true },
   { ...OUTSIDE_LANE_ACTOR },
 ];
 
@@ -456,8 +456,8 @@ export function buildRailModel(timeline: Timeline, opts: RailOptions = {}): Rail
         // A launch is a point on the spawner's line (no stop of its own): a lane it starts leaves the line from there.
         // Foreground launches count too, and a launch made by Claude (no agent on the call) names the request that owns it.
         // So is a SendMessage, which starts the resumed line of the agent it wakes.
-        if (call.tool === "SendMessage") sendIds.add(sk(request.session, call.id));
-        if ((isLauncherTool(call.tool) || call.tool === "SendMessage") && call.start != null) entries.push({ at: call.start, launch: sk(request.session, call.id), req: call.agent ? null : request.id, bg: call.tool === "SendMessage" || call.background === true });
+        if (resumesHelper(call.host, call.tool)) sendIds.add(sk(request.session, call.id));
+        if ((isLauncherTool(call.tool, call.host) || resumesHelper(call.host, call.tool)) && call.start != null) entries.push({ at: call.start, launch: sk(request.session, call.id), req: call.agent ? null : request.id, bg: resumesHelper(call.host, call.tool) || call.background === true });
         if (call.agent) {
           const key = segKey(request.session, call.agent.id, call.resumedBy);
           agentOfCall.set(sk(request.session, call.id), key);
@@ -481,7 +481,7 @@ export function buildRailModel(timeline: Timeline, opts: RailOptions = {}): Rail
         if (said && call.outcome !== "failed" && call.changes.length === 0) {
           const lane = laneOfCall.get(call.id)!;
           entries.push({ at: call.start ?? null, send: { call, session: request.session, key: lane.key, type: lane.type } });
-        } else if (isLauncherTool(call.tool) && call.outcome !== "failed" && call.changes.length === 0 && call.start != null) {
+        } else if (isLauncherTool(call.tool, call.host) && call.outcome !== "failed" && call.changes.length === 0 && call.start != null) {
           // Starting a helper is a step on the spawner's lane, not a quiet call.
           const lane = laneOfCall.get(call.id)!;
           entries.push({ at: call.start, start: { call, session: request.session, key: lane.key, type: lane.type, launch: sk(request.session, call.id) } });
@@ -1090,7 +1090,7 @@ function attachInputs(files: RailFile[], placed: readonly Placed[], timeline: Ti
       const c = ordered[i]!;
       if (agentOf(c) !== agentOf(me)) continue;
       if (c.changes.length > 0) break;
-      if (c.tool === "Read") take(c, looked);
+      if (isReadTool(c.tool, c.host)) take(c, looked);
     }
     return { own, looked };
   };

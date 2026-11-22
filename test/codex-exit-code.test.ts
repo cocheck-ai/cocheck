@@ -50,7 +50,7 @@ async function setup(edit: (items: Record<string, Record<string, any>>) => void 
   await writeFile(mainRollout, header(MAIN, {}) + body(only?.main ?? [FAIL128, OK_MAIN]));
   await writeFile(path.join(day, `rollout-2026-10-25T14-35-24-${HELPER}.jsonl`), header(HELPER, { parent_thread_id: MAIN }) + body(only?.helper ?? [FAIL1, OK_HELPER]));
   let clock = Date.UTC(2026, 9, 25, 18, 0, 0);
-  const opts = { perSession: false, host: "codex" as const, home, claimed: workbookClaims, folder, now: () => clock, codexSessions: path.join(root, "codex-sessions") };
+  const opts = { perSession: false, host: "codex" as const, home, claimed: workbookClaims, folder, now: () => clock, sessionsDir: path.join(root, "codex-sessions") };
   const call = async (id: string, extra: Record<string, unknown> = {}, command = "true", write?: string) => {
     for (const hook_event_name of ["PreToolUse", "PostToolUse"]) {
       clock += 1000;
@@ -71,7 +71,7 @@ async function setup(edit: (items: Record<string, Record<string, any>>) => void 
   const failedOnPage = (id: string, withRollout = false) => {
     const ledger = openLedger(home);
     try {
-      const rows = withRollout ? loadRows(ledger, 1, "test", { transcriptsRoot: path.join(root, "no-transcripts"), codexSessions: path.join(root, "codex-sessions") }) : loadRows(ledger, 1, "test");
+      const rows = withRollout ? loadRows(ledger, 1, "test", { transcriptsRoot: path.join(root, "no-transcripts"), sessionsDir: path.join(root, "codex-sessions") }) : loadRows(ledger, 1, "test");
       const t = buildTimeline({ ...rows, build: "t", folder, stored: new Map(), formats: new Map(), quickLook: false });
       const c = t.requests.flatMap((r) => r.runs.flatMap((u) => u.calls)).find((x) => x.id === id);
       return c?.outcome;

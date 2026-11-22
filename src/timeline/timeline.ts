@@ -3,7 +3,7 @@ import { isUriSubject } from "../connector/subject.ts";
 import { subjectDisplay } from "./subject-display.ts";
 import { fromDiffObject, type DiffObject } from "../connector/diff-object.ts";
 import { createHash } from "node:crypto";
-import { findProfile, profileOf } from "../hosts/index.ts";
+import { findProfile, profileOf, resumesHelper } from "../hosts/index.ts";
 import { isSecretPath, secretLine } from "../secret-files.ts";
 import { EMPTY_SHA, secretShasOf } from "../secret-hashes.ts";
 import path from "node:path";
@@ -769,8 +769,8 @@ export function buildTimeline(input: TimelineInput): Timeline {
     const rest = c.tool.slice("mcp__".length), cut = rest.lastIndexOf("__");
     return { mcp: { server: cut > 0 ? rest.slice(0, cut) : "", tool: cut > 0 ? rest.slice(cut + 2) : rest, inputFields: [...(c.toolLabel?.inputFields ?? [])] } };
   };
-  const purposeOf = (c: { tool: string | null; description?: string | null; toolLabel: { fields: Record<string, string | string[]> } | null }): { purpose?: string } => {
-    if (!isLauncherTool(c.tool)) return {};
+  const purposeOf = (c: { tool: string | null; host?: string | null; description?: string | null; toolLabel: { fields: Record<string, string | string[]> } | null }): { purpose?: string } => {
+    if (!isLauncherTool(c.tool, c.host)) return {};
     const label = c.toolLabel?.fields.description ?? c.toolLabel?.fields.task_name;
     const raw = typeof label === "string" && label.trim() !== "" ? label : (c.description ?? "");
     const text = raw.trim() === "" ? "" : scrub(raw.trim()).text.trim();
@@ -778,8 +778,8 @@ export function buildTimeline(input: TimelineInput): Timeline {
   };
 
   /** A launch's brief from the call's label (the hook scrubbed and cut it); nothing for another tool or a label without one. */
-  const briefOf = (c: { tool: string | null; toolLabel: { fields: Record<string, string | string[]>; dropped?: Record<string, string> } | null }): { brief?: string; briefWithheld?: true; briefEncrypted?: true } => {
-    if (!isLauncherTool(c.tool) || c.toolLabel === null) return {};
+  const briefOf = (c: { tool: string | null; host?: string | null; toolLabel: { fields: Record<string, string | string[]>; dropped?: Record<string, string> } | null }): { brief?: string; briefWithheld?: true; briefEncrypted?: true } => {
+    if (!isLauncherTool(c.tool, c.host) || c.toolLabel === null) return {};
     const raw = c.toolLabel.fields.prompt ?? c.toolLabel.fields.message;
     // Encrypted by the host: said so, never shown (records written before the hook dropped it still hold the token in `fields`).
     if (isEncryptedToken(raw) || c.toolLabel.dropped?.message === ENCRYPTED_BRIEF_NOTE || c.toolLabel.dropped?.prompt === ENCRYPTED_BRIEF_NOTE) return { briefEncrypted: true };
@@ -795,8 +795,8 @@ export function buildTimeline(input: TimelineInput): Timeline {
   };
 
   /** A SendMessage's recipient, summary and text from the call's label (the hook scrubbed and cut them); nothing for another tool or a label without them. */
-  const sendOf = (c: { tool: string | null; toolLabel: { fields: Record<string, string | string[]>; dropped?: Record<string, string> } | null }): { send?: NonNullable<TimelineCall["send"]> } => {
-    if (c.tool !== "SendMessage" || c.toolLabel === null) return {};
+  const sendOf = (c: { tool: string | null; host?: string | null; toolLabel: { fields: Record<string, string | string[]>; dropped?: Record<string, string> } | null }): { send?: NonNullable<TimelineCall["send"]> } => {
+    if (!resumesHelper(c.host, c.tool) || c.toolLabel === null) return {};
     const f = c.toolLabel.fields;
     const one = (k: string): string | null => (typeof f[k] === "string" && (f[k] as string).trim() !== "" ? lineFrom(f[k] as string, { source: "agent-claim", label: SEND_NOTE }).text : null);
     const d = c.toolLabel.dropped ?? {};
@@ -1288,12 +1288,12 @@ export function creditStates(input: TimelineInput, R: RunsResult, folder: string
       if (!ownPost) return false;
     }
     const ev = input.evidence?.get(id) ?? c.ended ?? undefined;
-    if (!evidenceMayCredit(ev, { background: runsOnAfterResult(c), closedByOwnEvent: c.closedBy === "post" || c.closedBy === "failure" }, Number.isFinite(at) ? at : null, firstSweepAtOrAfter)) return false;
+    if (!evidenceMayCredit(ev, { background: runsOnAfterResult(c, c.host), closedByOwnEvent: c.closedBy === "post" || c.closedBy === "failure" }, Number.isFinite(at) ? at : null, firstSweepAtOrAfter)) return false;
     // A launch is no suspect at a sweep where a call of its own helper is open
-    if (c.waits === true || isWaitTool(c.tool)) return false;
-    if (!launcherMayCredit(c.tool, s.open.some((o) => R.calls.get(o)?.launchId === id))) return false;
+    if (c.waits === true || isWaitTool(c.tool, c.host)) return false;
+    if (!launcherMayCredit(c.tool, s.open.some((o) => R.calls.get(o)?.launchId === id), c.host)) return false;
     const fp = c.toolLabel?.fields.file_path;
-    return toolMayCredit(c.tool, typeof fp === "string" ? fp : null, s.file_path, (a, b) => samePath(a, b, false, gKit), gKit);
+    return toolMayCredit(c.tool, typeof fp === "string" ? fp : null, s.file_path, (a, b) => samePath(a, b, false, gKit), gKit, c.host);
   };
   const cannot = input.cannotWrite;
   const guarded = (s: State, ids: readonly string[]): string[] => creditWithEvidence(ids, s.file_path, input.writeEvidence, guard(s), s.step_id ?? null, cannot === undefined ? undefined : (id) => cannot(id, s.file_path, s.step_id ?? null));

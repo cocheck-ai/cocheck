@@ -6,7 +6,7 @@
 import { scrubFailureText, scrubToolInput } from "./patch-secrets.ts";
 import path, { isAbsolute } from "node:path";
 import { isHostKey, profileOf, type EventKind, type HostKey } from "./hosts/index.ts";
-import type { ExtraFields } from "./hosts/types.ts";
+import type { ExtraFields, PerActionEvents } from "./hosts/types.ts";
 import { SHARED_EVENT_KINDS } from "./hosts/types.ts";
 import type { ProofRecord } from "./attribution/basis.ts";
 
@@ -16,6 +16,7 @@ export type HookHost = HostKey;
 /** The version of the NormalizedEvent shape; a consumer refuses any other. */
 const NORMALIZED_VERSION = 1;
 
+/** The canonical event every host is mapped onto. Which fields exist, which are optional and what each means: "Canonical event (v1)" in docs/hooks.md. */
 export interface NormalizedEvent {
   v: typeof NORMALIZED_VERSION;
   host: HookHost;
@@ -31,7 +32,7 @@ export interface NormalizedEvent {
   toolUseId?: string;
   agentId?: string;
   agentType?: string;
-  /** The args key of the launch call a Copilot helper was linked to (put on the payload by src/copilot-helpers.ts, never sent by the host). */
+  /** The args key of the launch call a Copilot helper was linked to (put on the payload by src/helper-linker.ts, never sent by the host). */
   launchKey?: string;
   /** Set when the event reports a failed call: the host's failure event, or a post whose response carries the host's error flag. `raw` is the host's words, unredacted and unbounded. */
   failure?: { raw: string; interrupted: boolean; inferred?: true };
@@ -54,7 +55,7 @@ export interface NormalizedEvent {
 }
 
 /** Every host event name the adapter handles; the installer must register exactly these. */
-export const HANDLED_EVENTS: readonly string[] = Object.keys(SHARED_EVENT_KINDS);
+export const HANDLED_EVENTS: readonly string[] = Object.entries(SHARED_EVENT_KINDS).filter(([, kind]) => kind !== "other").map(([name]) => name);
 
 /** Throws for a host that is not wired or a null payload. Never throws for a field of an odd type. */
 export function normalize(host: HookHost, raw: unknown, eventArg?: string): NormalizedEvent {
@@ -63,7 +64,7 @@ export function normalize(host: HookHost, raw: unknown, eventArg?: string): Norm
   const f = profile.fields;
   // `null` threw (a TypeError, exit 1) before the normalizer existed; any other JSON value read as an event with no fields and was ignored (exit 0).
   if (raw === null || raw === undefined) throw new Error("hook payload is null");
-  const p = raw as Record<string, unknown>;
+  const p = profile.readPayload === undefined ? (raw as Record<string, unknown>) : profile.readPayload(raw, eventArg);
   // A host whose payload names no event is told it by the hook command (`--event`).
   const eventName = (profile.eventFromArg === true ? eventArg : p[f.eventName]) as string;
   const named: EventKind = (typeof eventName === "string" && Object.hasOwn(profile.eventKinds, eventName) ? profile.eventKinds[eventName] : undefined) ?? "other";
@@ -73,7 +74,8 @@ export function normalize(host: HookHost, raw: unknown, eventArg?: string): Norm
   const rawInput = profile.parseToolInput === undefined ? p[f.toolInput] : profile.parseToolInput(p[f.toolInput]);
   // The tool's own name (a host that joins a namespace onto it has it taken off here, once); every consumer reads this form.
   const reported = p[f.toolName];
-  const toolName = typeof reported === "string" && profile.toolName !== undefined ? profile.toolName(reported, p) : (reported as string | undefined);
+  const action = perActionCall(profile.perAction, kind, p);
+  const toolName = action !== undefined ? action.tool : typeof reported === "string" && profile.toolName !== undefined ? profile.toolName(reported, p) : (reported as string | undefined);
   return {
     v: NORMALIZED_VERSION,
     host,
@@ -83,13 +85,13 @@ export function normalize(host: HookHost, raw: unknown, eventArg?: string): Norm
     cwd: p[f.cwd] as string | undefined,
     toolName,
     // The raw input of a file-writing call (a patch is the new file contents) is scrubbed here, once; every consumer reads this form.
-    toolInput: scrubToolInput(toolName, rawInput),
-    toolResponse: f.toolResponse === undefined ? undefined : p[f.toolResponse],
+    toolInput: scrubToolInput(toolName, action !== undefined ? action.input : rawInput, host),
+    toolResponse: action?.response !== undefined ? action.response : f.toolResponse === undefined ? undefined : p[f.toolResponse],
     toolUseId: p[f.toolUseId] as string | undefined,
     agentId: p[f.agentId] as string | undefined,
     agentType: p[f.agentType] as string | undefined,
-    ...(profile.capabilities.launchKey && typeof p.cocheckLaunchKey === "string" && p.cocheckLaunchKey !== "" ? { launchKey: p.cocheckLaunchKey } : {}),
-    failure: scrubbedFailure(profile.failureOf(kind, p), toolName, rawInput),
+    ...(profile.capabilities.launchKey && f.launchKey !== undefined && typeof p[f.launchKey] === "string" && p[f.launchKey] !== "" ? { launchKey: p[f.launchKey] as string } : {}),
+    failure: scrubbedFailure(profile.failureOf(kind, p), toolName, action !== undefined ? action.input : rawInput, host),
     transcriptPath: p[f.transcriptPath] as string | undefined,
     ...helperTranscript(host, p),
     lastAssistantMessage: p[f.lastAssistantMessage] as string | undefined,
@@ -102,9 +104,32 @@ export function normalize(host: HookHost, raw: unknown, eventArg?: string): Norm
   };
 }
 
+/**
+ * A per-action event (`file-edit`, `shell-pre`, `shell-post`) read as a call of the tool the profile declares for it: the tool's name, the input
+ * in the shape that tool class's rules read (`file_path` with `edits` or `content`; `command`), and for a shell Post its result. Values pass through unchecked.
+ * Undefined for any other kind, or a host that declares no per-action events.
+ */
+function perActionCall(pa: PerActionEvents | undefined, kind: EventKind, p: Record<string, unknown>): { tool: string; input: unknown; response?: unknown } | undefined {
+  if (pa === undefined) return undefined;
+  const k = pa.fields;
+  if (kind === "file-edit") {
+    const list = k.editList === undefined ? undefined : p[k.editList];
+    const content = k.editContent === undefined ? undefined : p[k.editContent];
+    const edits = Array.isArray(list) ? list.map((e) => (typeof e === "object" && e !== null ? { old_string: (e as Record<string, unknown>).old_string, new_string: (e as Record<string, unknown>).new_string } : e)) : undefined;
+    return { tool: pa.fileEditTool, input: { file_path: p[k.editPath], ...(typeof content === "string" ? { content } : edits !== undefined ? { edits } : {}) } };
+  }
+  if (kind === "shell-pre" || kind === "shell-post") {
+    const exit = k.exitCode === undefined ? undefined : p[k.exitCode];
+    const out = k.output === undefined ? undefined : p[k.output];
+    const response = kind === "shell-post" && (exit !== undefined || out !== undefined) ? { ...(exit === undefined ? {} : { exit_code: exit }), ...(out === undefined ? {} : { output: out }) } : undefined;
+    return { tool: pa.shellTool, input: { command: p[k.command] }, ...(response === undefined ? {} : { response }) };
+  }
+  return undefined;
+}
+
 /** A host's error text with echoes of a withheld patch section removed (see patch-secrets.ts). */
-function scrubbedFailure<T extends { raw: string } | undefined | null>(failure: T, tool: unknown, input: unknown): T {
-  return failure == null || typeof failure.raw !== "string" ? failure : { ...failure, raw: scrubFailureText(failure.raw, tool, input) };
+function scrubbedFailure<T extends { raw: string } | undefined | null>(failure: T, tool: unknown, input: unknown, host: string): T {
+  return failure == null || typeof failure.raw !== "string" ? failure : { ...failure, raw: scrubFailureText(failure.raw, tool, input, host) };
 }
 
 /** Throws unless `ev` is a NormalizedEvent of the version this build reads. */

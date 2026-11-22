@@ -17,6 +17,8 @@ rmSync(dist, { recursive: true, force: true });
 run("tsc -p tsconfig.build.json"); // npm puts node_modules/.bin on PATH for scripts
 mkdirSync(path.join(dist, "timeline", "rail"), { recursive: true });
 cpSync(path.join(root, "src", "timeline", "rail", "assets"), path.join(dist, "timeline", "rail", "assets"), { recursive: true });
+// The harness manifests shipped with CoCheck: data at the repo root, read by src/hosts/index.ts from dist/harnesses when it runs from dist/.
+cpSync(path.join(root, "harnesses"), path.join(dist, "harnesses"), { recursive: true });
 mkdirSync(path.join(dist, "attribution"), { recursive: true });
 cpSync(path.join(root, "src", "attribution", "hooks"), path.join(dist, "attribution", "hooks"), { recursive: true });
 // pdf.js (text only: the PDF reader on every OS, public-kit/helpers/pdf-text.mjs): just the two legacy build files the reader process loads, and

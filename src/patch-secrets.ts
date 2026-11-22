@@ -2,7 +2,7 @@
 // treatment a Write's content gets. A section whose file is a secret path (src/secret-files.ts) or whose lines hold a gitleaks-shaped value
 // (src/secret-scan.ts) is withheld; the headers stay, so the timeline still names the files. Bound: the same detector as every other secret
 // check (gitleaks default rules plus the secret-path list); a password in free prose with no vendor format is not detected.
-import { allProfiles } from "./hosts/index.ts";
+import { allProfiles, toolEntryOf } from "./hosts/index.ts";
 import { isSecretPath } from "./secret-files.ts";
 import { firstSecretRule } from "./secret-scan.ts";
 
@@ -99,8 +99,8 @@ function leaves(v: unknown, out: string[] = [], depth = 0): string[] {
   return out;
 }
 
-/** The tools that carry a patch (Codex and Copilot `apply_patch`, Copilot `patch`), by name, in any namespaced form. */
-export const isPatchTool = (tool: unknown): boolean => typeof tool === "string" && /(^|[.:/])(apply_patch|patch)$/i.test(tool);
+/** The tools that carry a patch (class `patch` in the host's table), by name, in any namespaced form. With no host the built-in tables are read together. */
+export const isPatchTool = (tool: unknown, host?: string | null): boolean => typeof tool === "string" && toolEntryOf(host, tool.slice(tool.search(/[^.:/]*$/)), true)?.class === "patch";
 /** The input fields of a patch tool that hold the patch text. Anything else in an input (and every other tool's input) is left to the secret-content filter. */
 const PATCH_FIELDS = ["input", "patch", "command", "diff"];
 
@@ -108,8 +108,8 @@ const PATCH_FIELDS = ["input", "patch", "command", "diff"];
  * A patch tool's input with its patch text scrubbed (the input itself when it is the text, else the patch-carrying fields); the one form the
  * adapter reads. Any other tool's input passes through untouched, so a Write whose content merely holds a patch block is not altered.
  */
-export function scrubToolInput(tool: unknown, v: unknown): unknown {
-  if (!isPatchTool(tool)) return v;
+export function scrubToolInput(tool: unknown, v: unknown, host?: string | null): unknown {
+  if (!isPatchTool(tool, host)) return v;
   if (typeof v === "string") return scrubPatchText(v);
   if (v === null || typeof v !== "object" || Array.isArray(v)) return v;
   return Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, x]) => [k, PATCH_FIELDS.includes(k) && typeof x === "string" ? scrubPatchText(x) : x]));
@@ -122,10 +122,10 @@ export function scrubToolInput(tool: unknown, v: unknown): unknown {
  */
 const RESPONSE_FIELDS = ["error", "tool_response", "toolResult"];
 
-function scrubTextDeep(v: unknown, tool: unknown, input: unknown, depth = 0): unknown {
-  if (typeof v === "string") return scrubFailureText(v, tool, input);
-  if (Array.isArray(v) && depth < 6) return v.map((x) => scrubTextDeep(x, tool, input, depth + 1));
-  if (v !== null && typeof v === "object" && depth < 6) return Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, x]) => [k, scrubTextDeep(x, tool, input, depth + 1)]));
+function scrubTextDeep(v: unknown, tool: unknown, input: unknown, depth = 0, host?: string | null): unknown {
+  if (typeof v === "string") return scrubFailureText(v, tool, input, host);
+  if (Array.isArray(v) && depth < 6) return v.map((x) => scrubTextDeep(x, tool, input, depth + 1, host));
+  if (v !== null && typeof v === "object" && depth < 6) return Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, x]) => [k, scrubTextDeep(x, tool, input, depth + 1, host)]));
   return v;
 }
 
@@ -180,8 +180,8 @@ export function scrubPayloadBytes(bytes: Buffer): Buffer {
 }
 
 /** Error text with each line that echoes a withheld patch line replaced, and any patch text in it scrubbed. */
-export function scrubFailureText(text: string, tool: unknown, input: unknown): string {
-  if (!isPatchTool(tool)) return text;
+export function scrubFailureText(text: string, tool: unknown, input: unknown, host?: string | null): string {
+  if (!isPatchTool(tool, host)) return text;
   const secret = leaves(input).flatMap(withheldLinesOf);
   const lines = scrubPatchText(text).split("\n");
   return lines.map((l) => (secret.some((s) => l.includes(s)) ? PATCH_WITHHELD : l)).join("\n");
